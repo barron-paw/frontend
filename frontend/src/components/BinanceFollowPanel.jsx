@@ -215,6 +215,11 @@ export default function BinanceFollowPanel() {
               disabled={loading}
             />
             <span>{isEnglish ? 'Enable auto follow' : '启用自动跟单'}</span>
+            <small style={{ display: 'block', marginTop: '4px', color: '#888' }}>
+              {isEnglish 
+                ? 'Uncheck and save to stop auto follow. Configuration persists after leaving this page.'
+                : '取消勾选并保存即可停止自动跟单。离开此页面后配置仍然有效。'}
+            </small>
           </label>
 
           <label className="monitor-config__field">
