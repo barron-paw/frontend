@@ -141,7 +141,9 @@ export default function MonitorConfigPanel() {
         webhookUrl: form.wecomWebhookUrl.trim() || null,
         mentions,
       };
+      console.log('Saving WeCom config:', wecomPayload); // 调试日志
       const wecomResponse = await saveWecomConfig(wecomPayload);
+      console.log('WeCom config saved:', wecomResponse); // 调试日志
       
       setForm({
         telegramChatId: monitorResponse.telegramChatId || '',
