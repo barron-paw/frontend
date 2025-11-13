@@ -23,6 +23,43 @@
   box-shadow: var(--shadow-sm);
 }
 
+.dashboard__tabs {
+  display: inline-flex;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-lg);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-pill);
+  padding: var(--space-xs);
+  background: rgba(28, 36, 70, 0.6);
+}
+
+.dashboard__tab {
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  padding: calc(var(--space-sm) * 0.9) var(--space-lg);
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+  font-size: 0.95rem;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.dashboard__tab:hover {
+  color: var(--text-primary);
+}
+
+.dashboard__tab--active {
+  background: var(--accent-primary);
+  color: white;
+  box-shadow: 0 10px 20px rgba(91, 124, 250, 0.25);
+}
+
+.dashboard__page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xl);
+}
+
 .subscription-panel__content {
   display: flex;
   flex-direction: column;
@@ -354,6 +391,11 @@
 
 .binance-follow__reset:hover {
   background: rgba(255, 255, 255, 0.08);
+  color: var(--accent-primary);
+}
+
+.enterprise-wechat .monitor-config__status {
+  background: var(--info-soft);
   color: var(--accent-primary);
 }
 .monitor-config__details {

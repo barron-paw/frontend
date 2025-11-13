@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import './Dashboard.css';
 import Layout from '../components/Layout';
 import WalletSelector from '../components/WalletSelector';
@@ -11,11 +12,13 @@ import AccountMenu from '../components/AccountMenu.jsx';
 import SubscriptionPanel from '../components/SubscriptionPanel.jsx';
 import MonitorConfigPanel from '../components/MonitorConfigPanel.jsx';
 import BinanceFollowPanel from '../components/BinanceFollowPanel.jsx';
+import EnterpriseWeChatPanel from '../components/EnterpriseWeChatPanel.jsx';
 import { useLanguage } from '../context/LanguageContext.jsx';
 
 export function Dashboard() {
   const { language } = useLanguage();
   const isEnglish = language === 'en';
+  const [activePage, setActivePage] = useState('monitor');
   const {
     selectedWallet,
     setSelectedWallet,
@@ -63,32 +66,57 @@ export function Dashboard() {
 
   return (
     <Layout header={header} actions={<AccountMenu />} footer={footer}>
-      <SubscriptionPanel />
-      <div className="dashboard__config-grid">
-        <MonitorConfigPanel />
-        <BinanceFollowPanel />
+      <div className="dashboard__tabs">
+        <button
+          type="button"
+          className={activePage === 'monitor' ? 'dashboard__tab dashboard__tab--active' : 'dashboard__tab'}
+          onClick={() => setActivePage('monitor')}
+        >
+          {isEnglish ? 'Monitoring' : '监控配置'}
+        </button>
+        <button
+          type="button"
+          className={activePage === 'automation' ? 'dashboard__tab dashboard__tab--active' : 'dashboard__tab'}
+          onClick={() => setActivePage('automation')}
+        >
+          {isEnglish ? 'Automation' : '自动化配置'}
+        </button>
       </div>
 
-      <WalletSelector
-        value={selectedWallet}
-        onChange={setSelectedWallet}
-        onRefresh={refresh}
-        isLoading={loading}
-      />
+      {activePage === 'monitor' ? (
+        <>
+          <SubscriptionPanel />
+          <div className="dashboard__config-grid">
+            <MonitorConfigPanel />
+            <EnterpriseWeChatPanel />
+          </div>
 
-      {error ? (
-        <StatusBanner
-          kind="error"
-          title={isEnglish ? 'Unable to fetch data' : '无法获取数据'}
-          description={error}
-        />
-      ) : null}
+          <WalletSelector
+            value={selectedWallet}
+            onChange={setSelectedWallet}
+            onRefresh={refresh}
+            isLoading={loading}
+          />
 
-      {loading ? <LoadingIndicator /> : null}
+          {error ? (
+            <StatusBanner
+              kind="error"
+              title={isEnglish ? 'Unable to fetch data' : '无法获取数据'}
+              description={error}
+            />
+          ) : null}
 
-      <MetricsGrid summary={summary} />
-      <PositionsTable positions={positions} />
-      <FillsList fills={fills} />
+          {loading ? <LoadingIndicator /> : null}
+
+          <MetricsGrid summary={summary} />
+          <PositionsTable positions={positions} />
+          <FillsList fills={fills} />
+        </>
+      ) : (
+        <div className="dashboard__page">
+          <BinanceFollowPanel />
+        </div>
+      )}
     </Layout>
   );
 }
