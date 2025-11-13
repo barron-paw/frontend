@@ -246,9 +246,7 @@ export default function MonitorConfigPanel() {
               </ul>
             </div>
           </form>
-        </div>
 
-        <div className="monitor-config__card monitor-config__card--guide">
           <div className="monitor-config__guide">
             <button type="button" className="monitor-config__guide-toggle" onClick={toggleGuide}>
               {guideExpanded ? '▼' : '▶'} {guideToggleLabel}

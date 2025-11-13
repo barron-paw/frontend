@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { fetchWecomConfig, saveWecomConfig } from '../api/wecom.js';
 import { useLanguage } from '../context/LanguageContext.jsx';
+import WeComGuide from './WeComGuide.jsx';
 
 const DEFAULT_FORM = {
   enabled: false,
@@ -8,12 +9,16 @@ const DEFAULT_FORM = {
   mentions: '',
 };
 
+const GUIDE_EXPANDED_KEY = 'hm_wecom_guide_expanded';
+const GUIDE_SEEN_KEY = 'hm_wecom_guide_seen';
+
 export default function EnterpriseWeChatPanel() {
   const { language } = useLanguage();
   const isEnglish = language === 'en';
   const [form, setForm] = useState(DEFAULT_FORM);
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState('');
+  const [guideExpanded, setGuideExpanded] = useState(true);
 
   useEffect(() => {
     let ignore = false;
@@ -45,6 +50,25 @@ export default function EnterpriseWeChatPanel() {
       ignore = true;
     };
   }, [isEnglish]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+    const stored = window.localStorage.getItem(GUIDE_EXPANDED_KEY);
+    if (stored !== null) {
+      setGuideExpanded(stored === 'true');
+      return;
+    }
+    const seen = window.localStorage.getItem(GUIDE_SEEN_KEY);
+    if (seen) {
+      setGuideExpanded(false);
+    } else {
+      window.localStorage.setItem(GUIDE_SEEN_KEY, 'true');
+      window.localStorage.setItem(GUIDE_EXPANDED_KEY, 'true');
+      setGuideExpanded(true);
+    }
+  }, []);
 
   const handleChange = (field) => (event) => {
     const value = event.target.type === 'checkbox' ? event.target.checked : event.target.value;
@@ -79,6 +103,21 @@ export default function EnterpriseWeChatPanel() {
     }
   };
 
+  const toggleGuide = () => {
+    setGuideExpanded((prev) => {
+      const next = !prev;
+      if (typeof window !== 'undefined') {
+        window.localStorage.setItem(GUIDE_EXPANDED_KEY, String(next));
+        window.localStorage.setItem(GUIDE_SEEN_KEY, 'true');
+      }
+      return next;
+    });
+  };
+
+  const guideToggleLabel = guideExpanded
+    ? (isEnglish ? 'Hide Enterprise WeChat guide' : '收起企业微信指南')
+    : (isEnglish ? 'Show Enterprise WeChat guide' : '展开企业微信指南');
+
   return (
     <section className="dashboard__section enterprise-wechat">
       <div className="monitor-config__header">
@@ -93,61 +132,70 @@ export default function EnterpriseWeChatPanel() {
         {status ? <div className="monitor-config__status">{status}</div> : null}
       </div>
 
-      <form className="monitor-config__form" onSubmit={handleSubmit}>
-        <div className="monitor-config__fieldset">
-          <span className="monitor-config__legend">{isEnglish ? 'Webhook Settings' : 'Webhook 配置'}</span>
-          <label className="monitor-config__field monitor-config__field--inline">
-            <input
-              type="checkbox"
-              checked={form.enabled}
-              onChange={handleChange('enabled')}
-              disabled={loading}
-            />
-            <span>{isEnglish ? 'Enable Enterprise WeChat notifications' : '启用企业微信推送'}</span>
-          </label>
+      <div className="monitor-config__card monitor-config__card--form">
+        <form className="monitor-config__form" onSubmit={handleSubmit}>
+          <div className="monitor-config__fieldset">
+            <span className="monitor-config__legend">{isEnglish ? 'Webhook Settings' : 'Webhook 配置'}</span>
+            <label className="monitor-config__field monitor-config__field--inline">
+              <input
+                type="checkbox"
+                checked={form.enabled}
+                onChange={handleChange('enabled')}
+                disabled={loading}
+              />
+              <span>{isEnglish ? 'Enable Enterprise WeChat notifications' : '启用企业微信推送'}</span>
+            </label>
 
-          <label className="monitor-config__field">
-            <span>{isEnglish ? 'Webhook URL' : 'Webhook 地址'}</span>
-            <input
-              type="text"
-              value={form.webhookUrl}
-              onChange={handleChange('webhookUrl')}
-              placeholder={isEnglish ? 'https://qyapi.weixin.qq.com/cgi-bin/webhook/send?...' : 'https://qyapi.weixin.qq.com/cgi-bin/webhook/send?...'}
-              disabled={loading}
-            />
-            <small>
+            <label className="monitor-config__field">
+              <span>{isEnglish ? 'Webhook URL' : 'Webhook 地址'}</span>
+              <input
+                type="text"
+                value={form.webhookUrl}
+                onChange={handleChange('webhookUrl')}
+                placeholder={isEnglish ? 'https://qyapi.weixin.qq.com/cgi-bin/webhook/send?...' : 'https://qyapi.weixin.qq.com/cgi-bin/webhook/send?...'}
+                disabled={loading}
+              />
+              <small>
+                {isEnglish
+                  ? 'Create an Enterprise WeChat bot and copy the webhook address here. Messages are only sent when enabled.'
+                  : '在企业微信中添加群机器人，并将生成的 webhook 地址粘贴至此。启用后将推送监控消息。'}
+              </small>
+            </label>
+          </div>
+
+          <div className="monitor-config__fieldset">
+            <span className="monitor-config__legend">{isEnglish ? 'Mentions' : '提醒对象'}</span>
+            <label className="monitor-config__field">
+              <span>{isEnglish ? 'Mobile numbers to @mention (optional)' : '需 @ 的手机号（可选）'}</span>
+              <textarea
+                rows={4}
+                value={form.mentions}
+                onChange={handleChange('mentions')}
+                placeholder={isEnglish ? 'Separate multiple numbers with comma or newline' : '多个手机号可用逗号或换行分隔'}
+                disabled={loading}
+              />
+            </label>
+          </div>
+
+          <div className="monitor-config__actions">
+            <button type="submit" disabled={loading}>
+              {loading ? (isEnglish ? 'Processing…' : '处理中…') : isEnglish ? 'Save' : '保存配置'}
+            </button>
+            <p className="monitor-config__hint">
               {isEnglish
-                ? 'Create an Enterprise WeChat bot and copy the webhook address here. Messages are only sent when enabled.'
-                : '在企业微信中添加群机器人，并将生成的 webhook 地址粘贴至此。启用后将推送监控消息。'}
-            </small>
-          </label>
-        </div>
+                ? 'Messages will be delivered in Chinese or English according to the monitoring language.'
+                : '推送消息的语言将随监控语言设置自动切换。'}
+            </p>
+          </div>
+        </form>
 
-        <div className="monitor-config__fieldset">
-          <span className="monitor-config__legend">{isEnglish ? 'Mentions' : '提醒对象'}</span>
-          <label className="monitor-config__field">
-            <span>{isEnglish ? 'Mobile numbers to @mention (optional)' : '需 @ 的手机号（可选）'}</span>
-            <textarea
-              rows={4}
-              value={form.mentions}
-              onChange={handleChange('mentions')}
-              placeholder={isEnglish ? 'Separate multiple numbers with comma or newline' : '多个手机号可用逗号或换行分隔'}
-              disabled={loading}
-            />
-          </label>
-        </div>
-
-        <div className="monitor-config__actions">
-          <button type="submit" disabled={loading}>
-            {loading ? (isEnglish ? 'Processing…' : '处理中…') : isEnglish ? 'Save' : '保存配置'}
+        <div className="monitor-config__guide">
+          <button type="button" className="monitor-config__guide-toggle" onClick={toggleGuide}>
+            {guideExpanded ? '▼' : '▶'} {guideToggleLabel}
           </button>
-          <p className="monitor-config__hint">
-            {isEnglish
-              ? 'Messages will be delivered in Chinese or English according to the monitoring language.'
-              : '推送消息的语言将随监控语言设置自动切换。'}
-          </p>
+          {guideExpanded && <WeComGuide />}
         </div>
-      </form>
+      </div>
     </section>
   );
 }

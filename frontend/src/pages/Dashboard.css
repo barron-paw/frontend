@@ -308,7 +308,9 @@
 }
 
 .monitor-config__guide {
-  margin-top: var(--space-md);
+  margin-top: var(--space-xl);
+  padding-top: var(--space-lg);
+  border-top: 1px solid rgba(138, 160, 255, 0.15);
 }
 
 .monitor-config__guide-toggle {
