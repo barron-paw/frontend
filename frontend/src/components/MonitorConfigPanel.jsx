@@ -131,10 +131,11 @@ export default function MonitorConfigPanel() {
       const monitorResponse = await updateMonitorConfig(monitorPayload);
       
       // Save WeCom config
+      // 处理手机号：去除 @ 符号，只保留数字
       const mentions = form.wecomMentions
         .split(/[\s,]+/)
-        .map((item) => item.trim())
-        .filter(Boolean);
+        .map((item) => item.trim().replace(/^@+/, '')) // 去除开头的 @ 符号
+        .filter((item) => item && /^\d+$/.test(item)); // 只保留纯数字
       const wecomPayload = {
         enabled: form.wecomEnabled && Boolean(form.wecomWebhookUrl.trim()),
         webhookUrl: form.wecomWebhookUrl.trim() || null,
