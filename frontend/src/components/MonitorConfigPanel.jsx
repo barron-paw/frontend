@@ -2,11 +2,15 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useAuth } from '../context/AuthContext.jsx';
 import { fetchMonitorConfig, updateMonitorConfig } from '../api/config.js';
+import { fetchWecomConfig, saveWecomConfig } from '../api/wecom.js';
 import BotFatherGuide from './BotFatherGuide.jsx';
+import WeComGuide from './WeComGuide.jsx';
 import { useLanguage } from '../context/LanguageContext.jsx';
 
 const GUIDE_EXPANDED_KEY = 'hm_telegram_guide_expanded';
 const GUIDE_SEEN_KEY = 'hm_telegram_guide_seen';
+const WECOM_GUIDE_EXPANDED_KEY = 'hm_wecom_guide_expanded';
+const WECOM_GUIDE_SEEN_KEY = 'hm_wecom_guide_seen';
 
 export default function MonitorConfigPanel() {
   const { user } = useAuth();
@@ -16,12 +20,17 @@ export default function MonitorConfigPanel() {
     telegramChatId: '',
     walletAddresses: '',
     language: 'zh',
+    telegramEnabled: true,
+    wecomEnabled: false,
+    wecomWebhookUrl: '',
+    wecomMentions: '',
   });
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState('');
   const [usesDefaultBot, setUsesDefaultBot] = useState(false);
   const [defaultBotUsername, setDefaultBotUsername] = useState('');
-  const [guideExpanded, setGuideExpanded] = useState(true);
+  const [telegramGuideExpanded, setTelegramGuideExpanded] = useState(true);
+  const [wecomGuideExpanded, setWecomGuideExpanded] = useState(true);
 
   const canEdit = user?.can_access_monitor;
 
@@ -32,15 +41,22 @@ export default function MonitorConfigPanel() {
       }
       setLoading(true);
       try {
-        const data = await fetchMonitorConfig();
+        const [monitorData, wecomData] = await Promise.all([
+          fetchMonitorConfig(),
+          fetchWecomConfig().catch(() => ({ enabled: false, webhookUrl: '', mentions: [] })),
+        ]);
         setForm({
-          telegramChatId: data.telegramChatId || '',
-          walletAddresses: (data.walletAddresses || []).join('\n'),
-          language: data.language || 'zh',
+          telegramChatId: monitorData.telegramChatId || '',
+          walletAddresses: (monitorData.walletAddresses || []).join('\n'),
+          language: monitorData.language || 'zh',
+          telegramEnabled: Boolean(monitorData.telegramChatId),
+          wecomEnabled: Boolean(wecomData.enabled),
+          wecomWebhookUrl: wecomData.webhookUrl || '',
+          wecomMentions: (wecomData.mentions || []).join('\n'),
         });
-        setLanguage(data.language || 'zh');
-        setUsesDefaultBot(Boolean(data.usesDefaultBot));
-        setDefaultBotUsername(data.defaultBotUsername || '');
+        setLanguage(monitorData.language || 'zh');
+        setUsesDefaultBot(Boolean(monitorData.usesDefaultBot));
+        setDefaultBotUsername(monitorData.defaultBotUsername || '');
       } catch (err) {
         setStatus(isEnglish ? err.message || 'Failed to load monitor configuration' : err.message || '无法加载监控配置');
       } finally {
@@ -54,18 +70,33 @@ export default function MonitorConfigPanel() {
     if (typeof window === 'undefined') {
       return;
     }
+    // Telegram guide state
     const stored = window.localStorage.getItem(GUIDE_EXPANDED_KEY);
     if (stored !== null) {
-      setGuideExpanded(stored === 'true');
-      return;
-    }
-    const seen = window.localStorage.getItem(GUIDE_SEEN_KEY);
-    if (seen) {
-      setGuideExpanded(false);
+      setTelegramGuideExpanded(stored === 'true');
     } else {
-      window.localStorage.setItem(GUIDE_SEEN_KEY, 'true');
-      window.localStorage.setItem(GUIDE_EXPANDED_KEY, 'true');
-      setGuideExpanded(true);
+      const seen = window.localStorage.getItem(GUIDE_SEEN_KEY);
+      if (seen) {
+        setTelegramGuideExpanded(false);
+      } else {
+        window.localStorage.setItem(GUIDE_SEEN_KEY, 'true');
+        window.localStorage.setItem(GUIDE_EXPANDED_KEY, 'true');
+        setTelegramGuideExpanded(true);
+      }
+    }
+    // WeCom guide state
+    const wecomStored = window.localStorage.getItem(WECOM_GUIDE_EXPANDED_KEY);
+    if (wecomStored !== null) {
+      setWecomGuideExpanded(wecomStored === 'true');
+    } else {
+      const wecomSeen = window.localStorage.getItem(WECOM_GUIDE_SEEN_KEY);
+      if (wecomSeen) {
+        setWecomGuideExpanded(false);
+      } else {
+        window.localStorage.setItem(WECOM_GUIDE_SEEN_KEY, 'true');
+        window.localStorage.setItem(WECOM_GUIDE_EXPANDED_KEY, 'true');
+        setWecomGuideExpanded(true);
+      }
     }
   }, []);
 
@@ -87,8 +118,9 @@ export default function MonitorConfigPanel() {
     setStatus('');
     try {
       setLoading(true);
-      const payload = {
-        telegramChatId: form.telegramChatId.trim() || null,
+      // Save monitor config
+      const monitorPayload = {
+        telegramChatId: form.telegramEnabled ? (form.telegramChatId.trim() || null) : null,
         walletAddresses: form.walletAddresses
           .split(/[\s,;]+/)
           .map((addr) => addr.trim())
@@ -96,16 +128,33 @@ export default function MonitorConfigPanel() {
           .slice(0, 2),
         language: form.language,
       };
-      const response = await updateMonitorConfig(payload);
+      const monitorResponse = await updateMonitorConfig(monitorPayload);
+      
+      // Save WeCom config
+      const mentions = form.wecomMentions
+        .split(/[\s,]+/)
+        .map((item) => item.trim())
+        .filter(Boolean);
+      const wecomPayload = {
+        enabled: form.wecomEnabled && Boolean(form.wecomWebhookUrl.trim()),
+        webhookUrl: form.wecomWebhookUrl.trim() || null,
+        mentions,
+      };
+      const wecomResponse = await saveWecomConfig(wecomPayload);
+      
       setForm({
-        telegramChatId: response.telegramChatId || '',
-        walletAddresses: (response.walletAddresses || []).join('\n'),
-        language: response.language || 'zh',
+        telegramChatId: monitorResponse.telegramChatId || '',
+        walletAddresses: (monitorResponse.walletAddresses || []).join('\n'),
+        language: monitorResponse.language || 'zh',
+        telegramEnabled: Boolean(monitorResponse.telegramChatId),
+        wecomEnabled: Boolean(wecomResponse.enabled),
+        wecomWebhookUrl: wecomResponse.webhookUrl || '',
+        wecomMentions: (wecomResponse.mentions || []).join('\n'),
       });
-      setLanguage(response.language || 'zh');
-      setUsesDefaultBot(Boolean(response.usesDefaultBot));
-      setDefaultBotUsername(response.defaultBotUsername || '');
-      setStatus(isEnglish ? 'Monitoring configuration saved.' : '监控配置已保存。');
+      setLanguage(monitorResponse.language || 'zh');
+      setUsesDefaultBot(Boolean(monitorResponse.usesDefaultBot));
+      setDefaultBotUsername(monitorResponse.defaultBotUsername || '');
+      setStatus(isEnglish ? 'Configuration saved.' : '配置已保存。');
     } catch (err) {
       setStatus(err.message || (isEnglish ? 'Save failed, please retry later.' : '保存失败，请稍后重试'));
     } finally {
@@ -113,8 +162,8 @@ export default function MonitorConfigPanel() {
     }
   };
 
-  const toggleGuide = () => {
-    setGuideExpanded((prev) => {
+  const toggleTelegramGuide = () => {
+    setTelegramGuideExpanded((prev) => {
       const next = !prev;
       if (typeof window !== 'undefined') {
         window.localStorage.setItem(GUIDE_EXPANDED_KEY, String(next));
@@ -124,9 +173,24 @@ export default function MonitorConfigPanel() {
     });
   };
 
-  const guideToggleLabel = guideExpanded
+  const toggleWecomGuide = () => {
+    setWecomGuideExpanded((prev) => {
+      const next = !prev;
+      if (typeof window !== 'undefined') {
+        window.localStorage.setItem(WECOM_GUIDE_EXPANDED_KEY, String(next));
+        window.localStorage.setItem(WECOM_GUIDE_SEEN_KEY, 'true');
+      }
+      return next;
+    });
+  };
+
+  const telegramGuideToggleLabel = telegramGuideExpanded
     ? (isEnglish ? 'Hide Telegram guide' : '收起 Telegram 指南')
     : (isEnglish ? 'Show Telegram guide' : '展开 Telegram 指南');
+
+  const wecomGuideToggleLabel = wecomGuideExpanded
+    ? (isEnglish ? 'Hide Enterprise WeChat guide' : '收起企业微信指南')
+    : (isEnglish ? 'Show Enterprise WeChat guide' : '展开企业微信指南');
 
   return (
     <section className="dashboard__section monitor-config">
@@ -135,8 +199,8 @@ export default function MonitorConfigPanel() {
           <h2>{isEnglish ? 'Monitoring Configuration' : '监控配置'}</h2>
           <p>
             {isEnglish
-              ? 'Save your Telegram chat ID and wallet addresses. The system already uses the official bot token for you.'
-              : '填写 Telegram chat_id 与钱包地址即可，系统已为您配置官方机器人 Token。'}
+              ? 'Configure notification channels (Telegram or Enterprise WeChat) and wallet addresses to monitor. The system already uses the official Telegram bot token for you.'
+              : '配置推送渠道（Telegram 或企业微信）和要监控的钱包地址。系统已为您配置官方 Telegram 机器人 Token。'}
           </p>
         </div>
         {status ? <div className="monitor-config__status">{status}</div> : null}
@@ -147,43 +211,116 @@ export default function MonitorConfigPanel() {
       <div className="monitor-config__card monitor-config__card--form">
           <form className="monitor-config__form" onSubmit={handleSubmit}>
             <div className="monitor-config__fieldset">
-              <span className="monitor-config__legend">{isEnglish ? 'Telegram' : 'Telegram 设置'}</span>
-              <label className="monitor-config__field">
-                <span>{isEnglish ? 'Chat ID' : 'Chat ID'}</span>
-                <input
-                  type="text"
-                  value={form.telegramChatId}
-                  onChange={(event) => setForm((prev) => ({ ...prev, telegramChatId: event.target.value }))}
-                  placeholder={isEnglish ? 'Group or chat ID' : '群组或私聊 ID'}
-                  disabled={!canEdit || loading}
-                />
-                <small>
-                  {isEnglish ? (
-                    <>
-                      {usesDefaultBot
-                        ? 'Our default bot token is preconfigured. Talk to '
-                        : 'Provide the chat ID used by your Telegram bot. Talk to '}
-                      <strong>@TelegramBotRaw</strong> to obtain the ID.
-                    </>
-                  ) : (
-                    <>
-                      {usesDefaultBot ? '系统已内置官方机器人 Token。' : '如使用自建机器人请填写对应 chat_id。'}
-                      通过 <strong>@TelegramBotRaw</strong> 发送消息即可返回 chat_id。
-                    </>
-                  )}
-                </small>
-                {usesDefaultBot ? (
-                  <small className="monitor-config__field-note">
-                    {isEnglish
-                      ? defaultBotUsername
-                        ? `Default bot: ${defaultBotUsername}. Open Telegram, search for it, press Start once.`
-                        : 'Default bot token is active. Open Telegram and press Start on the official bot.'
-                      : defaultBotUsername
-                        ? `默认机器人：${defaultBotUsername}，在 Telegram 搜索并点击 Start 即可。`
-                        : '已启用默认机器人，请在 Telegram 中打开官方机器人并点击 Start。'}
+              <span className="monitor-config__legend">{isEnglish ? 'Notification Channels' : '推送渠道'}</span>
+              
+              <div className="monitor-config__notification-toggle">
+                <label className="monitor-config__field monitor-config__field--inline">
+                  <input
+                    type="checkbox"
+                    checked={form.telegramEnabled}
+                    onChange={(event) => setForm((prev) => ({ ...prev, telegramEnabled: event.target.checked }))}
+                    disabled={!canEdit || loading}
+                  />
+                  <span>{isEnglish ? 'Enable Telegram notifications' : '启用 Telegram 推送'}</span>
+                </label>
+                <label className="monitor-config__field monitor-config__field--inline">
+                  <input
+                    type="checkbox"
+                    checked={form.wecomEnabled}
+                    onChange={(event) => setForm((prev) => ({ ...prev, wecomEnabled: event.target.checked }))}
+                    disabled={!canEdit || loading}
+                  />
+                  <span>{isEnglish ? 'Enable Enterprise WeChat notifications' : '启用企业微信推送'}</span>
+                </label>
+              </div>
+
+              {form.telegramEnabled && (
+                <label className="monitor-config__field">
+                  <span>{isEnglish ? 'Telegram Chat ID' : 'Telegram Chat ID'}</span>
+                  <input
+                    type="text"
+                    value={form.telegramChatId}
+                    onChange={(event) => setForm((prev) => ({ ...prev, telegramChatId: event.target.value }))}
+                    placeholder={isEnglish ? 'Group or chat ID' : '群组或私聊 ID'}
+                    disabled={!canEdit || loading}
+                  />
+                  <small>
+                    {isEnglish ? (
+                      <>
+                        {usesDefaultBot
+                          ? 'Our default bot token is preconfigured. Talk to '
+                          : 'Provide the chat ID used by your Telegram bot. Talk to '}
+                        <strong>@TelegramBotRaw</strong> to obtain the ID.
+                      </>
+                    ) : (
+                      <>
+                        {usesDefaultBot ? '系统已内置官方机器人 Token。' : '如使用自建机器人请填写对应 chat_id。'}
+                        通过 <strong>@TelegramBotRaw</strong> 发送消息即可返回 chat_id。
+                      </>
+                    )}
                   </small>
-                ) : null}
-              </label>
+                  {usesDefaultBot ? (
+                    <small className="monitor-config__field-note">
+                      {isEnglish
+                        ? defaultBotUsername
+                          ? `Default bot: ${defaultBotUsername}. Open Telegram, search for it, press Start once.`
+                          : 'Default bot token is active. Open Telegram and press Start on the official bot.'
+                        : defaultBotUsername
+                          ? `默认机器人：${defaultBotUsername}，在 Telegram 搜索并点击 Start 即可。`
+                          : '已启用默认机器人，请在 Telegram 中打开官方机器人并点击 Start。'}
+                    </small>
+                  ) : null}
+                </label>
+              )}
+
+              {form.wecomEnabled && (
+                <>
+                  <label className="monitor-config__field">
+                    <span>{isEnglish ? 'Enterprise WeChat Webhook URL' : '企业微信 Webhook 地址'}</span>
+                    <input
+                      type="text"
+                      value={form.wecomWebhookUrl}
+                      onChange={(event) => setForm((prev) => ({ ...prev, wecomWebhookUrl: event.target.value }))}
+                      placeholder={isEnglish ? 'https://qyapi.weixin.qq.com/cgi-bin/webhook/send?...' : 'https://qyapi.weixin.qq.com/cgi-bin/webhook/send?...'}
+                      disabled={!canEdit || loading}
+                    />
+                    <small>
+                      {isEnglish
+                        ? 'Create an Enterprise WeChat bot and copy the webhook address here. Messages are only sent when enabled.'
+                        : '在企业微信中添加群机器人，并将生成的 webhook 地址粘贴至此。启用后将推送监控消息。'}
+                    </small>
+                  </label>
+                  <label className="monitor-config__field">
+                    <div className="monitor-config__field-header">
+                      <span>{isEnglish ? 'Mobile numbers to @mention (optional)' : '需 @ 的手机号（可选）'}</span>
+                      <button
+                        type="button"
+                        className="monitor-config__help-button"
+                        onClick={() => {
+                          alert(isEnglish 
+                            ? 'Enter mobile numbers registered in Enterprise WeChat. These users will be @mentioned in push messages for better visibility.'
+                            : '填写在企业微信中注册的手机号。推送消息时会 @ 提醒这些用户，提高消息可见性。');
+                        }}
+                        title={isEnglish ? 'What is this for?' : '这是做什么用的？'}
+                      >
+                        ?
+                      </button>
+                    </div>
+                    <textarea
+                      rows={3}
+                      value={form.wecomMentions}
+                      onChange={(event) => setForm((prev) => ({ ...prev, wecomMentions: event.target.value }))}
+                      placeholder={isEnglish ? 'Separate multiple numbers with comma or newline' : '多个手机号可用逗号或换行分隔'}
+                      disabled={!canEdit || loading}
+                    />
+                    <small>
+                      {isEnglish
+                        ? 'These users will be @mentioned in push messages for better visibility.'
+                        : '推送消息时会 @ 提醒这些用户，提高消息可见性。'}
+                    </small>
+                  </label>
+                </>
+              )}
             </div>
 
             <div className="monitor-config__fieldset">
@@ -246,12 +383,23 @@ export default function MonitorConfigPanel() {
             </div>
           </form>
 
-          <div className="monitor-config__guide">
-            <button type="button" className="monitor-config__guide-toggle" onClick={toggleGuide}>
-              {guideExpanded ? '▼' : '▶'} {guideToggleLabel}
-            </button>
-            {guideExpanded && <BotFatherGuide usesDefaultBot={usesDefaultBot} defaultBotUsername={defaultBotUsername} />}
-          </div>
+          {form.telegramEnabled && (
+            <div className="monitor-config__guide">
+              <button type="button" className="monitor-config__guide-toggle" onClick={toggleTelegramGuide}>
+                {telegramGuideExpanded ? '▼' : '▶'} {telegramGuideToggleLabel}
+              </button>
+              {telegramGuideExpanded && <BotFatherGuide usesDefaultBot={usesDefaultBot} defaultBotUsername={defaultBotUsername} />}
+            </div>
+          )}
+
+          {form.wecomEnabled && (
+            <div className="monitor-config__guide">
+              <button type="button" className="monitor-config__guide-toggle" onClick={toggleWecomGuide}>
+                {wecomGuideExpanded ? '▼' : '▶'} {wecomGuideToggleLabel}
+              </button>
+              {wecomGuideExpanded && <WeComGuide />}
+            </div>
+          )}
         </div>
     </section>
   );

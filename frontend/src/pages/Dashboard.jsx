@@ -12,7 +12,6 @@ import AccountMenu from '../components/AccountMenu.jsx';
 import SubscriptionPanel from '../components/SubscriptionPanel.jsx';
 import MonitorConfigPanel from '../components/MonitorConfigPanel.jsx';
 import BinanceFollowPanel from '../components/BinanceFollowPanel.jsx';
-import EnterpriseWeChatPanel from '../components/EnterpriseWeChatPanel.jsx';
 import { useLanguage } from '../context/LanguageContext.jsx';
 
 export function Dashboard() {
@@ -86,10 +85,7 @@ export function Dashboard() {
       {activePage === 'monitor' ? (
         <>
           <SubscriptionPanel />
-          <div className="dashboard__config-grid">
-            <MonitorConfigPanel />
-            <EnterpriseWeChatPanel />
-          </div>
+          <MonitorConfigPanel />
 
           <WalletSelector
             value={selectedWallet}
