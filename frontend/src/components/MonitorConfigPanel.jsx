@@ -58,13 +58,14 @@ export default function MonitorConfigPanel() {
         setUsesDefaultBot(Boolean(monitorData.usesDefaultBot));
         setDefaultBotUsername(monitorData.defaultBotUsername || '');
       } catch (err) {
+        console.error('Failed to load monitor config:', err);
         setStatus(isEnglish ? err.message || 'Failed to load monitor configuration' : err.message || '无法加载监控配置');
       } finally {
         setLoading(false);
       }
     };
     loadConfig();
-  }, [canEdit, isEnglish, setLanguage]);
+  }, [canEdit]); // 只在 canEdit 改变时重新加载
 
   useEffect(() => {
     if (typeof window === 'undefined') {

@@ -87,7 +87,10 @@ export default function BinanceFollowPanel() {
         );
       } catch (err) {
         if (!ignore) {
+          console.error('Failed to load Binance config:', err);
           setStatusMessage(err.message || (isEnglish ? 'Failed to load Binance settings.' : '无法加载 Binance 设置。'));
+          // 如果加载失败，设置默认状态
+          setFollowStatus('disabled');
         }
       } finally {
         if (!ignore) {
@@ -99,7 +102,7 @@ export default function BinanceFollowPanel() {
     return () => {
       ignore = true;
     };
-  }, [isEnglish]);
+  }, []); // 只在组件挂载时加载一次
 
   const statusLabel = useMemo(() => {
     const pack = STATUS_LABELS[followStatus] || STATUS_LABELS.disabled;
