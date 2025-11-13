@@ -37,6 +37,7 @@ export function WalletSelector({ value, onChange, onRefresh, isLoading }) {
           onKeyDown={handleKeyDown}
           placeholder={isEnglish ? 'Enter wallet address' : '请输入钱包地址'}
           spellCheck="false"
+          autoComplete="off"
         />
       </div>
 

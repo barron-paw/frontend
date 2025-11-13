@@ -298,11 +298,11 @@ export default function BinanceFollowPanel() {
               <span>
                 {form.mode === 'percentage'
                   ? (isEnglish ? 'Percentage (%)' : '百分比 (%)')
-                  : (isEnglish ? 'Fixed size (contracts)' : '固定份额（合约张数）')}
+                  : (isEnglish ? 'Fixed size (USDT)' : '固定份额（USDT）')}
               </span>
               <input
                 type="number"
-                step="0.0001"
+                step="0.01"
                 min="0"
                 value={form.amount}
                 onChange={handleChange('amount')}
@@ -330,10 +330,10 @@ export default function BinanceFollowPanel() {
             </label>
 
             <label className="monitor-config__field">
-              <span>{isEnglish ? 'Maximum position (contracts)' : '最大持仓（合约张数）'}</span>
+              <span>{isEnglish ? 'Maximum position (USDT)' : '最大持仓（USDT）'}</span>
               <input
                 type="number"
-                step="0.0001"
+                step="0.01"
                 min="0"
                 value={form.maxPosition}
                 onChange={handleChange('maxPosition')}
@@ -343,10 +343,10 @@ export default function BinanceFollowPanel() {
           </div>
 
           <label className="monitor-config__field">
-            <span>{isEnglish ? 'Minimum order size (contracts)' : '最小下单量（合约张数）'}</span>
+            <span>{isEnglish ? 'Minimum order size (USDT)' : '最小下单量（USDT）'}</span>
             <input
               type="number"
-              step="0.0001"
+              step="0.01"
               min="0"
               value={form.minOrderSize}
               onChange={handleChange('minOrderSize')}
@@ -354,8 +354,8 @@ export default function BinanceFollowPanel() {
             />
             <small>
               {isEnglish
-                ? 'Orders smaller than this value will be skipped to avoid Binance minimum lot errors.'
-                : '订单数量低于该值时将被跳过，以避免 Binance 最小下单量限制。'}
+                ? 'Orders smaller than this value (in USDT) will be skipped to avoid Binance minimum lot errors.'
+                : '订单金额（USDT）低于该值时将被跳过，以避免 Binance 最小下单量限制。'}
             </small>
           </label>
         </div>

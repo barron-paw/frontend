@@ -165,6 +165,7 @@
   box-shadow: 0 18px 40px rgba(0, 0, 0, 0.25);
   padding: clamp(var(--space-lg), 3vw, var(--space-xl));
   backdrop-filter: blur(12px);
+  min-height: 100%;
 }
 
 .monitor-config__helper {
@@ -180,6 +181,7 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-lg);
+  flex: 1;
 }
 
 .monitor-config__field--inline {
@@ -249,7 +251,7 @@
 }
 
 .monitor-config__form textarea {
-  min-height: 180px;
+  min-height: 120px;
   resize: vertical;
 }
 
@@ -338,12 +340,25 @@
   display: grid;
   gap: var(--space-xl);
   margin-bottom: var(--space-xl);
+  align-items: start;
 }
 
 @media (min-width: 1180px) {
   .dashboard__config-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+}
+
+.dashboard__config-grid > .dashboard__section {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.dashboard__config-grid .monitor-config__card {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
 }
 
 .binance-follow__status {

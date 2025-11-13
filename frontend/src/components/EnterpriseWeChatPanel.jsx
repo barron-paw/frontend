@@ -168,7 +168,7 @@ export default function EnterpriseWeChatPanel() {
             <label className="monitor-config__field">
               <span>{isEnglish ? 'Mobile numbers to @mention (optional)' : '需 @ 的手机号（可选）'}</span>
               <textarea
-                rows={4}
+                rows={5}
                 value={form.mentions}
                 onChange={handleChange('mentions')}
                 placeholder={isEnglish ? 'Separate multiple numbers with comma or newline' : '多个手机号可用逗号或换行分隔'}

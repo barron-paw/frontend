@@ -144,8 +144,7 @@ export default function MonitorConfigPanel() {
 
       {helperText ? <p className="monitor-config__helper">{helperText}</p> : null}
 
-      <div className="monitor-config__layout">
-        <div className="monitor-config__card monitor-config__card--form">
+      <div className="monitor-config__card monitor-config__card--form">
           <form className="monitor-config__form" onSubmit={handleSubmit}>
             <div className="monitor-config__fieldset">
               <span className="monitor-config__legend">{isEnglish ? 'Telegram' : 'Telegram 设置'}</span>
@@ -192,7 +191,7 @@ export default function MonitorConfigPanel() {
               <label className="monitor-config__field">
                 <span>{isEnglish ? 'Addresses to Monitor' : '监控地址'}</span>
                 <textarea
-                  rows={7}
+                  rows={5}
                   value={form.walletAddresses}
                   onChange={(event) => setForm((prev) => ({ ...prev, walletAddresses: event.target.value }))}
                   placeholder={isEnglish ? '0x1234...\n0xabcd...' : '0x1234...\n0xabcd...'}
@@ -254,7 +253,6 @@ export default function MonitorConfigPanel() {
             {guideExpanded && <BotFatherGuide usesDefaultBot={usesDefaultBot} defaultBotUsername={defaultBotUsername} />}
           </div>
         </div>
-      </div>
     </section>
   );
 }
