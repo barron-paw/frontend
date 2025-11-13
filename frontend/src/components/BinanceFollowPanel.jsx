@@ -16,6 +16,10 @@ const STATUS_LABELS = {
     zh: '未启用',
     en: 'Disabled',
   },
+  enabled_but_disabled: {
+    zh: '已启用',
+    en: 'Enabled',
+  },
   stopped_by_loss: {
     zh: '已因止损暂停',
     en: 'Stopped by stop-loss',
@@ -71,7 +75,12 @@ export default function BinanceFollowPanel() {
         });
         setHasApiKey(Boolean(data.hasApiKey));
         setHasApiSecret(Boolean(data.hasApiSecret));
-        setFollowStatus(data.status || (data.enabled ? 'active' : 'disabled'));
+        // 如果用户启用了但状态是 disabled，显示为 enabled_but_disabled
+        let status = data.status || (data.enabled ? 'active' : 'disabled');
+        if (data.enabled && status === 'disabled') {
+          status = 'enabled_but_disabled';
+        }
+        setFollowStatus(status);
         setStopReason(data.stopReason || '');
         setBaselineBalance(
           typeof data.baselineBalance === 'number' ? data.baselineBalance : null,
@@ -128,7 +137,12 @@ export default function BinanceFollowPanel() {
       const record = await saveBinanceFollowConfig(payload);
       setHasApiKey(Boolean(record.hasApiKey));
       setHasApiSecret(Boolean(record.hasApiSecret));
-      setFollowStatus(record.status || (record.enabled ? 'active' : 'disabled'));
+      // 如果用户启用了但状态是 disabled，显示为 enabled_but_disabled
+      let status = record.status || (record.enabled ? 'active' : 'disabled');
+      if (record.enabled && status === 'disabled') {
+        status = 'enabled_but_disabled';
+      }
+      setFollowStatus(status);
       setStopReason(record.stopReason || '');
       setBaselineBalance(
         typeof record.baselineBalance === 'number' ? record.baselineBalance : null,

@@ -405,6 +405,11 @@
   color: var(--success);
 }
 
+.binance-follow__badge--enabled_but_disabled {
+  background: var(--info-soft);
+  color: var(--accent-primary);
+}
+
 .binance-follow__badge--stopped_by_loss {
   background: var(--danger-soft);
   color: var(--danger);

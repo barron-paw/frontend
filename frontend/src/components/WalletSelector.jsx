@@ -7,7 +7,7 @@ export function WalletSelector({ value, onChange, onRefresh, isLoading }) {
   const isEnglish = language === 'en';
   const handleInputChange = useCallback(
     (event) => {
-      onChange?.(event.target.value);
+    onChange?.(event.target.value);
     },
     [onChange],
   );
@@ -28,15 +28,15 @@ export function WalletSelector({ value, onChange, onRefresh, isLoading }) {
         <label className="wallet-selector__label" htmlFor="wallet-input">
           {isEnglish ? 'Wallet' : '钱包'}
         </label>
-        <input
-          id="wallet-input"
-          type="text"
-          className="wallet-selector__input"
-          value={value}
-          onChange={handleInputChange}
+          <input
+            id="wallet-input"
+            type="text"
+            className="wallet-selector__input"
+            value={value}
+            onChange={handleInputChange}
           onKeyDown={handleKeyDown}
           placeholder={isEnglish ? 'Enter wallet address' : '请输入钱包地址'}
-          spellCheck="false"
+            spellCheck="false"
           autoComplete="off"
         />
       </div>
