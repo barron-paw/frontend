@@ -311,7 +311,12 @@
 .monitor-config__guide {
   margin-top: var(--space-xl);
   padding-top: var(--space-lg);
-  border-top: 1px solid rgba(138, 160, 255, 0.15);
+  border-top: 1px solid var(--border-subtle);
+  width: 100%;
+}
+
+.monitor-config__guide > * {
+  width: 100%;
 }
 
 .monitor-config__guide-toggle {
