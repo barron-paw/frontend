@@ -333,44 +333,52 @@ export default function MonitorConfigPanel() {
                           const guideContent = isEnglish
                             ? `Enterprise WeChat Webhook Setup Guide:
 
-Step 1: Open Enterprise WeChat (企业微信) on your mobile device or desktop app. Make sure you are logged in to your account.
+Step 1: Open Enterprise WeChat (企业微信) on your mobile device or desktop app. Make sure you are logged in to your account. You should see the main message interface with your conversations.
 
-Step 2: Tap on the top-left corner of the message interface to access the menu.
+Step 2: Tap on the top-left corner of the message interface. You will see a menu icon (usually three horizontal lines or a back arrow) in the top-left corner. Tap on it to access the main menu.
 
-Step 3: Select "Create Enterprise" (创建企业) to set up a new enterprise account, or select your existing enterprise if you already have one.
+Step 3: In the menu that appears, find and select "Create Enterprise" (创建企业) option. This will allow you to set up a new enterprise account. If you already have an enterprise account, you can select your existing enterprise from the list instead.
 
-Step 4: Complete the enterprise information form. Fill in the required details such as enterprise name, industry, and other supplementary information as prompted.
+Step 4: Complete the enterprise information form. You will be prompted to fill in various details such as:
+   - Enterprise name (企业名称)
+   - Industry type (行业类型)
+   - Other supplementary information as required
+Fill in all the required fields and submit the form to complete the enterprise setup.
 
-Step 5: Open the group chat where you want to receive Hyperliquid monitoring notifications. Tap on the three dots icon (⋮) in the top-right corner of the group chat to open the group settings menu.
+Step 5: After setting up or selecting your enterprise, navigate to the group chat where you want to receive Hyperliquid monitoring notifications. Once you are in the group chat, look for the three dots icon (⋮) in the top-right corner of the screen. Tap on it to open the group settings menu.
 
-Step 6: Scroll down in the group settings menu and find "Message Push" (消息推送) option. Tap on it to access the message push settings.
+Step 6: In the group settings menu, scroll down to find the "Message Push" (消息推送) option. This option is usually located further down in the settings list, so you may need to scroll down to see it. Tap on "Message Push" (消息推送) to access the message push settings page.
 
-Step 7: Tap on "Add Bot" (添加机器人) button to create a new bot for this group.
+Step 7: On the message push settings page, you will see an "Add Bot" (添加机器人) button. Tap on this button to create a new bot for this group. The system will generate a unique webhook URL for your bot.
 
-Step 8: After the bot is created, you will see the webhook URL displayed on the screen. It should start with "https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=..." followed by a long string of characters. Copy the entire webhook URL carefully, then paste it into the "Webhook 地址" (Webhook URL) field in the form above and fill in the form.
+Step 8: After the bot is created successfully, you will see the webhook URL displayed on the screen. The webhook URL will start with "https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=..." followed by a long string of characters (the API key). IMPORTANT: Copy the entire webhook URL carefully, making sure to include all characters from the beginning to the end. Then paste it into the "Webhook 地址" (Webhook URL) field in the form above.
 
-Step 9: (Optional) If you want to @mention specific members when notifications are sent, enter their mobile numbers (as registered in Enterprise WeChat) in the "需 @ 的手机号" (Mobile numbers to @mention) field. You can separate multiple numbers with commas or newlines.
+Step 9: (Optional) If you want to @mention specific members when notifications are sent, enter their mobile numbers (as registered in Enterprise WeChat) in the "需 @ 的手机号" (Mobile numbers to @mention) field. You can separate multiple numbers with commas or newlines. This will ensure that these members receive notifications when monitoring alerts are sent.
 
 Finally: Enable the "启用企业微信推送" (Enable Enterprise WeChat notifications) toggle switch, and click "保存配置" (Save Configuration) to activate Enterprise WeChat notifications. You will start receiving Hyperliquid monitoring messages in your Enterprise WeChat group.`
                             : `企业微信 Webhook 配置指南：
 
-步骤 1：打开企业微信（手机端或桌面端），确保已登录您的企业微信账号。
+步骤 1：打开企业微信（手机端或桌面端），确保已登录您的企业微信账号。您应该能看到主消息界面，显示您的对话列表。
 
-步骤 2：点击消息界面的左上角，打开菜单。
+步骤 2：点击消息界面的左上角。您会在左上角看到一个菜单图标（通常是三条横线或返回箭头）。点击它来打开主菜单。
 
-步骤 3：点击「创建企业」来创建新的企业账号，或者如果您已有企业账号，请选择您现有的企业。
+步骤 3：在出现的菜单中，找到并点击「创建企业」选项。这将允许您创建新的企业账号。如果您已有企业账号，也可以从列表中选择您现有的企业。
 
-步骤 4：完成企业信息补充。按照提示填写企业名称、行业等必要的补充信息。
+步骤 4：完成企业信息补充。系统会提示您填写以下信息：
+   - 企业名称
+   - 行业类型
+   - 其他必要的补充信息
+请填写所有必填字段并提交表单，以完成企业设置。
 
-步骤 5：打开需要接收 Hyperliquid 监控通知的群聊。点击群聊右上角的三个点图标（⋮），打开群聊设置菜单。
+步骤 5：设置或选择企业后，进入需要接收 Hyperliquid 监控通知的群聊。进入群聊后，找到屏幕右上角的三个点图标（⋮）。点击它来打开群聊设置菜单。
 
-步骤 6：在群聊设置菜单中向下滑动，找到「消息推送」选项，点击进入消息推送设置。
+步骤 6：在群聊设置菜单中，向下滑动找到「消息推送」选项。该选项通常位于设置列表的较下方，因此您可能需要向下滚动才能看到它。点击「消息推送」进入消息推送设置页面。
 
-步骤 7：点击「添加机器人」按钮，为该群聊创建一个新的机器人。
+步骤 7：在消息推送设置页面上，您会看到一个「添加机器人」按钮。点击此按钮为该群聊创建一个新的机器人。系统会为您的机器人生成一个唯一的 webhook 地址。
 
-步骤 8：机器人创建成功后，您将看到生成的 webhook 地址显示在屏幕上。该地址通常以 "https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=..." 开头，后面跟着一长串字符。仔细复制完整的 webhook 地址，然后粘贴到上方表单中的「Webhook 地址」输入框中并填写表单。
+步骤 8：机器人创建成功后，您将看到生成的 webhook 地址显示在屏幕上。webhook 地址通常以 "https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=..." 开头，后面跟着一长串字符（API 密钥）。重要：请仔细复制完整的 webhook 地址，确保包含从开头到结尾的所有字符。然后将其粘贴到上方表单中的「Webhook 地址」输入框中。
 
-步骤 9：（可选）如果您希望在发送通知时 @ 提醒特定成员，请在「需 @ 的手机号」输入框中填写他们的手机号（需在企业微信中注册）。多个手机号可用逗号或换行分隔。
+步骤 9：（可选）如果您希望在发送通知时 @ 提醒特定成员，请在「需 @ 的手机号」输入框中填写他们的手机号（需在企业微信中注册）。多个手机号可用逗号或换行分隔。这将确保这些成员在发送监控提醒时收到通知。
 
 最后：勾选「启用企业微信推送」开关，点击「保存配置」按钮即可启用企业微信推送功能。之后您将在企业微信群聊中收到 Hyperliquid 监控消息。`;
                           
@@ -387,14 +395,20 @@ Finally: Enable the "启用企业微信推送" (Enable Enterprise WeChat notific
                           ];
                           
                           const imageHtml = images.map((img, idx) => 
-                            `<div style="margin: 10px 0;"><img src="${img}" alt="Step ${idx + 1}" style="max-width: 100%; border-radius: 4px;" /></div>`
+                            `<div style="margin: 20px 0;">
+                              <div style="font-weight: 600; margin-bottom: 10px; color: var(--text-primary, #fff); font-size: 1.1rem; padding-bottom: 8px; border-bottom: 1px solid rgba(255, 255, 255, 0.1);">
+                                ${isEnglish ? `Step ${idx + 1}` : `步骤 ${idx + 1}`}
+                              </div>
+                              <img src="${img}" alt="${isEnglish ? `Step ${idx + 1}` : `步骤 ${idx + 1}`}" style="max-width: 100%; border-radius: 6px; border: 1px solid rgba(255, 255, 255, 0.15); box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);" />
+                            </div>`
                           ).join('');
                           
                           const fullContent = `
-                            <div style="max-width: 600px; padding: 20px;">
-                              <h3 style="margin-top: 0;">${isEnglish ? 'Enterprise WeChat Webhook Setup Guide' : '企业微信 Webhook 配置指南'}</h3>
-                              <div style="white-space: pre-line; margin-bottom: 20px;">${guideContent}</div>
-                              <div style="margin-top: 20px;">
+                            <div style="max-width: 700px; padding: 20px;">
+                              <h3 style="margin-top: 0; margin-bottom: 20px; font-size: 1.5rem;">${isEnglish ? 'Enterprise WeChat Webhook Setup Guide' : '企业微信 Webhook 配置指南'}</h3>
+                              <div style="white-space: pre-line; margin-bottom: 30px; line-height: 1.8; font-size: 0.95rem;">${guideContent}</div>
+                              <div style="margin-top: 30px; border-top: 1px solid rgba(255, 255, 255, 0.1); padding-top: 20px;">
+                                <h4 style="margin-top: 0; margin-bottom: 20px; font-size: 1.2rem; color: var(--text-primary, #fff);">${isEnglish ? 'Step-by-Step Screenshots' : '步骤截图'}</h4>
                                 ${imageHtml}
                               </div>
                             </div>

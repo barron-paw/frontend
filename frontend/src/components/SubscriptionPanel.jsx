@@ -144,7 +144,153 @@ export default function SubscriptionPanel() {
         </div>
         <form className="subscription-panel__form" onSubmit={handleSubmit}>
           <label>
-            {isEnglish ? 'Transaction Hash (Tx Hash)' : '交易哈希 (Tx Hash)'}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+              <span>{isEnglish ? 'Transaction Hash (Tx Hash)' : '交易哈希 (Tx Hash)'}</span>
+              <button
+                type="button"
+                className="monitor-config__help-button"
+                onClick={() => {
+                  const guideContent = isEnglish
+                    ? `Transaction Hash (Tx Hash) Guide:
+
+Step 1: After completing the payment to the recipient address, you will receive a transaction hash (Tx Hash) from your wallet or exchange.
+
+Step 2: The transaction hash is a unique identifier for your payment transaction on the blockchain. It typically starts with "0x" followed by a long string of letters and numbers (64 characters in hexadecimal format).
+
+Step 3: You can find the transaction hash in several places:
+   - In your wallet app (MetaMask, Trust Wallet, etc.) after sending the transaction
+   - On the blockchain explorer (BSCScan) by searching for your wallet address
+   - In the transaction history of the exchange or wallet you used
+
+Step 4: Copy the complete transaction hash. Make sure to copy the entire string from "0x" to the end, without any spaces or extra characters.
+
+Step 5: Paste the transaction hash into the "Transaction Hash (Tx Hash)" field above and click "Submit" to verify your payment and activate your subscription.
+
+Important Notes:
+- The payment amount must be ≥ 7.9 USDT, otherwise the subscription verification may fail.
+- The transaction must be sent to the correct recipient address shown above.
+- The transaction hash is case-sensitive, so make sure to copy it exactly as shown.`
+                    : `交易哈希 (Tx Hash) 指南：
+
+步骤 1：完成向收款地址的支付后，您会从钱包或交易所收到一个交易哈希（Tx Hash）。
+
+步骤 2：交易哈希是您在区块链上支付交易的唯一标识符。它通常以 "0x" 开头，后面跟着一长串字母和数字（十六进制格式，共 64 个字符）。
+
+步骤 3：您可以在以下几个地方找到交易哈希：
+   - 在您的钱包应用（MetaMask、Trust Wallet 等）中发送交易后
+   - 在区块链浏览器（BSCScan）上通过搜索您的钱包地址
+   - 在您使用的交易所或钱包的交易历史记录中
+
+步骤 4：复制完整的交易哈希。确保复制从 "0x" 到结尾的整个字符串，不要有任何空格或额外字符。
+
+步骤 5：将交易哈希粘贴到上方的「交易哈希 (Tx Hash)」输入框中，然后点击「提交验证」来验证您的支付并激活订阅。
+
+重要提示：
+- 支付金额必须 ≥ 7.9 USDT，否则订阅验证可能会失败。
+- 交易必须发送到上方显示的正确收款地址。
+- 交易哈希区分大小写，因此请确保完全按照显示的方式复制。`;
+
+                  const imageUrl = 'https://raw.githubusercontent.com/barron-paw/frontend/main/tx%20hash.png';
+                  
+                  const fullContent = `
+                    <div style="max-width: 700px; padding: 20px;">
+                      <h3 style="margin-top: 0; margin-bottom: 20px; font-size: 1.5rem;">${isEnglish ? 'Transaction Hash (Tx Hash) Guide' : '交易哈希 (Tx Hash) 指南'}</h3>
+                      <div style="white-space: pre-line; margin-bottom: 30px; line-height: 1.8; font-size: 0.95rem;">${guideContent}</div>
+                      <div style="margin-top: 30px; border-top: 1px solid rgba(255, 255, 255, 0.1); padding-top: 20px;">
+                        <h4 style="margin-top: 0; margin-bottom: 20px; font-size: 1.2rem; color: var(--text-primary, #fff);">${isEnglish ? 'Screenshot Example' : '截图示例'}</h4>
+                        <div style="margin: 20px 0;">
+                          <img src="${imageUrl}" alt="${isEnglish ? 'Transaction Hash Example' : '交易哈希示例'}" style="max-width: 100%; border-radius: 6px; border: 1px solid rgba(255, 255, 255, 0.15); box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);" />
+                        </div>
+                      </div>
+                    </div>
+                  `;
+                  
+                  const modal = document.createElement('div');
+                  modal.style.cssText = `
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    right: 0;
+                    bottom: 0;
+                    background: rgba(0, 0, 0, 0.7);
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    z-index: 10000;
+                    padding: 20px;
+                    overflow-y: auto;
+                  `;
+                  
+                  const content = document.createElement('div');
+                  content.style.cssText = `
+                    background: var(--bg-primary, #1a1a1a);
+                    border-radius: 8px;
+                    padding: 20px;
+                    max-width: 700px;
+                    max-height: 90vh;
+                    overflow-y: auto;
+                    position: relative;
+                    color: var(--text-primary, #fff);
+                  `;
+                  content.innerHTML = fullContent;
+                  
+                  const closeBtn = document.createElement('button');
+                  closeBtn.textContent = '×';
+                  closeBtn.style.cssText = `
+                    position: absolute;
+                    top: 10px;
+                    right: 10px;
+                    background: none;
+                    border: none;
+                    color: var(--text-primary, #fff);
+                    font-size: 24px;
+                    cursor: pointer;
+                    width: 30px;
+                    height: 30px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    border-radius: 4px;
+                  `;
+                  closeBtn.onmouseenter = () => closeBtn.style.background = 'rgba(255, 255, 255, 0.1)';
+                  closeBtn.onmouseleave = () => closeBtn.style.background = 'none';
+                  closeBtn.onclick = () => document.body.removeChild(modal);
+                  
+                  content.appendChild(closeBtn);
+                  modal.appendChild(content);
+                  modal.onclick = (e) => {
+                    if (e.target === modal) document.body.removeChild(modal);
+                  };
+                  document.body.appendChild(modal);
+                }}
+                title={isEnglish ? 'Transaction Hash guide' : '交易哈希指南'}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: 'var(--text-secondary, #999)',
+                  cursor: 'pointer',
+                  padding: '2px 6px',
+                  fontSize: '0.9rem',
+                  borderRadius: '50%',
+                  width: '20px',
+                  height: '20px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  transition: 'all 0.2s',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.color = 'var(--primary-color, #3b82f6)';
+                  e.currentTarget.style.backgroundColor = 'var(--bg-hover, rgba(255, 255, 255, 0.05))';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.color = 'var(--text-secondary, #999)';
+                  e.currentTarget.style.backgroundColor = 'transparent';
+                }}
+              >
+                ?
+              </button>
+            </div>
             <input
               type="text"
               value={txHash}

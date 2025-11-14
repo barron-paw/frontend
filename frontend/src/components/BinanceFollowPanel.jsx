@@ -280,26 +280,38 @@ export default function BinanceFollowPanel() {
                     const guideContent = isEnglish
                       ? `Binance API Key Setup Guide:
 
-1. Log in to your Binance account and navigate to API Management.
+Step 1: Log in to your Binance account. After logging in, click on your profile icon in the top-right corner of the page.
 
-2. Click "Create API" and select "System generated" for API Key type.
+Step 2: In the dropdown menu that appears, find and click on "API Management" (API 管理) option. This will take you to the API management page.
 
-3. Label your API key (e.g., "Hyperliquid Auto Follow") and complete the security verification.
+Step 3: On the API Management page, you will see a list of your existing API keys (if any) and a "Create API" (创建 API) button. Click on the "Create API" button to start creating a new API key.
 
-4. IMPORTANT: Only enable "Enable Futures" permission. DO NOT enable "Enable Withdrawals" for security.
+Step 4: A dialog box will appear asking you to choose the API Key type. Select "System generated" (系统生成) as the API Key type. This is the recommended option for security.
 
-5. Copy the API Key and paste it into the "API Key" field above.`
+Step 5: You will be prompted to label your API key. Enter a descriptive name such as "Hyperliquid Auto Follow" or "交易跟单" to help you identify this API key later. Then complete the security verification (this may include email verification, SMS verification, or Google Authenticator code depending on your account security settings).
+
+Step 6: IMPORTANT - Permission Settings: On the permission settings page, you will see several permission options. For security reasons, ONLY enable "Enable Futures" (启用期货) permission. DO NOT enable "Enable Withdrawals" (启用提现) or "Enable Reading" (启用读取) permissions. This ensures that even if your API key is compromised, it cannot be used to withdraw funds from your account.
+
+Step 7: After setting the permissions, click "Next" or "Create" to complete the API key creation process. Binance will display your newly created API Key. Copy the entire API Key string immediately.
+
+Step 8: Paste the copied API Key into the "API Key" field in the form above. Make sure to copy the complete key without any extra spaces or characters.`
                       : `Binance API Key 配置指南：
 
-1. 登录您的 Binance 账户，进入 API 管理页面。
+步骤 1：登录您的 Binance 账户。登录后，点击页面右上角的个人头像图标。
 
-2. 点击「创建 API」，选择「系统生成」作为 API Key 类型。
+步骤 2：在下拉菜单中，找到并点击「API 管理」选项。这将带您进入 API 管理页面。
 
-3. 为 API Key 命名（例如「Hyperliquid 自动跟单」）并完成安全验证。
+步骤 3：在 API 管理页面上，您会看到现有 API Key 列表（如果有）和一个「创建 API」按钮。点击「创建 API」按钮开始创建新的 API Key。
 
-4. 重要：仅启用「启用期货」权限。为了安全，请勿启用「启用提现」权限。
+步骤 4：将弹出一个对话框，要求您选择 API Key 类型。选择「系统生成」作为 API Key 类型。这是推荐的安全选项。
 
-5. 复制 API Key 并粘贴到上方的「API Key」输入框中。`;
+步骤 5：系统会提示您为 API Key 命名。输入一个描述性的名称，例如「Hyperliquid 自动跟单」或「交易跟单」，以便您以后识别此 API Key。然后完成安全验证（这可能包括邮箱验证、短信验证或 Google 验证器代码，具体取决于您的账户安全设置）。
+
+步骤 6：重要 - 权限设置：在权限设置页面上，您会看到多个权限选项。为了安全起见，仅启用「启用期货」权限。请勿启用「启用提现」或「启用读取」权限。这确保即使您的 API Key 被泄露，也无法用于从您的账户提取资金。
+
+步骤 7：设置权限后，点击「下一步」或「创建」以完成 API Key 创建过程。Binance 将显示您新创建的 API Key。请立即复制整个 API Key 字符串。
+
+步骤 8：将复制的 API Key 粘贴到上方表单中的「API Key」输入框中。确保复制完整的密钥，不要有多余的空格或字符。`;
                     
                     const images = [
                       'https://raw.githubusercontent.com/barron-paw/frontend/main/b1.png',
@@ -310,14 +322,20 @@ export default function BinanceFollowPanel() {
                     ];
                     
                     const imageHtml = images.map((img, idx) => 
-                      `<div style="margin: 10px 0;"><img src="${img}" alt="Step ${idx + 1}" style="max-width: 100%; border-radius: 4px;" /></div>`
+                      `<div style="margin: 20px 0;">
+                        <div style="font-weight: 600; margin-bottom: 10px; color: var(--text-primary, #fff); font-size: 1.1rem; padding-bottom: 8px; border-bottom: 1px solid rgba(255, 255, 255, 0.1);">
+                          ${isEnglish ? `Step ${idx + 1}` : `步骤 ${idx + 1}`}
+                        </div>
+                        <img src="${img}" alt="${isEnglish ? `Step ${idx + 1}` : `步骤 ${idx + 1}`}" style="max-width: 100%; border-radius: 6px; border: 1px solid rgba(255, 255, 255, 0.15); box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);" />
+                      </div>`
                     ).join('');
                     
                     const fullContent = `
-                      <div style="max-width: 600px; padding: 20px;">
-                        <h3 style="margin-top: 0;">${isEnglish ? 'Binance API Key Setup Guide' : 'Binance API Key 配置指南'}</h3>
-                        <div style="white-space: pre-line; margin-bottom: 20px;">${guideContent}</div>
-                        <div style="margin-top: 20px;">
+                      <div style="max-width: 700px; padding: 20px;">
+                        <h3 style="margin-top: 0; margin-bottom: 20px; font-size: 1.5rem;">${isEnglish ? 'Binance API Key Setup Guide' : 'Binance API Key 配置指南'}</h3>
+                        <div style="white-space: pre-line; margin-bottom: 30px; line-height: 1.8; font-size: 0.95rem;">${guideContent}</div>
+                        <div style="margin-top: 30px; border-top: 1px solid rgba(255, 255, 255, 0.1); padding-top: 20px;">
+                          <h4 style="margin-top: 0; margin-bottom: 20px; font-size: 1.2rem; color: var(--text-primary, #fff);">${isEnglish ? 'Step-by-Step Screenshots' : '步骤截图'}</h4>
                           ${imageHtml}
                         </div>
                       </div>
@@ -409,26 +427,30 @@ export default function BinanceFollowPanel() {
                     const guideContent = isEnglish
                       ? `Binance API Secret Setup Guide:
 
-1. After creating the API Key, Binance will display the API Secret.
+Step 1: After successfully creating your API Key and setting the permissions, Binance will display a confirmation page showing both your API Key and API Secret.
 
-2. IMPORTANT: Copy the API Secret immediately. It will only be shown once and cannot be retrieved later.
+Step 2: IMPORTANT - Copy the API Secret immediately: The API Secret is displayed only once during the creation process. It will NOT be shown again after you close this page. Make sure to copy the entire API Secret string before proceeding.
 
-3. If you lose the API Secret, you will need to delete the API Key and create a new one.
+Step 3: Store the API Secret securely: You can temporarily save it in a secure location (like a password manager or encrypted note) while you complete the setup. Never share your API Secret with anyone.
 
-4. Paste the API Secret into the "API Secret" field above.
+Step 4: If you lose the API Secret: Unfortunately, Binance does not allow you to view the API Secret again after creation. If you lose it, you will need to delete the existing API Key and create a new one from scratch.
 
-5. The API Secret will be encrypted and stored securely on the server.`
+Step 5: Paste the API Secret into the "API Secret" field in the form above. Make sure to copy the complete secret without any extra spaces, line breaks, or characters. The API Secret is typically a long string of letters and numbers.
+
+Step 6: Security Note: The API Secret will be encrypted using industry-standard encryption and stored securely on our server. It will never be displayed in plain text after you save it.`
                       : `Binance API Secret 配置指南：
 
-1. 创建 API Key 后，Binance 会显示 API Secret。
+步骤 1：成功创建 API Key 并设置权限后，Binance 会显示一个确认页面，显示您的 API Key 和 API Secret。
 
-2. 重要：请立即复制 API Secret。它只会显示一次，之后无法再次查看。
+步骤 2：重要 - 立即复制 API Secret：API Secret 仅在创建过程中显示一次。关闭此页面后，将无法再次查看。请确保在继续操作之前复制整个 API Secret 字符串。
 
-3. 如果您丢失了 API Secret，需要删除 API Key 并重新创建。
+步骤 3：安全存储 API Secret：您可以在完成设置期间将其临时保存在安全位置（如密码管理器或加密笔记）。切勿与任何人分享您的 API Secret。
 
-4. 将 API Secret 粘贴到上方的「API Secret」输入框中。
+步骤 4：如果您丢失了 API Secret：不幸的是，Binance 不允许您在创建后再次查看 API Secret。如果您丢失了它，您需要删除现有的 API Key 并从头开始创建新的 API Key。
 
-5. API Secret 将被加密并安全存储在服务器上。`;
+步骤 5：将 API Secret 粘贴到上方表单中的「API Secret」输入框中。确保复制完整的密钥，不要有多余的空格、换行符或字符。API Secret 通常是一长串字母和数字。
+
+步骤 6：安全说明：API Secret 将使用行业标准加密进行加密，并安全存储在我们的服务器上。保存后，它永远不会以明文形式显示。`;
                     
                     const images = [
                       'https://raw.githubusercontent.com/barron-paw/frontend/main/b1.png',
@@ -439,14 +461,20 @@ export default function BinanceFollowPanel() {
                     ];
                     
                     const imageHtml = images.map((img, idx) => 
-                      `<div style="margin: 10px 0;"><img src="${img}" alt="Step ${idx + 1}" style="max-width: 100%; border-radius: 4px;" /></div>`
+                      `<div style="margin: 20px 0;">
+                        <div style="font-weight: 600; margin-bottom: 10px; color: var(--text-primary, #fff); font-size: 1.1rem; padding-bottom: 8px; border-bottom: 1px solid rgba(255, 255, 255, 0.1);">
+                          ${isEnglish ? `Step ${idx + 1}` : `步骤 ${idx + 1}`}
+                        </div>
+                        <img src="${img}" alt="${isEnglish ? `Step ${idx + 1}` : `步骤 ${idx + 1}`}" style="max-width: 100%; border-radius: 6px; border: 1px solid rgba(255, 255, 255, 0.15); box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);" />
+                      </div>`
                     ).join('');
                     
                     const fullContent = `
-                      <div style="max-width: 600px; padding: 20px;">
-                        <h3 style="margin-top: 0;">${isEnglish ? 'Binance API Secret Setup Guide' : 'Binance API Secret 配置指南'}</h3>
-                        <div style="white-space: pre-line; margin-bottom: 20px;">${guideContent}</div>
-                        <div style="margin-top: 20px;">
+                      <div style="max-width: 700px; padding: 20px;">
+                        <h3 style="margin-top: 0; margin-bottom: 20px; font-size: 1.5rem;">${isEnglish ? 'Binance API Secret Setup Guide' : 'Binance API Secret 配置指南'}</h3>
+                        <div style="white-space: pre-line; margin-bottom: 30px; line-height: 1.8; font-size: 0.95rem;">${guideContent}</div>
+                        <div style="margin-top: 30px; border-top: 1px solid rgba(255, 255, 255, 0.1); padding-top: 20px;">
+                          <h4 style="margin-top: 0; margin-bottom: 20px; font-size: 1.2rem; color: var(--text-primary, #fff);">${isEnglish ? 'Step-by-Step Screenshots' : '步骤截图'}</h4>
                           ${imageHtml}
                         </div>
                       </div>
