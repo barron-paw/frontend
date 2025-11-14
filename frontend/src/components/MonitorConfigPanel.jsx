@@ -333,30 +333,46 @@ export default function MonitorConfigPanel() {
                           const guideContent = isEnglish
                             ? `Enterprise WeChat Webhook Setup Guide:
 
-1. Open Enterprise WeChat (企业微信) on your mobile device or desktop app.
+Step 1: Open Enterprise WeChat (企业微信) on your mobile device or desktop app. Make sure you are logged in to your account.
 
-2. Navigate to the group where you want to receive notifications, tap the group settings (右上角三个点), and select "群机器人" (Group Bot).
+Step 2: Navigate to the group chat where you want to receive Hyperliquid monitoring notifications. This should be a group where you have admin or member permissions.
 
-3. Click "添加机器人" (Add Bot), give it a name, and confirm. The system will generate a webhook URL.
+Step 3: Tap on the group settings icon (usually three dots in the top right corner) to open the group settings menu.
 
-4. Copy the webhook URL (it should start with https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=...) and paste it into the "Webhook 地址" field above.
+Step 4: In the group settings menu, look for and select "群机器人" (Group Bot) option. This will open the bot management interface.
 
-5. (Optional) If you want to @mention specific members, enter their mobile numbers (registered in Enterprise WeChat) in the "需 @ 的手机号" field, separated by commas or newlines.
+Step 5: Click on "添加机器人" (Add Bot) button to create a new bot for this group.
 
-6. Enable the toggle switch and click "保存配置" (Save) to activate Enterprise WeChat notifications.`
+Step 6: Give your bot a name (e.g., "Hyperliquid Monitor" or "交易监控") and confirm the creation. The system will automatically generate a unique webhook URL for this bot.
+
+Step 7: After the bot is created, you will see the webhook URL displayed on the screen. It should start with "https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=..." followed by a long string of characters.
+
+Step 8: Copy the entire webhook URL carefully. Make sure to copy the complete URL including all parameters. Then paste it into the "Webhook 地址" (Webhook URL) field in the form above.
+
+Step 9: (Optional) If you want to @mention specific members when notifications are sent, enter their mobile numbers (as registered in Enterprise WeChat) in the "需 @ 的手机号" (Mobile numbers to @mention) field. You can separate multiple numbers with commas or newlines.
+
+Finally: Enable the "启用企业微信推送" (Enable Enterprise WeChat notifications) toggle switch, and click "保存配置" (Save Configuration) to activate Enterprise WeChat notifications. You will start receiving Hyperliquid monitoring messages in your Enterprise WeChat group.`
                             : `企业微信 Webhook 配置指南：
 
-1. 打开企业微信（手机端或桌面端）。
+步骤 1：打开企业微信（手机端或桌面端），确保已登录您的企业微信账号。
 
-2. 进入需要接收通知的群聊，点击右上角三个点，选择「群机器人」。
+步骤 2：进入需要接收 Hyperliquid 监控通知的群聊。请确保您在该群聊中拥有管理员或成员权限。
 
-3. 点击「添加机器人」，为机器人命名并确认。系统会生成一个 webhook 地址。
+步骤 3：点击群聊右上角的三个点图标，打开群聊设置菜单。
 
-4. 复制生成的 webhook 地址（通常以 https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=... 开头），粘贴到上方的「Webhook 地址」输入框中。
+步骤 4：在群聊设置菜单中，找到并点击「群机器人」选项，进入机器人管理界面。
 
-5. （可选）如需 @ 提醒特定成员，在「需 @ 的手机号」输入框中填写他们的手机号（需在企业微信中注册），多个手机号可用逗号或换行分隔。
+步骤 5：点击「添加机器人」按钮，为该群聊创建一个新的机器人。
 
-6. 勾选「启用企业微信推送」开关，点击「保存配置」即可启用企业微信推送功能。`;
+步骤 6：为机器人设置一个名称（例如「Hyperliquid 监控」或「交易监控」），然后确认创建。系统会自动为该机器人生成一个唯一的 webhook 地址。
+
+步骤 7：机器人创建成功后，您将看到生成的 webhook 地址显示在屏幕上。该地址通常以 "https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=..." 开头，后面跟着一长串字符。
+
+步骤 8：仔细复制完整的 webhook 地址，确保包含所有参数。然后将该地址粘贴到上方表单中的「Webhook 地址」输入框中。
+
+步骤 9：（可选）如果您希望在发送通知时 @ 提醒特定成员，请在「需 @ 的手机号」输入框中填写他们的手机号（需在企业微信中注册）。多个手机号可用逗号或换行分隔。
+
+最后：勾选「启用企业微信推送」开关，点击「保存配置」按钮即可启用企业微信推送功能。之后您将在企业微信群聊中收到 Hyperliquid 监控消息。`;
                           
                           const images = [
                             'https://raw.githubusercontent.com/barron-paw/frontend/main/1.png',
@@ -367,6 +383,7 @@ export default function MonitorConfigPanel() {
                             'https://raw.githubusercontent.com/barron-paw/frontend/main/6.png',
                             'https://raw.githubusercontent.com/barron-paw/frontend/main/7.png',
                             'https://raw.githubusercontent.com/barron-paw/frontend/main/8.png',
+                            'https://raw.githubusercontent.com/barron-paw/frontend/main/9.png',
                           ];
                           
                           const imageHtml = images.map((img, idx) => 
