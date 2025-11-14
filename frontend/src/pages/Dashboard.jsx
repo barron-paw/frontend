@@ -36,11 +36,10 @@ export function Dashboard() {
         <h1>Hyperliquid Monitor</h1>
         <p>
           {isEnglish
-            ? 'Live positions, balances, and fills for your tracked wallets.'
-            : '实时查看跟踪钱包的持仓、余额与成交明细。'}
+            ? 'Live positions, balances, and fills for your tracked wallets. Binance real-time order tracking.'
+            : '实时查看跟踪钱包的持仓、余额与成交明细。币安实时下单跟踪。'}
         </p>
       </div>
-      <WhaleAddressesPanel />
     </div>
   );
 
@@ -85,6 +84,7 @@ export function Dashboard() {
       </div>
 
       <div style={{ display: activePage === 'monitor' ? 'block' : 'none' }}>
+      <WhaleAddressesPanel />
       <SubscriptionPanel />
       <MonitorConfigPanel />
 

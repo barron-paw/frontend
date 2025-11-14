@@ -102,9 +102,21 @@
   text-decoration: underline;
 }
 
+.whale-addresses-panel__info {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
 .whale-addresses-panel__balance {
   font-size: 0.9rem;
   color: var(--text-secondary);
+}
+
+.whale-addresses-panel__profit-rate {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  font-weight: 500;
 }
 
 .whale-addresses-panel__refreshing {

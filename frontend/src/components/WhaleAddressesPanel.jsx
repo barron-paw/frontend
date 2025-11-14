@@ -96,18 +96,31 @@ export default function WhaleAddressesPanel() {
                   >
                     {formatAddress(whale.address)}
                   </button>
-                  {whale.balance && (
-                    <div className="whale-addresses-panel__balance">
-                      {isEnglish ? 'Balance: ' : '余额：'}
-                      {typeof whale.balance === 'number'
-                        ? whale.balance.toLocaleString(undefined, {
-                            minimumFractionDigits: 2,
-                            maximumFractionDigits: 2,
-                          })
-                        : whale.balance}
-                      {' USDT'}
-                    </div>
-                  )}
+                  <div className="whale-addresses-panel__info">
+                    {whale.positionValue && (
+                      <div className="whale-addresses-panel__balance">
+                        {isEnglish ? 'Position Value: ' : '持仓价值：'}
+                        {typeof whale.positionValue === 'number'
+                          ? whale.positionValue.toLocaleString(undefined, {
+                              minimumFractionDigits: 2,
+                              maximumFractionDigits: 2,
+                            })
+                          : whale.positionValue}
+                        {' USDT'}
+                      </div>
+                    )}
+                    {whale.profitRate && (
+                      <div className="whale-addresses-panel__profit-rate">
+                        {isEnglish ? '7-Day Profit Rate: ' : '7天盈利率：'}
+                        <span style={{ color: whale.profitRate > 0 ? '#4caf50' : '#f44336' }}>
+                          {typeof whale.profitRate === 'number'
+                            ? `${whale.profitRate > 0 ? '+' : ''}${whale.profitRate.toFixed(2)}`
+                            : whale.profitRate}
+                          {'%'}
+                        </span>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             ))
