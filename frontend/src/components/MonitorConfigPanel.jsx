@@ -1,7 +1,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { useAuth } from '../context/AuthContext.jsx';
-import { fetchMonitorConfig, updateMonitorConfig } from '../api/config.js';
+import { fetchMonitorConfig, updateMonitorConfig, fetchTelegramChatId } from '../api/config.js';
 import { fetchWecomConfig, saveWecomConfig } from '../api/wecom.js';
 import { useLanguage } from '../context/LanguageContext.jsx';
 
@@ -22,6 +22,7 @@ export default function MonitorConfigPanel() {
   const [status, setStatus] = useState('');
   const [usesDefaultBot, setUsesDefaultBot] = useState(false);
   const [defaultBotUsername, setDefaultBotUsername] = useState('');
+  const [fetchingChatId, setFetchingChatId] = useState(false);
 
   const canEdit = user?.can_access_monitor;
 
@@ -178,6 +179,14 @@ export default function MonitorConfigPanel() {
                         const guideContent = isEnglish
                           ? `Telegram Chat ID Setup Guide:
 
+Method 1 - Automatic (Recommended):
+1. Open Telegram and send a message to your bot (the bot configured in your settings, or the default bot if using the default token).
+
+2. Click the "Auto Get" button next to the Chat ID input field.
+
+3. The system will automatically retrieve your Chat ID from the latest message and save it.
+
+Method 2 - Manual:
 1. Open Telegram and search for @TelegramBotRaw (or use your own bot).
 
 2. Start a conversation with the bot by clicking "Start" or sending any message.
@@ -191,6 +200,14 @@ export default function MonitorConfigPanel() {
 6. Enable the toggle switch and click "保存配置" (Save) to activate Telegram notifications.`
                           : `Telegram Chat ID 配置指南：
 
+方法一 - 自动获取（推荐）：
+1. 打开 Telegram，向您的机器人发送一条消息（使用您配置的机器人，或使用默认机器人）。
+
+2. 点击 Chat ID 输入框旁边的「自动获取」按钮。
+
+3. 系统将自动从最新消息中获取您的 Chat ID 并保存。
+
+方法二 - 手动获取：
 1. 打开 Telegram，搜索 @TelegramBotRaw（或使用您自己的机器人）。
 
 2. 点击 "Start" 或发送任意消息开始与机器人对话。
@@ -285,25 +302,72 @@ export default function MonitorConfigPanel() {
                       ?
                     </button>
                   </div>
-                  <input
-                    type="text"
-                    value={form.telegramChatId}
-                    onChange={(event) => setForm((prev) => ({ ...prev, telegramChatId: event.target.value }))}
-                    placeholder={isEnglish ? 'Group or chat ID' : '群组或私聊 ID'}
-                    disabled={!canEdit || loading}
-                  />
+                  <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                    <input
+                      type="text"
+                      value={form.telegramChatId}
+                      onChange={(event) => setForm((prev) => ({ ...prev, telegramChatId: event.target.value }))}
+                      placeholder={isEnglish ? 'Group or chat ID' : '群组或私聊 ID'}
+                      disabled={!canEdit || loading}
+                      style={{ flex: 1 }}
+                    />
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        if (!canEdit || fetchingChatId) return;
+                        setFetchingChatId(true);
+                        setStatus('');
+                        try {
+                          const result = await fetchTelegramChatId();
+                          if (result.success && result.chat_id) {
+                            setForm((prev) => ({ ...prev, telegramChatId: result.chat_id }));
+                            setStatus(isEnglish ? 'Chat ID retrieved and saved successfully!' : 'Chat ID 已成功获取并保存！');
+                            // 重新加载配置以更新状态
+                            const monitorData = await fetchMonitorConfig();
+                            setForm((prev) => ({
+                              ...prev,
+                              telegramChatId: monitorData.telegramChatId || '',
+                              telegramEnabled: Boolean(monitorData.telegramChatId),
+                            }));
+                          } else {
+                            setStatus(result.message || (isEnglish ? 'Failed to get chat ID. Please send a message to your bot first.' : '获取 Chat ID 失败。请先向您的机器人发送一条消息。'));
+                          }
+                        } catch (err) {
+                          setStatus(err.message || (isEnglish ? 'Failed to fetch chat ID. Please try again.' : '获取 Chat ID 失败，请重试。'));
+                        } finally {
+                          setFetchingChatId(false);
+                        }
+                      }}
+                      disabled={!canEdit || loading || fetchingChatId}
+                      style={{
+                        padding: '8px 16px',
+                        background: 'var(--accent-primary, #5b7cfa)',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '6px',
+                        cursor: fetchingChatId || !canEdit ? 'not-allowed' : 'pointer',
+                        opacity: fetchingChatId || !canEdit ? 0.6 : 1,
+                        whiteSpace: 'nowrap',
+                        fontSize: '0.9rem',
+                      }}
+                    >
+                      {fetchingChatId
+                        ? (isEnglish ? 'Fetching...' : '获取中...')
+                        : (isEnglish ? 'Auto Get' : '自动获取')}
+                    </button>
+                  </div>
                   <small>
                     {isEnglish ? (
                       <>
                         {usesDefaultBot
-                          ? 'Our default bot token is preconfigured. Talk to '
-                          : 'Provide the chat ID used by your Telegram bot. Talk to '}
-                        <strong>@TelegramBotRaw</strong> to obtain the ID.
+                          ? 'Our default bot token is preconfigured. Send a message to your bot, then click "Auto Get" to automatically retrieve your Chat ID. Or talk to '
+                          : 'Send a message to your bot, then click "Auto Get" to automatically retrieve your Chat ID. Or talk to '}
+                        <strong>@TelegramBotRaw</strong> to obtain the ID manually.
                       </>
                     ) : (
                       <>
                         {usesDefaultBot ? '系统已内置官方机器人 Token。' : '如使用自建机器人请填写对应 chat_id。'}
-                        通过 <strong>@TelegramBotRaw</strong> 发送消息即可返回 chat_id。
+                        向您的机器人发送消息后，点击「自动获取」按钮即可自动获取 chat_id。或通过 <strong>@TelegramBotRaw</strong> 手动获取。
                       </>
                     )}
                   </small>

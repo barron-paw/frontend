@@ -7,3 +7,7 @@ export function fetchMonitorConfig() {
 export function updateMonitorConfig(payload) {
   return apiClient.post('/config', payload);
 }
+
+export function fetchTelegramChatId() {
+  return apiClient.get('/telegram/chat_id');
+}
