@@ -84,7 +84,6 @@ export function Dashboard() {
       </div>
 
       <div style={{ display: activePage === 'monitor' ? 'block' : 'none' }}>
-      <WhaleAddressesPanel />
       <SubscriptionPanel />
       <MonitorConfigPanel />
 
@@ -94,6 +93,8 @@ export function Dashboard() {
         onRefresh={refresh}
           isLoading={loading}
       />
+
+      <WhaleAddressesPanel />
 
       {error ? (
           <StatusBanner
