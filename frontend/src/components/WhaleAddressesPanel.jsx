@@ -42,9 +42,15 @@ export default function WhaleAddressesPanel() {
     return `${address.slice(0, 6)}...${address.slice(-4)}`;
   };
 
+  const [copiedAddress, setCopiedAddress] = useState(null);
+
   const copyToClipboard = (address) => {
+    if (!address) return;
     navigator.clipboard.writeText(address).then(() => {
-      // Could add a toast notification here
+      setCopiedAddress(address);
+      setTimeout(() => setCopiedAddress(null), 2000);
+    }).catch((err) => {
+      console.error('Failed to copy address:', err);
     });
   };
 
@@ -87,39 +93,77 @@ export default function WhaleAddressesPanel() {
             whaleAddresses.map((whale, index) => (
               <div key={whale.address || index} className="whale-addresses-panel__item">
                 <div className="whale-addresses-panel__rank">#{index + 1}</div>
-                <div className="whale-addresses-panel__address-wrapper">
-                  <button
-                    type="button"
-                    className="whale-addresses-panel__address"
-                    onClick={() => copyToClipboard(whale.address)}
-                    title={isEnglish ? 'Click to copy' : '点击复制'}
-                  >
-                    {formatAddress(whale.address)}
-                  </button>
-                  <div className="whale-addresses-panel__info">
-                    {whale.positionValue && (
-                      <div className="whale-addresses-panel__balance">
-                        {isEnglish ? 'Position Value: ' : '持仓价值：'}
-                        {typeof whale.positionValue === 'number'
-                          ? whale.positionValue.toLocaleString(undefined, {
+                <div className="whale-addresses-panel__content">
+                  <div className="whale-addresses-panel__header-row">
+                    <div className="whale-addresses-panel__address-group">
+                      <span className="whale-addresses-panel__address-text">
+                        {formatAddress(whale.address)}
+                      </span>
+                      <button
+                        type="button"
+                        className="whale-addresses-panel__copy-btn"
+                        onClick={() => copyToClipboard(whale.address)}
+                        title={isEnglish ? 'Click to copy' : '点击复制'}
+                      >
+                        {copiedAddress === whale.address ? (
+                          <span style={{ color: '#4caf50' }}>✓</span>
+                        ) : (
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                          </svg>
+                        )}
+                      </button>
+                    </div>
+                  </div>
+                  <div className="whale-addresses-panel__details">
+                    <div className="whale-addresses-panel__detail-item">
+                      <span className="whale-addresses-panel__detail-label">
+                        {isEnglish ? 'Account Total Value' : '账户总价值'}
+                      </span>
+                      <span className="whale-addresses-panel__detail-value">
+                        ${typeof whale.accountValue === 'number'
+                          ? whale.accountValue.toLocaleString(undefined, {
                               minimumFractionDigits: 2,
                               maximumFractionDigits: 2,
                             })
-                          : whale.positionValue}
-                        {' USDT'}
-                      </div>
-                    )}
-                    {whale.profitRate && (
-                      <div className="whale-addresses-panel__profit-rate">
-                        {isEnglish ? '7-Day Profit Rate: ' : '7天盈利率：'}
-                        <span style={{ color: whale.profitRate > 0 ? '#4caf50' : '#f44336' }}>
-                          {typeof whale.profitRate === 'number'
-                            ? `${whale.profitRate > 0 ? '+' : ''}${whale.profitRate.toFixed(2)}`
-                            : whale.profitRate}
-                          {'%'}
-                        </span>
-                      </div>
-                    )}
+                          : whale.accountValue || 'N/A'}
+                      </span>
+                    </div>
+                    <div className="whale-addresses-panel__detail-item">
+                      <span className="whale-addresses-panel__detail-label">
+                        {isEnglish ? 'PnL' : '盈亏'}
+                      </span>
+                      <span 
+                        className="whale-addresses-panel__detail-value"
+                        style={{ color: (whale.pnl || 0) >= 0 ? '#4caf50' : '#f44336' }}
+                      >
+                        ${typeof whale.pnl === 'number'
+                          ? `${whale.pnl >= 0 ? '+' : ''}${whale.pnl.toLocaleString(undefined, {
+                              minimumFractionDigits: 2,
+                              maximumFractionDigits: 2,
+                            })}`
+                          : whale.pnl || 'N/A'}
+                      </span>
+                    </div>
+                    <div className="whale-addresses-panel__detail-item">
+                      <span className="whale-addresses-panel__detail-label">
+                        {isEnglish ? 'Trades Count' : '交易次数'}
+                      </span>
+                      <span className="whale-addresses-panel__detail-value">
+                        {whale.tradesCount || 0}
+                      </span>
+                    </div>
+                    <div className="whale-addresses-panel__detail-item">
+                      <span className="whale-addresses-panel__detail-label">
+                        {isEnglish ? 'Win Rate' : '胜率'}
+                      </span>
+                      <span className="whale-addresses-panel__detail-value">
+                        {typeof whale.winRate === 'number'
+                          ? `${whale.winRate.toFixed(2)}%`
+                          : whale.winRate || 'N/A'}
+                      </span>
+                    </div>
                   </div>
                 </div>
               </div>

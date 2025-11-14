@@ -78,28 +78,70 @@
   flex-shrink: 0;
 }
 
-.whale-addresses-panel__address-wrapper {
+.whale-addresses-panel__content {
   flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.whale-addresses-panel__header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.whale-addresses-panel__address-group {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.whale-addresses-panel__address-text {
+  font-family: 'Courier New', monospace;
+  font-size: 1rem;
+  color: var(--text-primary);
+}
+
+.whale-addresses-panel__copy-btn {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: var(--space-xs);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s;
+  border-radius: var(--radius-sm);
+}
+
+.whale-addresses-panel__copy-btn:hover {
+  color: var(--primary-color, #3b82f6);
+  background-color: var(--bg-hover, rgba(255, 255, 255, 0.05));
+}
+
+.whale-addresses-panel__details {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-md);
+}
+
+.whale-addresses-panel__detail-item {
   display: flex;
   flex-direction: column;
   gap: var(--space-xs);
 }
 
-.whale-addresses-panel__address {
-  background: none;
-  border: none;
-  color: var(--text-primary);
-  font-family: 'Courier New', monospace;
-  font-size: 1rem;
-  cursor: pointer;
-  padding: var(--space-xs) 0;
-  text-align: left;
-  transition: color 0.2s;
+.whale-addresses-panel__detail-label {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
 }
 
-.whale-addresses-panel__address:hover {
-  color: var(--primary-color, #3b82f6);
-  text-decoration: underline;
+.whale-addresses-panel__detail-value {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
 }
 
 .whale-addresses-panel__info {

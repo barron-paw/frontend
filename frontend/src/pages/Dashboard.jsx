@@ -110,6 +110,7 @@ export function Dashboard() {
       <FillsList fills={fills} />
       </div>
       <div className="dashboard__page" style={{ display: activePage === 'automation' ? 'block' : 'none' }}>
+        <WhaleAddressesPanel />
         <BinanceFollowPanel />
         
         <WalletSelector
