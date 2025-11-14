@@ -1,0 +1,116 @@
+.whale-addresses-panel {
+  margin-top: var(--space-lg);
+}
+
+.whale-addresses-panel__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: var(--space-md);
+}
+
+.whale-addresses-panel__header h2 {
+  margin: 0 0 var(--space-xs) 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.whale-addresses-panel__header p {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+.whale-addresses-panel__update-time {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.whale-addresses-panel__error {
+  padding: var(--space-md);
+  background-color: var(--error-bg, rgba(255, 0, 0, 0.1));
+  color: var(--error-text, #ff4444);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--space-md);
+}
+
+.whale-addresses-panel__loading,
+.whale-addresses-panel__empty {
+  padding: var(--space-lg);
+  text-align: center;
+  color: var(--text-secondary);
+}
+
+.whale-addresses-panel__list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.whale-addresses-panel__item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  padding: var(--space-md);
+  background-color: var(--bg-secondary, rgba(255, 255, 255, 0.05));
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.1));
+  transition: background-color 0.2s, border-color 0.2s;
+}
+
+.whale-addresses-panel__item:hover {
+  background-color: var(--bg-hover, rgba(255, 255, 255, 0.08));
+  border-color: var(--border-hover, rgba(255, 255, 255, 0.2));
+}
+
+.whale-addresses-panel__rank {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  background-color: var(--primary-color, #3b82f6);
+  color: white;
+  border-radius: 50%;
+  font-weight: 600;
+  font-size: 1.1rem;
+  flex-shrink: 0;
+}
+
+.whale-addresses-panel__address-wrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.whale-addresses-panel__address {
+  background: none;
+  border: none;
+  color: var(--text-primary);
+  font-family: 'Courier New', monospace;
+  font-size: 1rem;
+  cursor: pointer;
+  padding: var(--space-xs) 0;
+  text-align: left;
+  transition: color 0.2s;
+}
+
+.whale-addresses-panel__address:hover {
+  color: var(--primary-color, #3b82f6);
+  text-decoration: underline;
+}
+
+.whale-addresses-panel__balance {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+
+.whale-addresses-panel__refreshing {
+  margin-top: var(--space-md);
+  text-align: center;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+

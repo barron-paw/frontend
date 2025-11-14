@@ -12,6 +12,7 @@ import AccountMenu from '../components/AccountMenu.jsx';
 import SubscriptionPanel from '../components/SubscriptionPanel.jsx';
 import MonitorConfigPanel from '../components/MonitorConfigPanel.jsx';
 import BinanceFollowPanel from '../components/BinanceFollowPanel.jsx';
+import WhaleAddressesPanel from '../components/WhaleAddressesPanel.jsx';
 import { useLanguage } from '../context/LanguageContext.jsx';
 
 export function Dashboard() {
@@ -39,6 +40,7 @@ export function Dashboard() {
             : '实时查看跟踪钱包的持仓、余额与成交明细。'}
         </p>
       </div>
+      <WhaleAddressesPanel />
     </div>
   );
 
@@ -109,6 +111,27 @@ export function Dashboard() {
       </div>
       <div className="dashboard__page" style={{ display: activePage === 'automation' ? 'block' : 'none' }}>
         <BinanceFollowPanel />
+        
+        <WalletSelector
+          value={selectedWallet}
+          onChange={setSelectedWallet}
+          onRefresh={refresh}
+          isLoading={loading}
+        />
+
+        {error ? (
+          <StatusBanner
+            kind="error"
+            title={isEnglish ? 'Unable to fetch data' : '无法获取数据'}
+            description={error}
+          />
+        ) : null}
+
+        {loading ? <LoadingIndicator /> : null}
+
+        <MetricsGrid summary={summary} />
+        <PositionsTable positions={positions} />
+        <FillsList fills={fills} />
       </div>
     </Layout>
   );
