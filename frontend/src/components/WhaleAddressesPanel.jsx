@@ -165,7 +165,7 @@ export default function WhaleAddressesPanel() {
                   </div>
                   <div className="whale-addresses-panel__detail-item">
                     <span className="whale-addresses-panel__detail-label">
-                      {isEnglish ? 'Trades Count' : '交易次数'}
+                      {isEnglish ? '7-Day Trades Count' : '最近7天交易次数'}
                     </span>
                     <span className="whale-addresses-panel__detail-value">
                       {whale.tradesCount || 0}
