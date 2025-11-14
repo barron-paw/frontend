@@ -65,17 +65,19 @@ export default function SimulatedFollowPanel() {
 
           <label className="simulated-follow__field">
             <span>{isEnglish ? 'Number of Trades' : '交易笔数'}</span>
-            <select
+            <input
+              type="number"
               value={tradeCount}
-              onChange={(e) => setTradeCount(Number(e.target.value))}
+              onChange={(e) => {
+                const value = Number(e.target.value);
+                if (value >= 1 && value <= 30) {
+                  setTradeCount(value);
+                }
+              }}
+              min={1}
+              max={30}
               disabled={loading}
-            >
-              {Array.from({ length: 21 }, (_, i) => i + 10).map((num) => (
-                <option key={num} value={num}>
-                  {num}
-                </option>
-              ))}
-            </select>
+            />
           </label>
 
           <button
