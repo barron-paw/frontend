@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { useAuth } from '../context/AuthContext.jsx';
 import { verifySubscription } from '../api/subscription.js';
 import { useLanguage } from '../context/LanguageContext.jsx';
+import { copyToClipboard as copyText } from '../utils/clipboard.js';
 
 const PAYMENT_ADDRESS = '0xc00f356d7d7977ac9ef6399d4bb2da26da139190';
 const PAYMENT_AMOUNT_EN = '7.9 USDT monthly';
@@ -37,13 +38,15 @@ export default function SubscriptionPanel() {
 
   const remaining = useMemo(() => formatRemaining(user, language), [user, language]);
 
-  const copyToClipboard = () => {
-    navigator.clipboard.writeText(PAYMENT_ADDRESS).then(() => {
+  const copyToClipboard = async () => {
+    const success = await copyText(PAYMENT_ADDRESS);
+    if (success) {
       setCopiedAddress(true);
       setTimeout(() => setCopiedAddress(false), 2000);
-    }).catch((err) => {
-      console.error('Failed to copy address:', err);
-    });
+    } else {
+      // 如果复制失败，可以显示错误提示
+      console.error('Failed to copy address');
+    }
   };
 
   if (!user) {

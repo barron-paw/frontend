@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useLanguage } from '../context/LanguageContext.jsx';
 import apiClient from '../api/client.js';
+import { copyToClipboard as copyText } from '../utils/clipboard.js';
 import './WhaleAddressesPanel.css';
 
 const WHALE_UPDATE_INTERVAL = 6 * 60 * 60 * 1000; // 6 hours in milliseconds
@@ -44,14 +45,16 @@ export default function WhaleAddressesPanel() {
 
   const [copiedAddress, setCopiedAddress] = useState(null);
 
-  const copyToClipboard = (address) => {
+  const copyToClipboard = async (address) => {
     if (!address) return;
-    navigator.clipboard.writeText(address).then(() => {
+    const success = await copyText(address);
+    if (success) {
       setCopiedAddress(address);
       setTimeout(() => setCopiedAddress(null), 2000);
-    }).catch((err) => {
-      console.error('Failed to copy address:', err);
-    });
+    } else {
+      // 如果复制失败，可以显示错误提示
+      console.error('Failed to copy address');
+    }
   };
 
   return (
