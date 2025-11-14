@@ -21,8 +21,15 @@ export default function WhaleAddressesPanel() {
       const data = await apiClient.get('/whale-addresses');
       setWhaleAddresses(data.addresses || []);
       setLastUpdate(new Date());
+      // 如果成功获取数据但地址列表为空，清除错误信息
+      if (!data.addresses || data.addresses.length === 0) {
+        setError('');
+      }
     } catch (err) {
-      setError(err.message || (isEnglish ? 'Failed to load whale addresses' : '加载巨鲸地址失败'));
+      // 保留错误信息以便用户看到问题
+      const errorMessage = err.message || (isEnglish ? 'Failed to load whale addresses' : '加载巨鲸地址失败');
+      setError(errorMessage);
+      console.error('Failed to fetch whale addresses:', err);
     } finally {
       setLoading(false);
     }
@@ -77,7 +84,15 @@ export default function WhaleAddressesPanel() {
       </div>
 
       {error && (
-        <div className="whale-addresses-panel__error">
+        <div className="whale-addresses-panel__error" style={{ 
+          whiteSpace: 'pre-line',
+          padding: 'var(--space-md)',
+          backgroundColor: 'rgba(244, 67, 54, 0.1)',
+          border: '1px solid rgba(244, 67, 54, 0.3)',
+          borderRadius: 'var(--radius-md)',
+          color: '#f44336',
+          marginBottom: 'var(--space-md)'
+        }}>
           {error}
         </div>
       )}
