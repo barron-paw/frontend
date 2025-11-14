@@ -11,12 +11,14 @@ export default function AuthDialog({ open, mode = 'login', onClose, onSwitch }) 
 
   const [form, setForm] = useState({ email: '', password: '', verificationCode: '' });
   const [submitting, setSubmitting] = useState(false);
+  const [requestingCode, setRequestingCode] = useState(false);
   const [localError, setLocalError] = useState('');
 
   useEffect(() => {
     if (!open) {
       setForm({ email: '', password: '', verificationCode: '' });
       setLocalError('');
+      setRequestingCode(false);
     }
   }, [open, mode]);
 
@@ -39,17 +41,26 @@ export default function AuthDialog({ open, mode = 'login', onClose, onSwitch }) 
       };
 
   const handleRequestVerification = async () => {
+    // 防止重复请求
+    if (requestingCode) {
+      return;
+    }
+    
     const email = form.email.trim();
     if (!email) {
       setLocalError(isEnglish ? 'Please enter your email first.' : '请先填写邮箱。');
       return;
     }
+    
     setLocalError('');
+    setRequestingCode(true);
     try {
       await requestVerificationCode({ email });
       setLocalError(isEnglish ? 'Verification code sent. Please check your inbox.' : '验证码已发送，请查收邮箱。');
     } catch (err) {
       setLocalError(err.message || (isEnglish ? 'Failed to send verification code.' : '验证码发送失败。'));
+    } finally {
+      setRequestingCode(false);
     }
   };
 
@@ -122,8 +133,8 @@ export default function AuthDialog({ open, mode = 'login', onClose, onSwitch }) 
                   value={form.verificationCode}
                   onChange={(event) => setForm((prev) => ({ ...prev, verificationCode: event.target.value }))}
                 />
-                <button type="button" onClick={handleRequestVerification} disabled={submitting}>
-                  {isEnglish ? 'Send Code' : '获取验证码'}
+                <button type="button" onClick={handleRequestVerification} disabled={submitting || requestingCode}>
+                  {requestingCode ? (isEnglish ? 'Sending…' : '发送中…') : (isEnglish ? 'Send Code' : '获取验证码')}
                 </button>
               </div>
             </label>

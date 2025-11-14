@@ -365,6 +365,8 @@ export default function MonitorConfigPanel() {
                             'https://raw.githubusercontent.com/barron-paw/frontend/main/4.png',
                             'https://raw.githubusercontent.com/barron-paw/frontend/main/5.png',
                             'https://raw.githubusercontent.com/barron-paw/frontend/main/6.png',
+                            'https://raw.githubusercontent.com/barron-paw/frontend/main/7.png',
+                            'https://raw.githubusercontent.com/barron-paw/frontend/main/8.png',
                           ];
                           
                           const imageHtml = images.map((img, idx) => 
