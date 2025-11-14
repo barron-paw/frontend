@@ -4,13 +4,10 @@ import { useAuth } from '../context/AuthContext.jsx';
 import { fetchMonitorConfig, updateMonitorConfig } from '../api/config.js';
 import { fetchWecomConfig, saveWecomConfig } from '../api/wecom.js';
 import BotFatherGuide from './BotFatherGuide.jsx';
-import WeComGuide from './WeComGuide.jsx';
 import { useLanguage } from '../context/LanguageContext.jsx';
 
 const GUIDE_EXPANDED_KEY = 'hm_telegram_guide_expanded';
 const GUIDE_SEEN_KEY = 'hm_telegram_guide_seen';
-const WECOM_GUIDE_EXPANDED_KEY = 'hm_wecom_guide_expanded';
-const WECOM_GUIDE_SEEN_KEY = 'hm_wecom_guide_seen';
 
 export default function MonitorConfigPanel() {
   const { user } = useAuth();
@@ -30,7 +27,6 @@ export default function MonitorConfigPanel() {
   const [usesDefaultBot, setUsesDefaultBot] = useState(false);
   const [defaultBotUsername, setDefaultBotUsername] = useState('');
   const [telegramGuideExpanded, setTelegramGuideExpanded] = useState(true);
-  const [wecomGuideExpanded, setWecomGuideExpanded] = useState(true);
 
   const canEdit = user?.can_access_monitor;
 
@@ -83,20 +79,6 @@ export default function MonitorConfigPanel() {
         window.localStorage.setItem(GUIDE_SEEN_KEY, 'true');
         window.localStorage.setItem(GUIDE_EXPANDED_KEY, 'true');
         setTelegramGuideExpanded(true);
-      }
-    }
-    // WeCom guide state
-    const wecomStored = window.localStorage.getItem(WECOM_GUIDE_EXPANDED_KEY);
-    if (wecomStored !== null) {
-      setWecomGuideExpanded(wecomStored === 'true');
-    } else {
-      const wecomSeen = window.localStorage.getItem(WECOM_GUIDE_SEEN_KEY);
-      if (wecomSeen) {
-        setWecomGuideExpanded(false);
-      } else {
-        window.localStorage.setItem(WECOM_GUIDE_SEEN_KEY, 'true');
-        window.localStorage.setItem(WECOM_GUIDE_EXPANDED_KEY, 'true');
-        setWecomGuideExpanded(true);
       }
     }
   }, []);
@@ -177,24 +159,9 @@ export default function MonitorConfigPanel() {
     });
   };
 
-  const toggleWecomGuide = () => {
-    setWecomGuideExpanded((prev) => {
-      const next = !prev;
-      if (typeof window !== 'undefined') {
-        window.localStorage.setItem(WECOM_GUIDE_EXPANDED_KEY, String(next));
-        window.localStorage.setItem(WECOM_GUIDE_SEEN_KEY, 'true');
-      }
-      return next;
-    });
-  };
-
   const telegramGuideToggleLabel = telegramGuideExpanded
     ? (isEnglish ? 'Hide Telegram guide' : '收起 Telegram 指南')
     : (isEnglish ? 'Show Telegram guide' : '展开 Telegram 指南');
-
-  const wecomGuideToggleLabel = wecomGuideExpanded
-    ? (isEnglish ? 'Hide Enterprise WeChat guide' : '收起企业微信指南')
-    : (isEnglish ? 'Show Enterprise WeChat guide' : '展开企业微信指南');
 
   return (
     <section className="dashboard__section monitor-config">
@@ -280,7 +247,126 @@ export default function MonitorConfigPanel() {
               {form.wecomEnabled && (
                 <>
                   <label className="monitor-config__field">
-                    <span>{isEnglish ? 'Enterprise WeChat Webhook URL' : '企业微信 Webhook 地址'}</span>
+                    <div className="monitor-config__field-header">
+                      <span>{isEnglish ? 'Enterprise WeChat Webhook URL' : '企业微信 Webhook 地址'}</span>
+                      <button
+                        type="button"
+                        className="monitor-config__help-button"
+                        onClick={() => {
+                          const guideContent = isEnglish
+                            ? `Enterprise WeChat Webhook Setup Guide:
+
+1. Open Enterprise WeChat (企业微信) on your mobile device or desktop app.
+
+2. Navigate to the group where you want to receive notifications, tap the group settings (右上角三个点), and select "群机器人" (Group Bot).
+
+3. Click "添加机器人" (Add Bot), give it a name, and confirm. The system will generate a webhook URL.
+
+4. Copy the webhook URL (it should start with https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=...) and paste it into the "Webhook 地址" field above.
+
+5. (Optional) If you want to @mention specific members, enter their mobile numbers (registered in Enterprise WeChat) in the "需 @ 的手机号" field, separated by commas or newlines.
+
+6. Enable the toggle switch and click "保存配置" (Save) to activate Enterprise WeChat notifications.`
+                            : `企业微信 Webhook 配置指南：
+
+1. 打开企业微信（手机端或桌面端）。
+
+2. 进入需要接收通知的群聊，点击右上角三个点，选择「群机器人」。
+
+3. 点击「添加机器人」，为机器人命名并确认。系统会生成一个 webhook 地址。
+
+4. 复制生成的 webhook 地址（通常以 https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=... 开头），粘贴到上方的「Webhook 地址」输入框中。
+
+5. （可选）如需 @ 提醒特定成员，在「需 @ 的手机号」输入框中填写他们的手机号（需在企业微信中注册），多个手机号可用逗号或换行分隔。
+
+6. 勾选「启用企业微信推送」开关，点击「保存配置」即可启用企业微信推送功能。`;
+                          
+                          const images = [
+                            'https://raw.githubusercontent.com/barron-paw/frontend/main/1.png',
+                            'https://raw.githubusercontent.com/barron-paw/frontend/main/2.png',
+                            'https://raw.githubusercontent.com/barron-paw/frontend/main/3.png',
+                            'https://raw.githubusercontent.com/barron-paw/frontend/main/4.png',
+                            'https://raw.githubusercontent.com/barron-paw/frontend/main/5.png',
+                            'https://raw.githubusercontent.com/barron-paw/frontend/main/6.png',
+                          ];
+                          
+                          const imageHtml = images.map((img, idx) => 
+                            `<div style="margin: 10px 0;"><img src="${img}" alt="Step ${idx + 1}" style="max-width: 100%; border-radius: 4px;" /></div>`
+                          ).join('');
+                          
+                          const fullContent = `
+                            <div style="max-width: 600px; padding: 20px;">
+                              <h3 style="margin-top: 0;">${isEnglish ? 'Enterprise WeChat Webhook Setup Guide' : '企业微信 Webhook 配置指南'}</h3>
+                              <div style="white-space: pre-line; margin-bottom: 20px;">${guideContent}</div>
+                              <div style="margin-top: 20px;">
+                                ${imageHtml}
+                              </div>
+                            </div>
+                          `;
+                          
+                          const modal = document.createElement('div');
+                          modal.style.cssText = `
+                            position: fixed;
+                            top: 0;
+                            left: 0;
+                            right: 0;
+                            bottom: 0;
+                            background: rgba(0, 0, 0, 0.7);
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            z-index: 10000;
+                            padding: 20px;
+                            overflow-y: auto;
+                          `;
+                          
+                          const content = document.createElement('div');
+                          content.style.cssText = `
+                            background: var(--bg-primary, #1a1a1a);
+                            border-radius: 8px;
+                            padding: 20px;
+                            max-width: 700px;
+                            max-height: 90vh;
+                            overflow-y: auto;
+                            position: relative;
+                            color: var(--text-primary, #fff);
+                          `;
+                          content.innerHTML = fullContent;
+                          
+                          const closeBtn = document.createElement('button');
+                          closeBtn.textContent = '×';
+                          closeBtn.style.cssText = `
+                            position: absolute;
+                            top: 10px;
+                            right: 10px;
+                            background: none;
+                            border: none;
+                            color: var(--text-primary, #fff);
+                            font-size: 24px;
+                            cursor: pointer;
+                            width: 30px;
+                            height: 30px;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            border-radius: 4px;
+                          `;
+                          closeBtn.onmouseenter = () => closeBtn.style.background = 'rgba(255, 255, 255, 0.1)';
+                          closeBtn.onmouseleave = () => closeBtn.style.background = 'none';
+                          closeBtn.onclick = () => document.body.removeChild(modal);
+                          
+                          content.appendChild(closeBtn);
+                          modal.appendChild(content);
+                          modal.onclick = (e) => {
+                            if (e.target === modal) document.body.removeChild(modal);
+                          };
+                          document.body.appendChild(modal);
+                        }}
+                        title={isEnglish ? 'Enterprise WeChat setup guide' : '企业微信配置指南'}
+                      >
+                        ?
+                      </button>
+                    </div>
                     <input
                       type="text"
                       value={form.wecomWebhookUrl}
@@ -396,14 +482,6 @@ export default function MonitorConfigPanel() {
             </div>
           )}
 
-          {form.wecomEnabled && (
-            <div className="monitor-config__guide">
-              <button type="button" className="monitor-config__guide-toggle" onClick={toggleWecomGuide}>
-                {wecomGuideExpanded ? '▼' : '▶'} {wecomGuideToggleLabel}
-              </button>
-              {wecomGuideExpanded && <WeComGuide />}
-            </div>
-          )}
         </div>
     </section>
   );
