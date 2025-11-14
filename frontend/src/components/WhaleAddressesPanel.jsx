@@ -170,7 +170,7 @@ export default function WhaleAddressesPanel() {
                     <span className="whale-addresses-panel__detail-value">
                       {(() => {
                         const count = whale.tradesCount || 0;
-                        if (typeof count === 'number' && count > 2000) {
+                        if (typeof count === 'number' && count >= 2000) {
                           return isEnglish ? '2000+' : '2000以上';
                         }
                         return count;
