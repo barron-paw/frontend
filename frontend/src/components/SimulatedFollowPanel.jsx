@@ -73,7 +73,7 @@ export default function SimulatedFollowPanel() {
           </label>
 
           <label className="simulated-follow__field">
-            <span>{isEnglish ? 'Number of Trades' : '交易笔数'}</span>
+            <span>{isEnglish ? 'Number of Trades (Max 30)' : '交易笔数（最多30笔）'}</span>
             <input
               type="number"
               inputMode="numeric"
