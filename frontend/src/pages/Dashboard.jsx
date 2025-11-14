@@ -13,6 +13,7 @@ import SubscriptionPanel from '../components/SubscriptionPanel.jsx';
 import MonitorConfigPanel from '../components/MonitorConfigPanel.jsx';
 import BinanceFollowPanel from '../components/BinanceFollowPanel.jsx';
 import WhaleAddressesPanel from '../components/WhaleAddressesPanel.jsx';
+import SimulatedFollowPanel from '../components/SimulatedFollowPanel.jsx';
 import { useLanguage } from '../context/LanguageContext.jsx';
 
 export function Dashboard() {
@@ -111,8 +112,9 @@ export function Dashboard() {
       <FillsList fills={fills} />
       </div>
       <div className="dashboard__page" style={{ display: activePage === 'automation' ? 'block' : 'none' }}>
-        <WhaleAddressesPanel />
         <BinanceFollowPanel />
+        <SimulatedFollowPanel />
+        <WhaleAddressesPanel />
         
         <WalletSelector
           value={selectedWallet}

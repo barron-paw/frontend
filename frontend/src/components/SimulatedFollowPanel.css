@@ -1,0 +1,205 @@
+.simulated-follow {
+  margin-top: var(--space-lg);
+  margin-bottom: var(--space-lg);
+}
+
+.simulated-follow__header h2 {
+  margin: 0 0 var(--space-xs) 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.simulated-follow__header p {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+.simulated-follow__form {
+  margin-top: var(--space-lg);
+  padding: var(--space-lg);
+  background-color: var(--bg-secondary, rgba(255, 255, 255, 0.05));
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.1));
+}
+
+.simulated-follow__input-group {
+  display: flex;
+  gap: var(--space-md);
+  align-items: flex-end;
+  flex-wrap: wrap;
+}
+
+.simulated-follow__field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  flex: 1;
+  min-width: 200px;
+}
+
+.simulated-follow__field span {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+
+.simulated-follow__field input,
+.simulated-follow__field select {
+  padding: var(--space-sm) var(--space-md);
+  background-color: var(--bg-primary, #1a1a1a);
+  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.1));
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  font-size: 0.9rem;
+}
+
+.simulated-follow__field input:focus,
+.simulated-follow__field select:focus {
+  outline: none;
+  border-color: var(--accent-primary, #5b7cfa);
+}
+
+.simulated-follow__button {
+  padding: var(--space-sm) var(--space-lg);
+  background-color: var(--accent-primary, #5b7cfa);
+  color: white;
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  white-space: nowrap;
+}
+
+.simulated-follow__button:hover:not(:disabled) {
+  background-color: var(--accent-primary-strong, #4866d0);
+}
+
+.simulated-follow__button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.simulated-follow__error {
+  margin-top: var(--space-md);
+  padding: var(--space-md);
+  background-color: rgba(244, 67, 54, 0.1);
+  border: 1px solid rgba(244, 67, 54, 0.3);
+  border-radius: var(--radius-md);
+  color: #f44336;
+}
+
+.simulated-follow__results {
+  margin-top: var(--space-lg);
+}
+
+.simulated-follow__summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: var(--space-md);
+  margin-bottom: var(--space-lg);
+  padding: var(--space-lg);
+  background-color: var(--bg-secondary, rgba(255, 255, 255, 0.05));
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.1));
+}
+
+.simulated-follow__summary-item {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.simulated-follow__summary-label {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.simulated-follow__summary-value {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.simulated-follow__trades {
+  margin-top: var(--space-lg);
+}
+
+.simulated-follow__trades h3 {
+  margin: 0 0 var(--space-md) 0;
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+.simulated-follow__trades-table {
+  overflow-x: auto;
+  background-color: var(--bg-secondary, rgba(255, 255, 255, 0.05));
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.1));
+}
+
+.simulated-follow__trades-table table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.simulated-follow__trades-table th,
+.simulated-follow__trades-table td {
+  padding: var(--space-sm) var(--space-md);
+  text-align: left;
+  border-bottom: 1px solid var(--border-color, rgba(255, 255, 255, 0.1));
+}
+
+.simulated-follow__trades-table th {
+  font-weight: 600;
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  text-transform: uppercase;
+}
+
+.simulated-follow__trades-table td {
+  font-size: 0.9rem;
+  color: var(--text-primary);
+}
+
+.simulated-follow__trades-table tbody tr:hover {
+  background-color: rgba(255, 255, 255, 0.02);
+}
+
+.simulated-follow__side {
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.simulated-follow__side--buy {
+  background-color: rgba(76, 175, 80, 0.2);
+  color: #4caf50;
+}
+
+.simulated-follow__side--sell {
+  background-color: rgba(244, 67, 54, 0.2);
+  color: #f44336;
+}
+
+@media (max-width: 768px) {
+  .simulated-follow__input-group {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .simulated-follow__field {
+    min-width: 100%;
+  }
+
+  .simulated-follow__summary {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .simulated-follow__trades-table {
+    font-size: 0.85rem;
+  }
+}
+
