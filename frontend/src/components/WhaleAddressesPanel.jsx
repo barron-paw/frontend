@@ -163,6 +163,19 @@ export default function WhaleAddressesPanel() {
                         : whale.winRate || 'N/A'}
                     </span>
                   </div>
+                  <div className="whale-addresses-panel__detail-item">
+                    <span className="whale-addresses-panel__detail-label">
+                      {isEnglish ? '7-Day Profit Rate' : '7天盈利率'}
+                    </span>
+                    <span 
+                      className="whale-addresses-panel__detail-value"
+                      style={{ color: (whale.profitRate || 0) >= 0 ? '#4caf50' : '#f44336' }}
+                    >
+                      {typeof whale.profitRate === 'number'
+                        ? `${whale.profitRate >= 0 ? '+' : ''}${whale.profitRate.toFixed(2)}%`
+                        : whale.profitRate || 'N/A'}
+                    </span>
+                  </div>
                 </div>
               </div>
             ))
