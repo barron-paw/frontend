@@ -284,13 +284,13 @@ Step 1: Log in to your Binance account. After logging in, click on your profile 
 
 Step 2: In the dropdown menu that appears, find and click on "API Management" (API 管理) option. This will take you to the API management page.
 
-Step 3: On the API Management page, you will see a list of your existing API keys (if any) and a "Create API" (创建 API) button. Click on the "Create API" button to start creating a new API key.
+Step 3: On the API Management page, you will see a list of your existing API keys (if any) and a "Create API" (创建 API) button. Click on the "Create API" button to start creating a new API key. IMPORTANT: Make sure to uncheck or deselect any options that might prevent you from enabling futures trading. You must uncheck these options first, otherwise you will not be able to enable futures trading in the later steps.
 
 Step 4: A dialog box will appear asking you to choose the API Key type. Select "System generated" (系统生成) as the API Key type. This is the recommended option for security.
 
 Step 5: You will be prompted to label your API key. Enter a descriptive name such as "Hyperliquid Auto Follow" or "交易跟单" to help you identify this API key later. Then complete the security verification (this may include email verification, SMS verification, or Google Authenticator code depending on your account security settings).
 
-Step 6: IMPORTANT - Permission Settings: On the permission settings page, you will see several permission options. For security reasons, ONLY enable "Enable Futures" (启用期货) permission. DO NOT enable "Enable Withdrawals" (启用提现) or "Enable Reading" (启用读取) permissions. This ensures that even if your API key is compromised, it cannot be used to withdraw funds from your account.
+Step 6: IMPORTANT - Permission Settings: On the permission settings page, you will see several permission options. For security reasons, ONLY enable "Futures Trading" (合约交易) permission. DO NOT enable "Enable Withdrawals" (启用提现) or "Enable Reading" (启用读取) permissions. This ensures that even if your API key is compromised, it cannot be used to withdraw funds from your account.
 
 Step 7: After setting the permissions, click "Next" or "Create" to complete the API key creation process. Binance will display your newly created API Key. Copy the entire API Key string immediately.
 
@@ -301,13 +301,13 @@ Step 8: Paste the copied API Key into the "API Key" field in the form above. Mak
 
 步骤 2：在下拉菜单中，找到并点击「API 管理」选项。这将带您进入 API 管理页面。
 
-步骤 3：在 API 管理页面上，您会看到现有 API Key 列表（如果有）和一个「创建 API」按钮。点击「创建 API」按钮开始创建新的 API Key。
+步骤 3：在 API 管理页面上，您会看到现有 API Key 列表（如果有）和一个「创建 API」按钮。点击「创建 API」按钮开始创建新的 API Key。重要：请务必取消勾选任何可能阻止您启用合约交易的选项。您必须先取消勾选这些选项，否则在后续步骤中将无法启用合约交易。
 
 步骤 4：将弹出一个对话框，要求您选择 API Key 类型。选择「系统生成」作为 API Key 类型。这是推荐的安全选项。
 
 步骤 5：系统会提示您为 API Key 命名。输入一个描述性的名称，例如「Hyperliquid 自动跟单」或「交易跟单」，以便您以后识别此 API Key。然后完成安全验证（这可能包括邮箱验证、短信验证或 Google 验证器代码，具体取决于您的账户安全设置）。
 
-步骤 6：重要 - 权限设置：在权限设置页面上，您会看到多个权限选项。为了安全起见，仅启用「启用期货」权限。请勿启用「启用提现」或「启用读取」权限。这确保即使您的 API Key 被泄露，也无法用于从您的账户提取资金。
+步骤 6：重要 - 权限设置：在权限设置页面上，您会看到多个权限选项。为了安全起见，仅启用「合约交易」权限。请勿启用「启用提现」或「启用读取」权限。这确保即使您的 API Key 被泄露，也无法用于从您的账户提取资金。
 
 步骤 7：设置权限后，点击「下一步」或「创建」以完成 API Key 创建过程。Binance 将显示您新创建的 API Key。请立即复制整个 API Key 字符串。
 
