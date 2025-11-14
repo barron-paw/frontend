@@ -3,8 +3,8 @@ import { useAuth } from '../context/AuthContext.jsx';
 import { verifySubscription } from '../api/subscription.js';
 import { useLanguage } from '../context/LanguageContext.jsx';
 
-const PAYMENT_ADDRESS = '0xa0191ab9cad3dae4ce390d633c6c467da0ca975d';
-const PAYMENT_AMOUNT = '7.9 USDT (BEP-20)';
+const PAYMENT_ADDRESS = '0xc00f356d7d7977ac9ef6399d4bb2da26da139190';
+const PAYMENT_AMOUNT = '7.9 USDT monthly';
 
 function formatRemaining(user, language) {
   const isEnglish = language === 'en';
@@ -32,8 +32,18 @@ export default function SubscriptionPanel() {
   const [txHash, setTxHash] = useState('');
   const [status, setStatus] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [copiedAddress, setCopiedAddress] = useState(false);
 
   const remaining = useMemo(() => formatRemaining(user, language), [user, language]);
+
+  const copyToClipboard = () => {
+    navigator.clipboard.writeText(PAYMENT_ADDRESS).then(() => {
+      setCopiedAddress(true);
+      setTimeout(() => setCopiedAddress(false), 2000);
+    }).catch((err) => {
+      console.error('Failed to copy address:', err);
+    });
+  };
 
   if (!user) {
     return (
@@ -78,7 +88,43 @@ export default function SubscriptionPanel() {
             <li>{isEnglish ? `Price: ${PAYMENT_AMOUNT}` : `费用：${PAYMENT_AMOUNT}`}</li>
             <li>
               {isEnglish ? 'Recipient address (BSC):' : '收款地址（BSC）：'}
-              <code>{PAYMENT_ADDRESS}</code>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '4px' }}>
+                <code>{PAYMENT_ADDRESS}</code>
+                <button
+                  type="button"
+                  onClick={copyToClipboard}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    color: 'var(--text-secondary, #999)',
+                    cursor: 'pointer',
+                    padding: '4px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    transition: 'color 0.2s',
+                    borderRadius: '4px',
+                  }}
+                  title={isEnglish ? 'Click to copy' : '点击复制'}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.color = 'var(--primary-color, #3b82f6)';
+                    e.currentTarget.style.backgroundColor = 'var(--bg-hover, rgba(255, 255, 255, 0.05))';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.color = 'var(--text-secondary, #999)';
+                    e.currentTarget.style.backgroundColor = 'transparent';
+                  }}
+                >
+                  {copiedAddress ? (
+                    <span style={{ color: '#4caf50' }}>✓</span>
+                  ) : (
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                    </svg>
+                  )}
+                </button>
+              </div>
             </li>
             <li>
               {isEnglish
