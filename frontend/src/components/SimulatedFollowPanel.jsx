@@ -11,6 +11,7 @@ export default function SimulatedFollowPanel() {
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState(null);
   const [error, setError] = useState('');
+  const [tableZoom, setTableZoom] = useState(1);
 
   const handleSimulate = async () => {
     if (!walletAddress.trim()) {
@@ -149,9 +150,65 @@ export default function SimulatedFollowPanel() {
           </div>
 
           <div className="simulated-follow__trades">
-            <h3>{isEnglish ? 'Recent Trades' : '最近交易'}</h3>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-md)' }}>
+              <h3 style={{ margin: 0 }}>{isEnglish ? 'Recent Trades' : '最近交易'}</h3>
+              <div style={{ display: 'flex', gap: 'var(--space-sm)', alignItems: 'center' }}>
+                <button
+                  type="button"
+                  onClick={() => setTableZoom(prev => Math.max(0.5, prev - 0.1))}
+                  style={{
+                    padding: '4px 8px',
+                    background: 'var(--bg-secondary, rgba(255, 255, 255, 0.05))',
+                    border: '1px solid var(--border-color, rgba(255, 255, 255, 0.1))',
+                    borderRadius: '4px',
+                    color: 'var(--text-primary)',
+                    cursor: 'pointer',
+                    fontSize: '0.85rem'
+                  }}
+                  title={isEnglish ? 'Zoom out' : '缩小'}
+                >
+                  −
+                </button>
+                <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', minWidth: '50px', textAlign: 'center' }}>
+                  {Math.round(tableZoom * 100)}%
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setTableZoom(prev => Math.min(2.0, prev + 0.1))}
+                  style={{
+                    padding: '4px 8px',
+                    background: 'var(--bg-secondary, rgba(255, 255, 255, 0.05))',
+                    border: '1px solid var(--border-color, rgba(255, 255, 255, 0.1))',
+                    borderRadius: '4px',
+                    color: 'var(--text-primary)',
+                    cursor: 'pointer',
+                    fontSize: '0.85rem'
+                  }}
+                  title={isEnglish ? 'Zoom in' : '放大'}
+                >
+                  +
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setTableZoom(1)}
+                  style={{
+                    padding: '4px 8px',
+                    background: 'var(--bg-secondary, rgba(255, 255, 255, 0.05))',
+                    border: '1px solid var(--border-color, rgba(255, 255, 255, 0.1))',
+                    borderRadius: '4px',
+                    color: 'var(--text-primary)',
+                    cursor: 'pointer',
+                    fontSize: '0.85rem',
+                    marginLeft: 'var(--space-xs)'
+                  }}
+                  title={isEnglish ? 'Reset zoom' : '重置缩放'}
+                >
+                  {isEnglish ? 'Reset' : '重置'}
+                </button>
+              </div>
+            </div>
             <div className="simulated-follow__trades-table">
-              <table>
+              <table style={{ zoom: tableZoom }}>
                 <thead>
                   <tr>
                     <th>{isEnglish ? 'Time' : '时间'}</th>
