@@ -335,19 +335,19 @@ export default function MonitorConfigPanel() {
 
 Step 1: Open Enterprise WeChat (企业微信) on your mobile device or desktop app. Make sure you are logged in to your account.
 
-Step 2: Navigate to the group chat where you want to receive Hyperliquid monitoring notifications. This should be a group where you have admin or member permissions.
+Step 2: Tap on the top-left corner of the message interface to access the menu.
 
-Step 3: Tap on the group settings icon (usually three dots in the top right corner) to open the group settings menu.
+Step 3: Select "Create Enterprise" (创建企业) to set up a new enterprise account, or select your existing enterprise if you already have one.
 
-Step 4: In the group settings menu, look for and select "群机器人" (Group Bot) option. This will open the bot management interface.
+Step 4: Complete the enterprise information form. Fill in the required details such as enterprise name, industry, and other supplementary information as prompted.
 
-Step 5: Click on "添加机器人" (Add Bot) button to create a new bot for this group.
+Step 5: Open the group chat where you want to receive Hyperliquid monitoring notifications. Tap on the three dots icon (⋮) in the top-right corner of the group chat to open the group settings menu.
 
-Step 6: Give your bot a name (e.g., "Hyperliquid Monitor" or "交易监控") and confirm the creation. The system will automatically generate a unique webhook URL for this bot.
+Step 6: Scroll down in the group settings menu and find "Message Push" (消息推送) option. Tap on it to access the message push settings.
 
-Step 7: After the bot is created, you will see the webhook URL displayed on the screen. It should start with "https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=..." followed by a long string of characters.
+Step 7: Tap on "Add Bot" (添加机器人) button to create a new bot for this group.
 
-Step 8: Copy the entire webhook URL carefully. Make sure to copy the complete URL including all parameters. Then paste it into the "Webhook 地址" (Webhook URL) field in the form above.
+Step 8: After the bot is created, you will see the webhook URL displayed on the screen. It should start with "https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=..." followed by a long string of characters. Copy the entire webhook URL carefully, then paste it into the "Webhook 地址" (Webhook URL) field in the form above and fill in the form.
 
 Step 9: (Optional) If you want to @mention specific members when notifications are sent, enter their mobile numbers (as registered in Enterprise WeChat) in the "需 @ 的手机号" (Mobile numbers to @mention) field. You can separate multiple numbers with commas or newlines.
 
@@ -356,19 +356,19 @@ Finally: Enable the "启用企业微信推送" (Enable Enterprise WeChat notific
 
 步骤 1：打开企业微信（手机端或桌面端），确保已登录您的企业微信账号。
 
-步骤 2：进入需要接收 Hyperliquid 监控通知的群聊。请确保您在该群聊中拥有管理员或成员权限。
+步骤 2：点击消息界面的左上角，打开菜单。
 
-步骤 3：点击群聊右上角的三个点图标，打开群聊设置菜单。
+步骤 3：点击「创建企业」来创建新的企业账号，或者如果您已有企业账号，请选择您现有的企业。
 
-步骤 4：在群聊设置菜单中，找到并点击「群机器人」选项，进入机器人管理界面。
+步骤 4：完成企业信息补充。按照提示填写企业名称、行业等必要的补充信息。
 
-步骤 5：点击「添加机器人」按钮，为该群聊创建一个新的机器人。
+步骤 5：打开需要接收 Hyperliquid 监控通知的群聊。点击群聊右上角的三个点图标（⋮），打开群聊设置菜单。
 
-步骤 6：为机器人设置一个名称（例如「Hyperliquid 监控」或「交易监控」），然后确认创建。系统会自动为该机器人生成一个唯一的 webhook 地址。
+步骤 6：在群聊设置菜单中向下滑动，找到「消息推送」选项，点击进入消息推送设置。
 
-步骤 7：机器人创建成功后，您将看到生成的 webhook 地址显示在屏幕上。该地址通常以 "https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=..." 开头，后面跟着一长串字符。
+步骤 7：点击「添加机器人」按钮，为该群聊创建一个新的机器人。
 
-步骤 8：仔细复制完整的 webhook 地址，确保包含所有参数。然后将该地址粘贴到上方表单中的「Webhook 地址」输入框中。
+步骤 8：机器人创建成功后，您将看到生成的 webhook 地址显示在屏幕上。该地址通常以 "https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=..." 开头，后面跟着一长串字符。仔细复制完整的 webhook 地址，然后粘贴到上方表单中的「Webhook 地址」输入框中并填写表单。
 
 步骤 9：（可选）如果您希望在发送通知时 @ 提醒特定成员，请在「需 @ 的手机号」输入框中填写他们的手机号（需在企业微信中注册）。多个手机号可用逗号或换行分隔。
 
