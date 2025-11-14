@@ -51,6 +51,22 @@
   border-radius: var(--radius-md);
   color: var(--text-primary);
   font-size: 0.9rem;
+  -webkit-appearance: none;
+  -moz-appearance: textfield;
+  touch-action: manipulation;
+  min-height: 44px; /* 确保在移动设备上有足够的点击区域 */
+}
+
+/* 移除数字输入框的上下箭头（Chrome, Safari, Edge） */
+.simulated-follow__field input[type="number"]::-webkit-inner-spin-button,
+.simulated-follow__field input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* 移除数字输入框的上下箭头（Firefox） */
+.simulated-follow__field input[type="number"] {
+  -moz-appearance: textfield;
 }
 
 .simulated-follow__field input:focus,

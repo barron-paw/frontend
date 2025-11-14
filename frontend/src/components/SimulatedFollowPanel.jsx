@@ -19,12 +19,20 @@ export default function SimulatedFollowPanel() {
       return;
     }
 
+    // 确保 tradeCount 是有效的数字
+    const validTradeCount = Number(tradeCount);
+    if (isNaN(validTradeCount) || validTradeCount < 1 || validTradeCount > 30) {
+      setError(isEnglish ? 'Please enter a valid number of trades (1-30)' : '请输入有效的交易笔数（1-30）');
+      setTradeCount(10); // 恢复为默认值
+      return;
+    }
+
     setLoading(true);
     setError('');
     setData(null);
 
     try {
-      const result = await apiClient.get(`/simulated-follow?address=${encodeURIComponent(walletAddress.trim())}&limit=${tradeCount}`);
+      const result = await apiClient.get(`/simulated-follow?address=${encodeURIComponent(walletAddress.trim())}&limit=${validTradeCount}`);
       setData(result);
     } catch (err) {
       setError(err.message || (isEnglish ? 'Failed to simulate follow' : '模拟跟单失败'));
@@ -68,23 +76,43 @@ export default function SimulatedFollowPanel() {
             <span>{isEnglish ? 'Number of Trades' : '交易笔数'}</span>
             <input
               type="number"
+              inputMode="numeric"
+              pattern="[0-9]*"
               value={tradeCount}
               onChange={(e) => {
-                const value = Number(e.target.value);
-                if (value >= 1 && value <= 30) {
+                const inputValue = e.target.value;
+                // 允许空值，以便用户可以清空输入
+                if (inputValue === '') {
+                  setTradeCount('');
+                  return;
+                }
+                const value = Number(inputValue);
+                // 只接受1-30之间的数字
+                if (!isNaN(value) && value >= 1 && value <= 30) {
                   setTradeCount(value);
+                }
+              }}
+              onBlur={(e) => {
+                // 失去焦点时，如果值无效，恢复为默认值10
+                const value = Number(e.target.value);
+                if (isNaN(value) || value < 1 || value > 30) {
+                  setTradeCount(10);
                 }
               }}
               min={1}
               max={30}
               disabled={loading}
+              style={{
+                WebkitAppearance: 'none',
+                MozAppearance: 'textfield',
+              }}
             />
           </label>
 
           <button
             type="button"
             onClick={handleSimulate}
-            disabled={loading || !walletAddress.trim()}
+            disabled={loading || !walletAddress.trim() || !tradeCount || Number(tradeCount) < 1 || Number(tradeCount) > 30}
             className="simulated-follow__button"
           >
             {loading ? (isEnglish ? 'Calculating...' : '计算中...') : (isEnglish ? 'Simulate' : '开始模拟')}
