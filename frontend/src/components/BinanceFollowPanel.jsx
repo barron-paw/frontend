@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { fetchBinanceFollowConfig, saveBinanceFollowConfig } from '../api/binance.js';
 import { useLanguage } from '../context/LanguageContext.jsx';
+import { useAuth } from '../context/AuthContext.jsx';
 
 const MODE_OPTIONS = [
   { value: 'fixed', labelZh: '固定份额', labelEn: 'Fixed size' },
@@ -40,7 +41,10 @@ const DEFAULT_FORM = {
 
 export default function BinanceFollowPanel() {
   const { language } = useLanguage();
+  const { user } = useAuth();
   const isEnglish = language === 'en';
+
+  const canEdit = user?.can_access_monitor;
 
   const [form, setForm] = useState(DEFAULT_FORM);
   const [loading, setLoading] = useState(false);
@@ -55,6 +59,9 @@ export default function BinanceFollowPanel() {
   useEffect(() => {
     let ignore = false;
     const load = async () => {
+      if (!canEdit) {
+        return;
+      }
       setLoading(true);
       setStatusMessage('');
       try {
@@ -221,15 +228,22 @@ export default function BinanceFollowPanel() {
         ) : null}
       </div>
 
-      <form className="monitor-config__form" onSubmit={handleSubmit}>
-        <div className="monitor-config__fieldset">
-          <span className="monitor-config__legend">{isEnglish ? 'Binance Account' : 'Binance 账户'}</span>
-          <label className="monitor-config__field monitor-config__field--inline">
-            <input
-              type="checkbox"
-              checked={form.enabled}
-              onChange={handleChange('enabled')}
-              disabled={loading}
+      {!canEdit ? (
+        <div className="monitor-config__helper" style={{ padding: 'var(--space-lg)', textAlign: 'center' }}>
+          {isEnglish
+            ? 'Subscription or trial required to access Binance auto follow. Please subscribe to continue.'
+            : '需要订阅或试用期才能使用 Binance 自动跟单功能。请订阅后继续使用。'}
+        </div>
+      ) : (
+        <form className="monitor-config__form" onSubmit={handleSubmit}>
+          <div className="monitor-config__fieldset">
+            <span className="monitor-config__legend">{isEnglish ? 'Binance Account' : 'Binance 账户'}</span>
+            <label className="monitor-config__field monitor-config__field--inline">
+              <input
+                type="checkbox"
+                checked={form.enabled}
+                onChange={handleChange('enabled')}
+                disabled={!canEdit || loading}
             />
             <span>{isEnglish ? 'Enable auto follow' : '启用自动跟单'}</span>
             <small style={{ display: 'block', marginTop: '4px', color: '#888' }}>
@@ -246,7 +260,7 @@ export default function BinanceFollowPanel() {
               value={form.walletAddress}
               onChange={handleChange('walletAddress')}
               placeholder="0x..."
-              disabled={loading}
+              disabled={!canEdit || loading}
             />
             <small>
               {isEnglish
@@ -263,7 +277,7 @@ export default function BinanceFollowPanel() {
                 value={form.apiKey}
                 onChange={handleChange('apiKey')}
                 placeholder={isEnglish ? (hasApiKey ? 'Already stored' : 'Paste Binance API Key') : hasApiKey ? '已保存' : '粘贴 Binance API Key'}
-                disabled={loading}
+                disabled={!canEdit || loading}
                 autoComplete="off"
               />
               {hasApiKey ? (
@@ -278,7 +292,7 @@ export default function BinanceFollowPanel() {
                 value={form.apiSecret}
                 onChange={handleChange('apiSecret')}
                 placeholder={isEnglish ? (hasApiSecret ? 'Already stored' : 'Paste Binance API Secret') : hasApiSecret ? '已保存' : '粘贴 Binance API Secret'}
-                disabled={loading}
+                disabled={!canEdit || loading}
                 autoComplete="off"
               />
               {hasApiSecret ? (
@@ -294,7 +308,7 @@ export default function BinanceFollowPanel() {
               type="button"
               className="binance-follow__reset"
               onClick={handleResetCredentials}
-              disabled={loading}
+              disabled={!canEdit || loading}
             >
               {isEnglish ? 'Reset saved credentials' : '重置已保存的凭证'}
             </button>
@@ -328,7 +342,7 @@ export default function BinanceFollowPanel() {
                 min="0"
                 value={form.amount}
                 onChange={handleChange('amount')}
-                disabled={loading}
+                disabled={!canEdit || loading}
               />
             </label>
           </div>
@@ -342,7 +356,7 @@ export default function BinanceFollowPanel() {
                 min="0"
                 value={form.stopLossAmount}
                 onChange={handleChange('stopLossAmount')}
-                disabled={loading}
+                disabled={!canEdit || loading}
               />
               <small>
                 {isEnglish
@@ -359,7 +373,7 @@ export default function BinanceFollowPanel() {
                 min="0"
                 value={form.maxPosition}
                 onChange={handleChange('maxPosition')}
-                disabled={loading}
+                disabled={!canEdit || loading}
               />
             </label>
           </div>
@@ -372,7 +386,7 @@ export default function BinanceFollowPanel() {
               min="0"
               value={form.minOrderSize}
               onChange={handleChange('minOrderSize')}
-              disabled={loading}
+              disabled={!canEdit || loading}
             />
             <small>
               {isEnglish
@@ -383,7 +397,7 @@ export default function BinanceFollowPanel() {
         </div>
 
         <div className="monitor-config__actions">
-          <button type="submit" disabled={loading}>
+          <button type="submit" disabled={!canEdit || loading}>
             {loading ? (isEnglish ? 'Processing…' : '处理中…') : isEnglish ? 'Save' : '保存配置'}
           </button>
           <p className="monitor-config__hint">
@@ -393,6 +407,7 @@ export default function BinanceFollowPanel() {
           </p>
         </div>
       </form>
+      )}
     </section>
   );
 }

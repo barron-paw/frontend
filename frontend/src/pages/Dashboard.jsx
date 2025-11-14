@@ -83,29 +83,29 @@ export function Dashboard() {
       </div>
 
       <div style={{ display: activePage === 'monitor' ? 'block' : 'none' }}>
-        <SubscriptionPanel />
-        <MonitorConfigPanel />
+      <SubscriptionPanel />
+      <MonitorConfigPanel />
 
-        <WalletSelector
-          value={selectedWallet}
-          onChange={setSelectedWallet}
-          onRefresh={refresh}
+      <WalletSelector
+        value={selectedWallet}
+        onChange={setSelectedWallet}
+        onRefresh={refresh}
           isLoading={loading}
-        />
+      />
 
-        {error ? (
+      {error ? (
           <StatusBanner
             kind="error"
             title={isEnglish ? 'Unable to fetch data' : '无法获取数据'}
             description={error}
           />
-        ) : null}
+      ) : null}
 
-        {loading ? <LoadingIndicator /> : null}
+      {loading ? <LoadingIndicator /> : null}
 
-        <MetricsGrid summary={summary} />
-        <PositionsTable positions={positions} />
-        <FillsList fills={fills} />
+      <MetricsGrid summary={summary} />
+      <PositionsTable positions={positions} />
+      <FillsList fills={fills} />
       </div>
       <div className="dashboard__page" style={{ display: activePage === 'automation' ? 'block' : 'none' }}>
         <BinanceFollowPanel />
