@@ -1,7 +1,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { useAuth } from '../context/AuthContext.jsx';
-import { fetchMonitorConfig, updateMonitorConfig, fetchTelegramChatId } from '../api/config.js';
+import { fetchMonitorConfig, updateMonitorConfig, fetchTelegramChatId, getTelegramVerificationCode } from '../api/config.js';
 import { fetchWecomConfig, saveWecomConfig } from '../api/wecom.js';
 import { useLanguage } from '../context/LanguageContext.jsx';
 
@@ -23,6 +23,8 @@ export default function MonitorConfigPanel() {
   const [usesDefaultBot, setUsesDefaultBot] = useState(false);
   const [defaultBotUsername, setDefaultBotUsername] = useState('');
   const [fetchingChatId, setFetchingChatId] = useState(false);
+  const [verificationCode, setVerificationCode] = useState('');
+  const [showVerificationCode, setShowVerificationCode] = useState(false);
 
   const canEdit = user?.can_access_monitor;
 
@@ -180,11 +182,15 @@ export default function MonitorConfigPanel() {
                           ? `Telegram Chat ID Setup Guide:
 
 Method 1 - Automatic (Recommended):
-1. Open Telegram and send a message to your bot (the bot configured in your settings, or the default bot if using the default token).
+1. Click the "Get Code" button to generate a unique verification code.
 
-2. Click the "Auto Get" button next to the Chat ID input field.
+2. Open Telegram and send this verification code to your bot (the bot configured in your settings, or the default bot if using the default token).
 
-3. The system will automatically retrieve your Chat ID from the latest message and save it.
+3. After sending the code, click the "Auto Get" button next to the Chat ID input field.
+
+4. The system will automatically find your message containing the verification code and retrieve your Chat ID, then save it.
+
+Note: Each user gets a unique verification code based on their account, so the system can correctly identify which chat_id belongs to you. The verification code is valid for 5 minutes.
 
 Method 2 - Manual:
 1. Open Telegram and search for @TelegramBotRaw (or use your own bot).
@@ -201,11 +207,15 @@ Method 2 - Manual:
                           : `Telegram Chat ID 配置指南：
 
 方法一 - 自动获取（推荐）：
-1. 打开 Telegram，向您的机器人发送一条消息（使用您配置的机器人，或使用默认机器人）。
+1. 点击「获取验证码」按钮生成一个唯一的验证码。
 
-2. 点击 Chat ID 输入框旁边的「自动获取」按钮。
+2. 打开 Telegram，将此验证码发送给您的机器人（使用您配置的机器人，或使用默认机器人）。
 
-3. 系统将自动从最新消息中获取您的 Chat ID 并保存。
+3. 发送验证码后，点击 Chat ID 输入框旁边的「自动获取」按钮。
+
+4. 系统将自动找到包含验证码的消息，获取您的 Chat ID 并保存。
+
+注意：每个用户都会获得基于其账户的唯一验证码，因此系统可以正确识别哪个 chat_id 属于您。验证码有效期为5分钟。
 
 方法二 - 手动获取：
 1. 打开 Telegram，搜索 @TelegramBotRaw（或使用您自己的机器人）。
@@ -302,19 +312,56 @@ Method 2 - Manual:
                       ?
                     </button>
                   </div>
-                  <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                  <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
                     <input
                       type="text"
                       value={form.telegramChatId}
                       onChange={(event) => setForm((prev) => ({ ...prev, telegramChatId: event.target.value }))}
                       placeholder={isEnglish ? 'Group or chat ID' : '群组或私聊 ID'}
                       disabled={!canEdit || loading}
-                      style={{ flex: 1 }}
+                      style={{ flex: 1, minWidth: '200px' }}
                     />
                     <button
                       type="button"
                       onClick={async () => {
+                        if (!canEdit) return;
+                        setStatus('');
+                        try {
+                          const result = await getTelegramVerificationCode();
+                          if (result.success && result.verification_code) {
+                            setVerificationCode(result.verification_code);
+                            setShowVerificationCode(true);
+                            setStatus(isEnglish 
+                              ? `Verification code generated: ${result.verification_code}. Please send this code to your bot, then click "Auto Get".` 
+                              : `验证码已生成：${result.verification_code}。请将此验证码发送给您的机器人，然后点击「自动获取」。`);
+                          }
+                        } catch (err) {
+                          setStatus(err.message || (isEnglish ? 'Failed to generate verification code.' : '生成验证码失败。'));
+                        }
+                      }}
+                      disabled={!canEdit || loading}
+                      style={{
+                        padding: '8px 16px',
+                        background: 'var(--accent-secondary, #4caf50)',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '6px',
+                        cursor: !canEdit ? 'not-allowed' : 'pointer',
+                        opacity: !canEdit ? 0.6 : 1,
+                        whiteSpace: 'nowrap',
+                        fontSize: '0.9rem',
+                      }}
+                    >
+                      {isEnglish ? 'Get Code' : '获取验证码'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={async () => {
                         if (!canEdit || fetchingChatId) return;
+                        if (!verificationCode) {
+                          setStatus(isEnglish ? 'Please get a verification code first.' : '请先获取验证码。');
+                          return;
+                        }
                         setFetchingChatId(true);
                         setStatus('');
                         try {
@@ -322,6 +369,8 @@ Method 2 - Manual:
                           if (result.success && result.chat_id) {
                             setForm((prev) => ({ ...prev, telegramChatId: result.chat_id }));
                             setStatus(isEnglish ? 'Chat ID retrieved and saved successfully!' : 'Chat ID 已成功获取并保存！');
+                            setShowVerificationCode(false);
+                            setVerificationCode('');
                             // 重新加载配置以更新状态
                             const monitorData = await fetchMonitorConfig();
                             setForm((prev) => ({
@@ -330,7 +379,7 @@ Method 2 - Manual:
                               telegramEnabled: Boolean(monitorData.telegramChatId),
                             }));
                           } else {
-                            setStatus(result.message || (isEnglish ? 'Failed to get chat ID. Please send a message to your bot first.' : '获取 Chat ID 失败。请先向您的机器人发送一条消息。'));
+                            setStatus(result.message || (isEnglish ? 'Failed to get chat ID. Please make sure you sent the verification code to your bot within the last 5 minutes.' : '获取 Chat ID 失败。请确保您已在最近5分钟内将验证码发送给机器人。'));
                           }
                         } catch (err) {
                           setStatus(err.message || (isEnglish ? 'Failed to fetch chat ID. Please try again.' : '获取 Chat ID 失败，请重试。'));
@@ -338,15 +387,15 @@ Method 2 - Manual:
                           setFetchingChatId(false);
                         }
                       }}
-                      disabled={!canEdit || loading || fetchingChatId}
+                      disabled={!canEdit || loading || fetchingChatId || !verificationCode}
                       style={{
                         padding: '8px 16px',
                         background: 'var(--accent-primary, #5b7cfa)',
                         color: 'white',
                         border: 'none',
                         borderRadius: '6px',
-                        cursor: fetchingChatId || !canEdit ? 'not-allowed' : 'pointer',
-                        opacity: fetchingChatId || !canEdit ? 0.6 : 1,
+                        cursor: fetchingChatId || !canEdit || !verificationCode ? 'not-allowed' : 'pointer',
+                        opacity: fetchingChatId || !canEdit || !verificationCode ? 0.6 : 1,
                         whiteSpace: 'nowrap',
                         fontSize: '0.9rem',
                       }}
@@ -356,18 +405,49 @@ Method 2 - Manual:
                         : (isEnglish ? 'Auto Get' : '自动获取')}
                     </button>
                   </div>
+                  {showVerificationCode && verificationCode && (
+                    <div style={{
+                      padding: '12px',
+                      background: 'rgba(91, 124, 250, 0.1)',
+                      border: '1px solid var(--accent-primary, #5b7cfa)',
+                      borderRadius: '6px',
+                      marginTop: '8px',
+                    }}>
+                      <div style={{ fontWeight: 'bold', marginBottom: '8px', color: 'var(--text-primary, #fff)' }}>
+                        {isEnglish ? 'Verification Code:' : '验证码：'}
+                      </div>
+                      <div style={{
+                        fontFamily: 'monospace',
+                        fontSize: '1.2rem',
+                        fontWeight: 'bold',
+                        color: 'var(--accent-primary, #5b7cfa)',
+                        marginBottom: '8px',
+                        padding: '8px',
+                        background: 'rgba(0, 0, 0, 0.2)',
+                        borderRadius: '4px',
+                        textAlign: 'center',
+                      }}>
+                        {verificationCode}
+                      </div>
+                      <div style={{ fontSize: '0.9rem', color: 'var(--text-muted, #999)' }}>
+                        {isEnglish 
+                          ? `Please send this code "${verificationCode}" to your Telegram bot, then click "Auto Get" button. The code is valid for 5 minutes.`
+                          : `请将此验证码 "${verificationCode}" 发送给您的 Telegram 机器人，然后点击「自动获取」按钮。验证码有效期为5分钟。`}
+                      </div>
+                    </div>
+                  )}
                   <small>
                     {isEnglish ? (
                       <>
                         {usesDefaultBot
-                          ? 'Our default bot token is preconfigured. Send a message to your bot, then click "Auto Get" to automatically retrieve your Chat ID. Or talk to '
-                          : 'Send a message to your bot, then click "Auto Get" to automatically retrieve your Chat ID. Or talk to '}
+                          ? 'Our default bot token is preconfigured. Click "Get Code" to generate a verification code, send it to your bot, then click "Auto Get" to retrieve your Chat ID. Or talk to '
+                          : 'Click "Get Code" to generate a verification code, send it to your bot, then click "Auto Get" to retrieve your Chat ID. Or talk to '}
                         <strong>@TelegramBotRaw</strong> to obtain the ID manually.
                       </>
                     ) : (
                       <>
                         {usesDefaultBot ? '系统已内置官方机器人 Token。' : '如使用自建机器人请填写对应 chat_id。'}
-                        向您的机器人发送消息后，点击「自动获取」按钮即可自动获取 chat_id。或通过 <strong>@TelegramBotRaw</strong> 手动获取。
+                        点击「获取验证码」生成验证码，将验证码发送给您的机器人，然后点击「自动获取」按钮即可自动获取 chat_id。或通过 <strong>@TelegramBotRaw</strong> 手动获取。
                       </>
                     )}
                   </small>

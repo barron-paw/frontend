@@ -8,6 +8,10 @@ export function updateMonitorConfig(payload) {
   return apiClient.post('/config', payload);
 }
 
+export function getTelegramVerificationCode() {
+  return apiClient.get('/telegram/verification_code');
+}
+
 export function fetchTelegramChatId() {
   return apiClient.get('/telegram/chat_id');
 }
