@@ -1,5 +1,8 @@
 .whale-addresses-panel {
-  margin-top: var(--space-lg);
+  margin-top: var(--space-sm);
+  max-width: 500px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .whale-addresses-panel__header {
@@ -11,14 +14,14 @@
 
 .whale-addresses-panel__header h2 {
   margin: 0 0 var(--space-xs) 0;
-  font-size: 1.5rem;
+  font-size: 1.2rem;
   font-weight: 600;
 }
 
 .whale-addresses-panel__header p {
   margin: 0;
   color: var(--text-secondary);
-  font-size: 0.9rem;
+  font-size: 0.85rem;
 }
 
 .whale-addresses-panel__update-time {
@@ -45,14 +48,14 @@
 .whale-addresses-panel__list {
   display: flex;
   flex-direction: column;
-  gap: var(--space-md);
+  gap: var(--space-sm);
 }
 
 .whale-addresses-panel__item {
   display: flex;
-  align-items: center;
-  gap: var(--space-md);
-  padding: var(--space-md);
+  align-items: flex-start;
+  gap: var(--space-sm);
+  padding: var(--space-sm);
   background-color: var(--bg-secondary, rgba(255, 255, 255, 0.05));
   border-radius: var(--radius-md);
   border: 1px solid var(--border-color, rgba(255, 255, 255, 0.1));
@@ -68,13 +71,13 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 2.5rem;
-  height: 2.5rem;
+  width: 2rem;
+  height: 2rem;
   background-color: var(--primary-color, #3b82f6);
   color: white;
   border-radius: 50%;
   font-weight: 600;
-  font-size: 1.1rem;
+  font-size: 0.9rem;
   flex-shrink: 0;
 }
 
@@ -99,7 +102,7 @@
 
 .whale-addresses-panel__address-text {
   font-family: 'Courier New', monospace;
-  font-size: 1rem;
+  font-size: 0.9rem;
   color: var(--text-primary);
 }
 
@@ -124,7 +127,7 @@
 .whale-addresses-panel__details {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: var(--space-md);
+  gap: var(--space-sm);
 }
 
 .whale-addresses-panel__detail-item {
@@ -134,12 +137,12 @@
 }
 
 .whale-addresses-panel__detail-label {
-  font-size: 0.85rem;
+  font-size: 0.75rem;
   color: var(--text-secondary);
 }
 
 .whale-addresses-panel__detail-value {
-  font-size: 1rem;
+  font-size: 0.9rem;
   font-weight: 600;
   color: var(--text-primary);
 }

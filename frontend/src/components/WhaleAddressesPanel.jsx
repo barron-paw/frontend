@@ -61,8 +61,8 @@ export default function WhaleAddressesPanel() {
           <h2>{isEnglish ? 'Top Whale Addresses' : '巨鲸地址'}</h2>
           <p>
             {isEnglish
-              ? 'Top 3 whale addresses updated every 6 hours. Click to copy address.'
-              : '每 6 小时更新一次的前 3 个巨鲸地址。点击地址可复制。'}
+              ? 'Top 3 whale addresses automatically fetched from Hyperliquid every 6 hours. Click icon to copy address.'
+              : '每 6 小时从 Hyperliquid 自动获取的前 3 个巨鲸地址。点击图标复制地址。'}
           </p>
         </div>
         {lastUpdate && (
