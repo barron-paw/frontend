@@ -4,7 +4,8 @@ import { verifySubscription } from '../api/subscription.js';
 import { useLanguage } from '../context/LanguageContext.jsx';
 
 const PAYMENT_ADDRESS = '0xc00f356d7d7977ac9ef6399d4bb2da26da139190';
-const PAYMENT_AMOUNT = '7.9 USDT monthly';
+const PAYMENT_AMOUNT_EN = '7.9 USDT monthly';
+const PAYMENT_AMOUNT_ZH = '7.9 USDT 月费';
 
 function formatRemaining(user, language) {
   const isEnglish = language === 'en';
@@ -85,7 +86,7 @@ export default function SubscriptionPanel() {
           <h2>{isEnglish ? 'Membership Subscription' : '会员订阅'}</h2>
           <p className="subscription-panel__status">{remaining}</p>
           <ul className="subscription-panel__list">
-            <li>{isEnglish ? `Price: ${PAYMENT_AMOUNT}` : `费用：${PAYMENT_AMOUNT}`}</li>
+            <li>{isEnglish ? `Price: ${PAYMENT_AMOUNT_EN}` : `费用：${PAYMENT_AMOUNT_ZH}`}</li>
             <li>
               {isEnglish ? 'Recipient address (BSC):' : '收款地址（BSC）：'}
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '4px' }}>

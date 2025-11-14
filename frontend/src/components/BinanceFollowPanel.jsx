@@ -271,7 +271,121 @@ export default function BinanceFollowPanel() {
 
           <div className="monitor-config__input-row">
             <label className="monitor-config__field">
-              <span>{isEnglish ? 'API Key' : 'API Key'}</span>
+              <div className="monitor-config__field-header">
+                <span>{isEnglish ? 'API Key' : 'API Key'}</span>
+                <button
+                  type="button"
+                  className="monitor-config__help-button"
+                  onClick={() => {
+                    const guideContent = isEnglish
+                      ? `Binance API Key Setup Guide:
+
+1. Log in to your Binance account and navigate to API Management.
+
+2. Click "Create API" and select "System generated" for API Key type.
+
+3. Label your API key (e.g., "Hyperliquid Auto Follow") and complete the security verification.
+
+4. IMPORTANT: Only enable "Enable Futures" permission. DO NOT enable "Enable Withdrawals" for security.
+
+5. Copy the API Key and paste it into the "API Key" field above.`
+                      : `Binance API Key 配置指南：
+
+1. 登录您的 Binance 账户，进入 API 管理页面。
+
+2. 点击「创建 API」，选择「系统生成」作为 API Key 类型。
+
+3. 为 API Key 命名（例如「Hyperliquid 自动跟单」）并完成安全验证。
+
+4. 重要：仅启用「启用期货」权限。为了安全，请勿启用「启用提现」权限。
+
+5. 复制 API Key 并粘贴到上方的「API Key」输入框中。`;
+                    
+                    const images = [
+                      'https://raw.githubusercontent.com/barron-paw/frontend/main/b1.png',
+                      'https://raw.githubusercontent.com/barron-paw/frontend/main/b2.png',
+                      'https://raw.githubusercontent.com/barron-paw/frontend/main/b3.png',
+                      'https://raw.githubusercontent.com/barron-paw/frontend/main/b4.png',
+                      'https://raw.githubusercontent.com/barron-paw/frontend/main/b5.png',
+                    ];
+                    
+                    const imageHtml = images.map((img, idx) => 
+                      `<div style="margin: 10px 0;"><img src="${img}" alt="Step ${idx + 1}" style="max-width: 100%; border-radius: 4px;" /></div>`
+                    ).join('');
+                    
+                    const fullContent = `
+                      <div style="max-width: 600px; padding: 20px;">
+                        <h3 style="margin-top: 0;">${isEnglish ? 'Binance API Key Setup Guide' : 'Binance API Key 配置指南'}</h3>
+                        <div style="white-space: pre-line; margin-bottom: 20px;">${guideContent}</div>
+                        <div style="margin-top: 20px;">
+                          ${imageHtml}
+                        </div>
+                      </div>
+                    `;
+                    
+                    const modal = document.createElement('div');
+                    modal.style.cssText = `
+                      position: fixed;
+                      top: 0;
+                      left: 0;
+                      right: 0;
+                      bottom: 0;
+                      background: rgba(0, 0, 0, 0.7);
+                      display: flex;
+                      align-items: center;
+                      justify-content: center;
+                      z-index: 10000;
+                      padding: 20px;
+                      overflow-y: auto;
+                    `;
+                    
+                    const content = document.createElement('div');
+                    content.style.cssText = `
+                      background: var(--bg-primary, #1a1a1a);
+                      border-radius: 8px;
+                      padding: 20px;
+                      max-width: 700px;
+                      max-height: 90vh;
+                      overflow-y: auto;
+                      position: relative;
+                      color: var(--text-primary, #fff);
+                    `;
+                    content.innerHTML = fullContent;
+                    
+                    const closeBtn = document.createElement('button');
+                    closeBtn.textContent = '×';
+                    closeBtn.style.cssText = `
+                      position: absolute;
+                      top: 10px;
+                      right: 10px;
+                      background: none;
+                      border: none;
+                      color: var(--text-primary, #fff);
+                      font-size: 24px;
+                      cursor: pointer;
+                      width: 30px;
+                      height: 30px;
+                      display: flex;
+                      align-items: center;
+                      justify-content: center;
+                      border-radius: 4px;
+                    `;
+                    closeBtn.onmouseenter = () => closeBtn.style.background = 'rgba(255, 255, 255, 0.1)';
+                    closeBtn.onmouseleave = () => closeBtn.style.background = 'none';
+                    closeBtn.onclick = () => document.body.removeChild(modal);
+                    
+                    content.appendChild(closeBtn);
+                    modal.appendChild(content);
+                    modal.onclick = (e) => {
+                      if (e.target === modal) document.body.removeChild(modal);
+                    };
+                    document.body.appendChild(modal);
+                  }}
+                  title={isEnglish ? 'Binance API Key setup guide' : 'Binance API Key 配置指南'}
+                >
+                  ?
+                </button>
+              </div>
               <input
                 type="text"
                 value={form.apiKey}
@@ -286,7 +400,121 @@ export default function BinanceFollowPanel() {
             </label>
 
             <label className="monitor-config__field">
-              <span>{isEnglish ? 'API Secret' : 'API Secret'}</span>
+              <div className="monitor-config__field-header">
+                <span>{isEnglish ? 'API Secret' : 'API Secret'}</span>
+                <button
+                  type="button"
+                  className="monitor-config__help-button"
+                  onClick={() => {
+                    const guideContent = isEnglish
+                      ? `Binance API Secret Setup Guide:
+
+1. After creating the API Key, Binance will display the API Secret.
+
+2. IMPORTANT: Copy the API Secret immediately. It will only be shown once and cannot be retrieved later.
+
+3. If you lose the API Secret, you will need to delete the API Key and create a new one.
+
+4. Paste the API Secret into the "API Secret" field above.
+
+5. The API Secret will be encrypted and stored securely on the server.`
+                      : `Binance API Secret 配置指南：
+
+1. 创建 API Key 后，Binance 会显示 API Secret。
+
+2. 重要：请立即复制 API Secret。它只会显示一次，之后无法再次查看。
+
+3. 如果您丢失了 API Secret，需要删除 API Key 并重新创建。
+
+4. 将 API Secret 粘贴到上方的「API Secret」输入框中。
+
+5. API Secret 将被加密并安全存储在服务器上。`;
+                    
+                    const images = [
+                      'https://raw.githubusercontent.com/barron-paw/frontend/main/b1.png',
+                      'https://raw.githubusercontent.com/barron-paw/frontend/main/b2.png',
+                      'https://raw.githubusercontent.com/barron-paw/frontend/main/b3.png',
+                      'https://raw.githubusercontent.com/barron-paw/frontend/main/b4.png',
+                      'https://raw.githubusercontent.com/barron-paw/frontend/main/b5.png',
+                    ];
+                    
+                    const imageHtml = images.map((img, idx) => 
+                      `<div style="margin: 10px 0;"><img src="${img}" alt="Step ${idx + 1}" style="max-width: 100%; border-radius: 4px;" /></div>`
+                    ).join('');
+                    
+                    const fullContent = `
+                      <div style="max-width: 600px; padding: 20px;">
+                        <h3 style="margin-top: 0;">${isEnglish ? 'Binance API Secret Setup Guide' : 'Binance API Secret 配置指南'}</h3>
+                        <div style="white-space: pre-line; margin-bottom: 20px;">${guideContent}</div>
+                        <div style="margin-top: 20px;">
+                          ${imageHtml}
+                        </div>
+                      </div>
+                    `;
+                    
+                    const modal = document.createElement('div');
+                    modal.style.cssText = `
+                      position: fixed;
+                      top: 0;
+                      left: 0;
+                      right: 0;
+                      bottom: 0;
+                      background: rgba(0, 0, 0, 0.7);
+                      display: flex;
+                      align-items: center;
+                      justify-content: center;
+                      z-index: 10000;
+                      padding: 20px;
+                      overflow-y: auto;
+                    `;
+                    
+                    const content = document.createElement('div');
+                    content.style.cssText = `
+                      background: var(--bg-primary, #1a1a1a);
+                      border-radius: 8px;
+                      padding: 20px;
+                      max-width: 700px;
+                      max-height: 90vh;
+                      overflow-y: auto;
+                      position: relative;
+                      color: var(--text-primary, #fff);
+                    `;
+                    content.innerHTML = fullContent;
+                    
+                    const closeBtn = document.createElement('button');
+                    closeBtn.textContent = '×';
+                    closeBtn.style.cssText = `
+                      position: absolute;
+                      top: 10px;
+                      right: 10px;
+                      background: none;
+                      border: none;
+                      color: var(--text-primary, #fff);
+                      font-size: 24px;
+                      cursor: pointer;
+                      width: 30px;
+                      height: 30px;
+                      display: flex;
+                      align-items: center;
+                      justify-content: center;
+                      border-radius: 4px;
+                    `;
+                    closeBtn.onmouseenter = () => closeBtn.style.background = 'rgba(255, 255, 255, 0.1)';
+                    closeBtn.onmouseleave = () => closeBtn.style.background = 'none';
+                    closeBtn.onclick = () => document.body.removeChild(modal);
+                    
+                    content.appendChild(closeBtn);
+                    modal.appendChild(content);
+                    modal.onclick = (e) => {
+                      if (e.target === modal) document.body.removeChild(modal);
+                    };
+                    document.body.appendChild(modal);
+                  }}
+                  title={isEnglish ? 'Binance API Secret setup guide' : 'Binance API Secret 配置指南'}
+                >
+                  ?
+                </button>
+              </div>
               <input
                 type="password"
                 value={form.apiSecret}

@@ -3,11 +3,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useAuth } from '../context/AuthContext.jsx';
 import { fetchMonitorConfig, updateMonitorConfig } from '../api/config.js';
 import { fetchWecomConfig, saveWecomConfig } from '../api/wecom.js';
-import BotFatherGuide from './BotFatherGuide.jsx';
 import { useLanguage } from '../context/LanguageContext.jsx';
-
-const GUIDE_EXPANDED_KEY = 'hm_telegram_guide_expanded';
-const GUIDE_SEEN_KEY = 'hm_telegram_guide_seen';
 
 export default function MonitorConfigPanel() {
   const { user } = useAuth();
@@ -26,7 +22,6 @@ export default function MonitorConfigPanel() {
   const [status, setStatus] = useState('');
   const [usesDefaultBot, setUsesDefaultBot] = useState(false);
   const [defaultBotUsername, setDefaultBotUsername] = useState('');
-  const [telegramGuideExpanded, setTelegramGuideExpanded] = useState(true);
 
   const canEdit = user?.can_access_monitor;
 
@@ -63,25 +58,6 @@ export default function MonitorConfigPanel() {
     loadConfig();
   }, [canEdit]); // 只在 canEdit 改变时重新加载
 
-  useEffect(() => {
-    if (typeof window === 'undefined') {
-      return;
-    }
-    // Telegram guide state
-    const stored = window.localStorage.getItem(GUIDE_EXPANDED_KEY);
-    if (stored !== null) {
-      setTelegramGuideExpanded(stored === 'true');
-    } else {
-      const seen = window.localStorage.getItem(GUIDE_SEEN_KEY);
-      if (seen) {
-        setTelegramGuideExpanded(false);
-      } else {
-        window.localStorage.setItem(GUIDE_SEEN_KEY, 'true');
-        window.localStorage.setItem(GUIDE_EXPANDED_KEY, 'true');
-        setTelegramGuideExpanded(true);
-      }
-    }
-  }, []);
 
   const helperText = useMemo(() => {
     if (!user) {
@@ -148,20 +124,6 @@ export default function MonitorConfigPanel() {
     }
   };
 
-  const toggleTelegramGuide = () => {
-    setTelegramGuideExpanded((prev) => {
-      const next = !prev;
-      if (typeof window !== 'undefined') {
-        window.localStorage.setItem(GUIDE_EXPANDED_KEY, String(next));
-        window.localStorage.setItem(GUIDE_SEEN_KEY, 'true');
-      }
-      return next;
-    });
-  };
-
-  const telegramGuideToggleLabel = telegramGuideExpanded
-    ? (isEnglish ? 'Hide Telegram guide' : '收起 Telegram 指南')
-    : (isEnglish ? 'Show Telegram guide' : '展开 Telegram 指南');
 
   return (
     <section className="dashboard__section monitor-config">
@@ -207,7 +169,122 @@ export default function MonitorConfigPanel() {
 
               {form.telegramEnabled && (
                 <label className="monitor-config__field">
-                  <span>{isEnglish ? 'Telegram Chat ID' : 'Telegram Chat ID'}</span>
+                  <div className="monitor-config__field-header">
+                    <span>{isEnglish ? 'Telegram Chat ID' : 'Telegram Chat ID'}</span>
+                    <button
+                      type="button"
+                      className="monitor-config__help-button"
+                      onClick={() => {
+                        const guideContent = isEnglish
+                          ? `Telegram Chat ID Setup Guide:
+
+1. Open Telegram and search for @TelegramBotRaw (or use your own bot).
+
+2. Start a conversation with the bot by clicking "Start" or sending any message.
+
+3. The bot will reply with your Chat ID (a number, possibly negative for groups).
+
+4. Copy the Chat ID and paste it into the "Telegram Chat ID" field above.
+
+5. If you're using a group, make sure the bot is added to the group first.
+
+6. Enable the toggle switch and click "保存配置" (Save) to activate Telegram notifications.`
+                          : `Telegram Chat ID 配置指南：
+
+1. 打开 Telegram，搜索 @TelegramBotRaw（或使用您自己的机器人）。
+
+2. 点击 "Start" 或发送任意消息开始与机器人对话。
+
+3. 机器人会回复您的 Chat ID（一个数字，群组可能是负数）。
+
+4. 复制 Chat ID 并粘贴到上方的「Telegram Chat ID」输入框中。
+
+5. 如果使用群组，请确保机器人已添加到群组中。
+
+6. 勾选「启用 Telegram 推送」开关，点击「保存配置」即可启用 Telegram 推送功能。`;
+                        
+                        const images = [
+                          'https://raw.githubusercontent.com/barron-paw/frontend/main/tg1.png',
+                          'https://raw.githubusercontent.com/barron-paw/frontend/main/tg2.png',
+                        ];
+                        
+                        const imageHtml = images.map((img, idx) => 
+                          `<div style="margin: 10px 0;"><img src="${img}" alt="Step ${idx + 1}" style="max-width: 100%; border-radius: 4px;" /></div>`
+                        ).join('');
+                        
+                        const fullContent = `
+                          <div style="max-width: 600px; padding: 20px;">
+                            <h3 style="margin-top: 0;">${isEnglish ? 'Telegram Chat ID Setup Guide' : 'Telegram Chat ID 配置指南'}</h3>
+                            <div style="white-space: pre-line; margin-bottom: 20px;">${guideContent}</div>
+                            <div style="margin-top: 20px;">
+                              ${imageHtml}
+                            </div>
+                          </div>
+                        `;
+                        
+                        const modal = document.createElement('div');
+                        modal.style.cssText = `
+                          position: fixed;
+                          top: 0;
+                          left: 0;
+                          right: 0;
+                          bottom: 0;
+                          background: rgba(0, 0, 0, 0.7);
+                          display: flex;
+                          align-items: center;
+                          justify-content: center;
+                          z-index: 10000;
+                          padding: 20px;
+                          overflow-y: auto;
+                        `;
+                        
+                        const content = document.createElement('div');
+                        content.style.cssText = `
+                          background: var(--bg-primary, #1a1a1a);
+                          border-radius: 8px;
+                          padding: 20px;
+                          max-width: 700px;
+                          max-height: 90vh;
+                          overflow-y: auto;
+                          position: relative;
+                          color: var(--text-primary, #fff);
+                        `;
+                        content.innerHTML = fullContent;
+                        
+                        const closeBtn = document.createElement('button');
+                        closeBtn.textContent = '×';
+                        closeBtn.style.cssText = `
+                          position: absolute;
+                          top: 10px;
+                          right: 10px;
+                          background: none;
+                          border: none;
+                          color: var(--text-primary, #fff);
+                          font-size: 24px;
+                          cursor: pointer;
+                          width: 30px;
+                          height: 30px;
+                          display: flex;
+                          align-items: center;
+                          justify-content: center;
+                          border-radius: 4px;
+                        `;
+                        closeBtn.onmouseenter = () => closeBtn.style.background = 'rgba(255, 255, 255, 0.1)';
+                        closeBtn.onmouseleave = () => closeBtn.style.background = 'none';
+                        closeBtn.onclick = () => document.body.removeChild(modal);
+                        
+                        content.appendChild(closeBtn);
+                        modal.appendChild(content);
+                        modal.onclick = (e) => {
+                          if (e.target === modal) document.body.removeChild(modal);
+                        };
+                        document.body.appendChild(modal);
+                      }}
+                      title={isEnglish ? 'Telegram setup guide' : 'Telegram 配置指南'}
+                    >
+                      ?
+                    </button>
+                  </div>
                   <input
                     type="text"
                     value={form.telegramChatId}
@@ -473,14 +550,6 @@ export default function MonitorConfigPanel() {
             </div>
           </form>
 
-          {form.telegramEnabled && (
-            <div className="monitor-config__guide">
-              <button type="button" className="monitor-config__guide-toggle" onClick={toggleTelegramGuide}>
-                {telegramGuideExpanded ? '▼' : '▶'} {telegramGuideToggleLabel}
-              </button>
-              {telegramGuideExpanded && <BotFatherGuide usesDefaultBot={usesDefaultBot} defaultBotUsername={defaultBotUsername} />}
-            </div>
-          )}
 
         </div>
     </section>
