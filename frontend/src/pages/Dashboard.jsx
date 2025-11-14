@@ -87,6 +87,7 @@ export function Dashboard() {
       <div style={{ display: activePage === 'monitor' ? 'block' : 'none' }}>
       <SubscriptionPanel />
       <MonitorConfigPanel />
+      <SimulatedFollowPanel />
 
       <WalletSelector
         value={selectedWallet}
