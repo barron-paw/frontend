@@ -168,7 +168,13 @@ export default function WhaleAddressesPanel() {
                       {isEnglish ? '7-Day Trades Count' : '最近7天交易次数'}
                     </span>
                     <span className="whale-addresses-panel__detail-value">
-                      {whale.tradesCount || 0}
+                      {(() => {
+                        const count = whale.tradesCount || 0;
+                        if (typeof count === 'number' && count > 2000) {
+                          return isEnglish ? '2000+' : '2000以上';
+                        }
+                        return count;
+                      })()}
                     </span>
                   </div>
                   <div className="whale-addresses-panel__detail-item">

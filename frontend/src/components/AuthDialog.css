@@ -110,6 +110,15 @@
   font-size: 0.9rem;
 }
 
+.auth-dialog__success {
+  background: rgba(76, 175, 80, 0.1);
+  border: 1px solid rgba(76, 175, 80, 0.5);
+  color: #4caf50;
+  padding: var(--space-sm) var(--space-md);
+  border-radius: var(--radius-md);
+  font-size: 0.9rem;
+}
+
 .auth-dialog__submit {
   margin-top: var(--space-sm);
   padding: var(--space-sm) var(--space-lg);
