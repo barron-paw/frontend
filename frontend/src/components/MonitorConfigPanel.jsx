@@ -25,6 +25,7 @@ export default function MonitorConfigPanel() {
   const [fetchingChatId, setFetchingChatId] = useState(false);
   const [verificationCode, setVerificationCode] = useState('');
   const [showVerificationCode, setShowVerificationCode] = useState(false);
+  const [lastSaveTime, setLastSaveTime] = useState(0);
 
   const canEdit = user?.can_access_monitor;
 
@@ -77,7 +78,20 @@ export default function MonitorConfigPanel() {
     if (!canEdit) {
       return;
     }
+    
+    // 防抖：5秒内不能重复点击
+    const now = Date.now();
+    const timeSinceLastSave = now - lastSaveTime;
+    if (timeSinceLastSave < 5000) {
+      const remainingSeconds = Math.ceil((5000 - timeSinceLastSave) / 1000);
+      setStatus(isEnglish 
+        ? `Please wait ${remainingSeconds} second(s) before saving again.` 
+        : `请等待 ${remainingSeconds} 秒后再保存。`);
+      return;
+    }
+    
     setStatus('');
+    setLastSaveTime(now);
     try {
       setLoading(true);
       // Save monitor config
@@ -746,7 +760,10 @@ Finally: Enable the "启用企业微信推送" (Enable Enterprise WeChat notific
 
             <div className="monitor-config__actions">
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <button type="submit" disabled={!canEdit || loading}>
+                <button 
+                  type="submit" 
+                  disabled={!canEdit || loading || (Date.now() - lastSaveTime < 5000)}
+                >
                   {loading ? (isEnglish ? 'Processing…' : '处理中…') : isEnglish ? 'Save' : '保存配置'}
                 </button>
                 <button
@@ -755,24 +772,26 @@ Finally: Enable the "启用企业微信推送" (Enable Enterprise WeChat notific
                     const helpText = isEnglish
                       ? `Configuration Save Help:
 
-• Every time you save the configuration, if there are any changes (wallet addresses, Telegram, WeChat, language), a position snapshot will be pushed immediately for each monitored wallet.
+• Every time you save the configuration, if there are any changes (wallet addresses or language), a position snapshot will be pushed immediately for each monitored wallet.
 • Only one snapshot per wallet will be sent, no duplicates.
 • Historical trade records will not be pushed.
 • After monitoring is enabled, you will receive push notifications for all dynamic trades (open, close, partial close) in real-time.
 • A position snapshot will be automatically pushed every 4 hours for all monitored wallets.
 • Push notifications are sent in real-time without delay, regardless of whether the wallet balance is zero.
+• Changing Telegram or WeChat notification settings will not trigger a snapshot.
 
-Note: You can click this help button every 5 seconds to view this information.`
+Note: The save button can only be clicked once every 5 seconds.`
                       : `保存配置帮助说明：
 
-• 每次保存配置时，只要有变化（钱包地址、Telegram、企业微信、语言），会立即推送每个监控钱包的持仓快照。
+• 每次保存配置时，如果有变化（钱包地址或语言），会立即推送每个监控钱包的持仓快照。
 • 每个钱包只推送一次快照，不会重复。
 • 不会推送历史交易记录。
 • 启用监控后，钱包有动态交易（开仓、平仓、部分平仓）时，都会实时收到推送消息。
 • 系统会每 4 小时自动推送一次所有监控钱包的持仓快照。
 • 推送行为都是实时推送，不要延迟，不管钱包是否为零。
+• 切换 Telegram 或企业微信推送设置不会触发快照。
 
-注意：您可以每 5 秒点击一次此帮助按钮查看此信息。`;
+注意：保存配置按钮每 5 秒只能点击一次。`;
                     alert(helpText);
                   }}
                   style={{
@@ -803,7 +822,8 @@ Note: You can click this help button every 5 seconds to view this information.`
             <div className="monitor-config__details">
               <p className="monitor-config__details-title">{isEnglish ? 'Monitoring Behaviour' : '监控提醒说明'}</p>
               <ul className="monitor-config__details-list">
-                <li>{isEnglish ? 'Every time you save the configuration, a fresh position snapshot is pushed immediately.' : '每次保存配置后，立即发送当前持仓快照。'}</li>
+                <li>{isEnglish ? 'Every time you save the configuration, if wallet addresses or language change, a fresh position snapshot is pushed immediately for each monitored wallet.' : '每次保存配置时，如果钱包地址或语言发生变化，会立即推送每个监控钱包的持仓快照。'}</li>
+                <li>{isEnglish ? 'Changing Telegram or WeChat notification settings will not trigger a snapshot.' : '切换 Telegram 或企业微信推送设置不会触发快照。'}</li>
                 <li>{isEnglish ? 'After monitoring is enabled, every open or close event triggers a notification.' : '保存配置并启用监控后，每次开仓或平仓都会推送提醒。'}</li>
                 <li>{isEnglish ? 'A consolidated position snapshot is delivered every 4 hours automatically.' : '系统会每 4 小时自动发送一次持仓快照。'}</li>
               </ul>
