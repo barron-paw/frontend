@@ -130,15 +130,20 @@ export default function MonitorConfigPanel() {
       const wecomResponse = await saveWecomConfig(wecomPayload);
       console.log('WeCom config saved:', wecomResponse); // 调试日志
       
-      setForm({
+      // 保持用户的选择，不要根据后端返回的数据自动改变开关状态
+      // 只有 chat_id 或 webhook 实际存在时才更新开关状态
+      setForm((prev) => ({
+        ...prev,
         telegramChatId: monitorResponse.telegramChatId || '',
         walletAddresses: (monitorResponse.walletAddresses || []).join('\n'),
         language: monitorResponse.language || 'zh',
-        telegramEnabled: Boolean(monitorResponse.telegramChatId),
-        wecomEnabled: Boolean(wecomResponse.enabled),
+        // 只有当后端返回了 chat_id 时才更新 telegramEnabled，否则保持用户的选择
+        telegramEnabled: monitorResponse.telegramChatId ? Boolean(monitorResponse.telegramChatId) : prev.telegramEnabled,
+        // 只有当后端返回了 enabled 时才更新 wecomEnabled，否则保持用户的选择
+        wecomEnabled: wecomResponse.enabled !== undefined ? Boolean(wecomResponse.enabled) : prev.wecomEnabled,
         wecomWebhookUrl: wecomResponse.webhookUrl || '',
         wecomMentions: (wecomResponse.mentions || []).join('\n'),
-      });
+      }));
       setLanguage(monitorResponse.language || 'zh');
       setUsesDefaultBot(Boolean(monitorResponse.usesDefaultBot));
       setDefaultBotUsername(monitorResponse.defaultBotUsername || '');
