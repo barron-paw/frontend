@@ -787,24 +787,24 @@ Finally: Enable the "启用企业微信推送" (Enable Enterprise WeChat notific
                     const helpText = isEnglish
                       ? `Configuration Save Help:
 
-• Every time you save the configuration, if there are any changes (wallet addresses or language), a position snapshot will be pushed immediately for each monitored wallet.
-• Only one snapshot per wallet will be sent, no duplicates.
-• Historical trade records will not be pushed.
+• When wallet addresses change, a position snapshot will be pushed immediately for each NEW wallet address.
+• Push behavior:
+  - Enable Telegram only → Push to Telegram only
+  - Enable WeChat only → Push to WeChat only
+  - Enable both → Push to both Telegram and WeChat
 • After monitoring is enabled, you will receive push notifications for all dynamic trades (open, close, partial close) in real-time.
 • A position snapshot will be automatically pushed every 4 hours for all monitored wallets.
-• Push notifications are sent in real-time without delay, regardless of whether the wallet balance is zero.
-• Changing Telegram or WeChat notification settings will not trigger a snapshot.
 
 Note: The save button can only be clicked once every 5 seconds.`
                       : `保存配置帮助说明：
 
-• 每次保存配置时，如果有变化（钱包地址或语言），会立即推送每个监控钱包的持仓快照。
-• 每个钱包只推送一次快照，不会重复。
-• 不会推送历史交易记录。
+• 钱包地址改变时，会立即推送每个新钱包地址的持仓快照。
+• 推送行为：
+  - 只启用 Telegram → 只推送到 Telegram
+  - 只启用企业微信 → 只推送到企业微信
+  - 同时启用 → 同时推送到 Telegram 和企业微信
 • 启用监控后，钱包有动态交易（开仓、平仓、部分平仓）时，都会实时收到推送消息。
 • 系统会每 4 小时自动推送一次所有监控钱包的持仓快照。
-• 推送行为都是实时推送，不要延迟，不管钱包是否为零。
-• 切换 Telegram 或企业微信推送设置不会触发快照。
 
 注意：保存配置按钮每 5 秒只能点击一次。`;
                     alert(helpText);
@@ -837,8 +837,8 @@ Note: The save button can only be clicked once every 5 seconds.`
             <div className="monitor-config__details">
               <p className="monitor-config__details-title">{isEnglish ? 'Monitoring Behaviour' : '监控提醒说明'}</p>
               <ul className="monitor-config__details-list">
-                <li>{isEnglish ? 'Every time you save the configuration, if wallet addresses or language change, a fresh position snapshot is pushed immediately for each monitored wallet.' : '每次保存配置时，如果钱包地址或语言发生变化，会立即推送每个监控钱包的持仓快照。'}</li>
-                <li>{isEnglish ? 'Changing Telegram or WeChat notification settings will not trigger a snapshot.' : '切换 Telegram 或企业微信推送设置不会触发快照。'}</li>
+                <li>{isEnglish ? 'When wallet addresses change, a position snapshot will be pushed immediately for each NEW wallet address.' : '钱包地址改变时，会立即推送每个新钱包地址的持仓快照。'}</li>
+                <li>{isEnglish ? 'Push behavior: Enable Telegram only → Telegram only; Enable WeChat only → WeChat only; Enable both → both.' : '推送行为：只启用 Telegram → 只推送到 Telegram；只启用企业微信 → 只推送到企业微信；同时启用 → 同时推送。'}</li>
                 <li>{isEnglish ? 'After monitoring is enabled, every open or close event triggers a notification.' : '保存配置并启用监控后，每次开仓或平仓都会推送提醒。'}</li>
                 <li>{isEnglish ? 'A consolidated position snapshot is delivered every 4 hours automatically.' : '系统会每 4 小时自动发送一次持仓快照。'}</li>
               </ul>
