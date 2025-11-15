@@ -101,19 +101,31 @@ export default function MonitorConfigPanel() {
     try {
       setLoading(true);
       // Save monitor config
+      // 影响是否发送快照、是否继续监控的，只取决于新的钱包变化
+      // 如果新的配置为空（钱包地址为空），就不再推送，停止监控
       // 互斥逻辑：
       // - 如果只勾选微信，停掉所有tg推送（但保留 chat_id，用户下次启用时不需要重新填写）
       // - 如果只勾选 Telegram，企业微信会被后端停用（但保留 webhook_url，用户下次启用时不需要重新填写）
       // - 如果两个都勾选，两个都推送
       // 注意：保留 chat_id，不清除（即使没有勾选 Telegram，也保留配置，用户下次启用时不需要重新填写）
       const telegramChatIdValue = form.telegramChatId.trim() || null;
+      const walletAddressesList = form.walletAddresses
+        .split(/[\s,;]+/)
+        .map((addr) => addr.trim())
+        .filter(Boolean)
+        .slice(0, 2);
+      // 如果钱包地址为空，前端提示用户
+      if (walletAddressesList.length === 0) {
+        setStatus(isEnglish 
+          ? 'Please enter at least one wallet address to enable monitoring.'
+          : '请至少输入一个钱包地址以启用监控。');
+        setIsSaving(false);
+        setLoading(false);
+        return;
+      }
       const monitorPayload = {
         telegramChatId: telegramChatIdValue,
-        walletAddresses: form.walletAddresses
-          .split(/[\s,;]+/)
-          .map((addr) => addr.trim())
-          .filter(Boolean)
-          .slice(0, 2),
+        walletAddresses: walletAddressesList,
         language: form.language,
       };
       const monitorResponse = await updateMonitorConfig(monitorPayload);
