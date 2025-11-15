@@ -81,8 +81,11 @@ export default function MonitorConfigPanel() {
     try {
       setLoading(true);
       // Save monitor config
+      // 保持 telegramChatId，除非用户明确清空（空字符串）
+      // 即使取消勾选 telegramEnabled，也保留 chat_id，除非用户手动删除
+      const telegramChatIdValue = form.telegramChatId.trim() || null;
       const monitorPayload = {
-        telegramChatId: form.telegramEnabled ? (form.telegramChatId.trim() || null) : null,
+        telegramChatId: telegramChatIdValue,
         walletAddresses: form.walletAddresses
           .split(/[\s,;]+/)
           .map((addr) => addr.trim())
@@ -742,9 +745,54 @@ Finally: Enable the "启用企业微信推送" (Enable Enterprise WeChat notific
             </div>
 
             <div className="monitor-config__actions">
-            <button type="submit" disabled={!canEdit || loading}>
-                {loading ? (isEnglish ? 'Processing…' : '处理中…') : isEnglish ? 'Save' : '保存配置'}
-            </button>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <button type="submit" disabled={!canEdit || loading}>
+                  {loading ? (isEnglish ? 'Processing…' : '处理中…') : isEnglish ? 'Save' : '保存配置'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const helpText = isEnglish
+                      ? `Configuration Save Help:
+
+• Every time you save the configuration, if there are any changes (wallet addresses, Telegram, WeChat, language), a position snapshot will be pushed immediately for each monitored wallet.
+• Only one snapshot per wallet will be sent, no duplicates.
+• Historical trade records will not be pushed.
+• After monitoring is enabled, you will receive push notifications for all dynamic trades (open, close, partial close) in real-time.
+• A position snapshot will be automatically pushed every 4 hours for all monitored wallets.
+• Push notifications are sent in real-time without delay, regardless of whether the wallet balance is zero.
+
+Note: You can click this help button every 5 seconds to view this information.`
+                      : `保存配置帮助说明：
+
+• 每次保存配置时，只要有变化（钱包地址、Telegram、企业微信、语言），会立即推送每个监控钱包的持仓快照。
+• 每个钱包只推送一次快照，不会重复。
+• 不会推送历史交易记录。
+• 启用监控后，钱包有动态交易（开仓、平仓、部分平仓）时，都会实时收到推送消息。
+• 系统会每 4 小时自动推送一次所有监控钱包的持仓快照。
+• 推送行为都是实时推送，不要延迟，不管钱包是否为零。
+
+注意：您可以每 5 秒点击一次此帮助按钮查看此信息。`;
+                    alert(helpText);
+                  }}
+                  style={{
+                    width: '24px',
+                    height: '24px',
+                    borderRadius: '50%',
+                    border: '1px solid #ccc',
+                    background: '#f5f5f5',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '14px',
+                    padding: 0,
+                  }}
+                  title={isEnglish ? 'Configuration Save Help' : '保存配置帮助'}
+                >
+                  ?
+                </button>
+              </div>
               <p className="monitor-config__hint">
                 {isEnglish
                   ? 'After saving, check the console to confirm the monitoring service is running.'
