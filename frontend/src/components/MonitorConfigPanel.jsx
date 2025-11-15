@@ -101,9 +101,9 @@ export default function MonitorConfigPanel() {
     try {
       setLoading(true);
       // Save monitor config
-      // 保持 telegramChatId，除非用户明确清空（空字符串）
-      // 即使取消勾选 telegramEnabled，也保留 chat_id，除非用户手动删除
-      const telegramChatIdValue = form.telegramChatId.trim() || null;
+      // 如果用户没有勾选 Telegram，清除 chat_id
+      // 如果用户勾选了 Telegram，保留 chat_id
+      const telegramChatIdValue = form.telegramEnabled ? (form.telegramChatId.trim() || null) : null;
       const monitorPayload = {
         telegramChatId: telegramChatIdValue,
         walletAddresses: form.walletAddresses
@@ -131,14 +131,16 @@ export default function MonitorConfigPanel() {
       console.log('WeCom config saved:', wecomResponse); // 调试日志
       
       // 保持用户的选择，不要根据后端返回的数据自动改变开关状态
-      // 只有 chat_id 或 webhook 实际存在时才更新开关状态
+      // 保持用户当前填入的地址，不要用后端返回的地址覆盖
       setForm((prev) => ({
         ...prev,
         telegramChatId: monitorResponse.telegramChatId || '',
-        walletAddresses: (monitorResponse.walletAddresses || []).join('\n'),
+        // 保持用户当前填入的地址，不要用后端返回的地址覆盖
+        walletAddresses: prev.walletAddresses,
         language: monitorResponse.language || 'zh',
-        // 只有当后端返回了 chat_id 时才更新 telegramEnabled，否则保持用户的选择
-        telegramEnabled: monitorResponse.telegramChatId ? Boolean(monitorResponse.telegramChatId) : prev.telegramEnabled,
+        // 保持用户的选择，不要因为后端返回了 chat_id 就自动勾选
+        // 只有当用户之前已经勾选了，或者后端明确返回了 enabled 状态时才更新
+        telegramEnabled: prev.telegramEnabled, // 保持用户的选择，不自动勾选
         // 只有当后端返回了 enabled 时才更新 wecomEnabled，否则保持用户的选择
         wecomEnabled: wecomResponse.enabled !== undefined ? Boolean(wecomResponse.enabled) : prev.wecomEnabled,
         wecomWebhookUrl: wecomResponse.webhookUrl || '',
