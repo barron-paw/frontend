@@ -102,10 +102,11 @@ export default function MonitorConfigPanel() {
       setLoading(true);
       // Save monitor config
       // 互斥逻辑：
-      // - 如果只勾选微信，清除 Telegram chat_id
-      // - 如果只勾选 Telegram，企业微信会被后端停用
+      // - 如果只勾选微信，停掉所有tg推送（但保留 chat_id，用户下次启用时不需要重新填写）
+      // - 如果只勾选 Telegram，企业微信会被后端停用（但保留 webhook_url，用户下次启用时不需要重新填写）
       // - 如果两个都勾选，两个都推送
-      const telegramChatIdValue = form.telegramEnabled ? (form.telegramChatId.trim() || null) : null;
+      // 注意：保留 chat_id，不清除（即使没有勾选 Telegram，也保留配置，用户下次启用时不需要重新填写）
+      const telegramChatIdValue = form.telegramChatId.trim() || null;
       const monitorPayload = {
         telegramChatId: telegramChatIdValue,
         walletAddresses: form.walletAddresses
@@ -846,7 +847,7 @@ Note: The save button can only be clicked once every 5 seconds.`
                   title={isEnglish ? 'Configuration Save Help' : '保存配置帮助'}
                 >
                   ?
-                </button>
+            </button>
               </div>
               <p className="monitor-config__hint">
                 {isEnglish
