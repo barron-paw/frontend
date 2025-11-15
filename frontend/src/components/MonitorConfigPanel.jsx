@@ -142,7 +142,7 @@ export default function MonitorConfigPanel() {
         {status ? <div className="monitor-config__status">{status}</div> : null}
       </div>
 
-      {helperText ? <p className="monitor-config__helper">{helperText}</p> : null}
+          {helperText ? <p className="monitor-config__helper">{helperText}</p> : null}
 
       <div className="monitor-config__card monitor-config__card--form">
           <form className="monitor-config__form" onSubmit={handleSubmit}>
@@ -160,14 +160,14 @@ export default function MonitorConfigPanel() {
                   <span>{isEnglish ? 'Enable Telegram notifications' : '启用 Telegram 推送'}</span>
                 </label>
                 <label className="monitor-config__field monitor-config__field--inline">
-                  <input
+              <input
                     type="checkbox"
                     checked={form.wecomEnabled}
                     onChange={(event) => setForm((prev) => ({ ...prev, wecomEnabled: event.target.checked }))}
-                    disabled={!canEdit || loading}
-                  />
+                disabled={!canEdit || loading}
+              />
                   <span>{isEnglish ? 'Enable Enterprise WeChat notifications' : '启用企业微信推送'}</span>
-                </label>
+            </label>
               </div>
 
               {form.telegramEnabled && (
@@ -194,7 +194,6 @@ export default function MonitorConfigPanel() {
                         const guideContent = isEnglish
                           ? `Telegram Chat ID Setup Guide:
 
-Method 1 - Automatic (Recommended):
 1. Click the "Get Code" button to generate a unique verification code.
 
 2. Open Telegram and ${botHint}.
@@ -203,23 +202,9 @@ Method 1 - Automatic (Recommended):
 
 4. The system will automatically find your message containing the verification code and retrieve your Chat ID, then save it.
 
-Note: Each user gets a unique verification code based on their account, so the system can correctly identify which chat_id belongs to you. The verification code is valid for 5 minutes.${botWarning}
-
-Method 2 - Manual:
-1. Open Telegram and search for @TelegramBotRaw (or use your own bot).
-
-2. Start a conversation with the bot by clicking "Start" or sending any message.
-
-3. The bot will reply with your Chat ID (a number, possibly negative for groups).
-
-4. Copy the Chat ID and paste it into the "Telegram Chat ID" field above.
-
-5. If you're using a group, make sure the bot is added to the group first.
-
-6. Enable the toggle switch and click "保存配置" (Save) to activate Telegram notifications.`
+Note: Each user gets a unique verification code based on their account, so the system can correctly identify which chat_id belongs to you. The verification code is valid for 5 minutes.${botWarning}`
                           : `Telegram Chat ID 配置指南：
 
-方法一 - 自动获取（推荐）：
 1. 点击「获取验证码」按钮生成一个唯一的验证码。
 
 2. 打开 Telegram，${botHintZh}。
@@ -228,20 +213,7 @@ Method 2 - Manual:
 
 4. 系统将自动找到包含验证码的消息，获取您的 Chat ID 并保存。
 
-注意：每个用户都会获得基于其账户的唯一验证码，因此系统可以正确识别哪个 chat_id 属于您。验证码有效期为5分钟。${botWarningZh}
-
-方法二 - 手动获取：
-1. 打开 Telegram，搜索 @TelegramBotRaw（或使用您自己的机器人）。
-
-2. 点击 "Start" 或发送任意消息开始与机器人对话。
-
-3. 机器人会回复您的 Chat ID（一个数字，群组可能是负数）。
-
-4. 复制 Chat ID 并粘贴到上方的「Telegram Chat ID」输入框中。
-
-5. 如果使用群组，请确保机器人已添加到群组中。
-
-6. 勾选「启用 Telegram 推送」开关，点击「保存配置」即可启用 Telegram 推送功能。`;
+注意：每个用户都会获得基于其账户的唯一验证码，因此系统可以正确识别哪个 chat_id 属于您。验证码有效期为5分钟。${botWarningZh}`;
                         
                         const images = [
                           'https://raw.githubusercontent.com/barron-paw/frontend/main/tg1.png',
@@ -326,10 +298,10 @@ Method 2 - Manual:
                     </button>
                   </div>
                   <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
-                    <input
-                      type="text"
-                      value={form.telegramChatId}
-                      onChange={(event) => setForm((prev) => ({ ...prev, telegramChatId: event.target.value }))}
+              <input
+                type="text"
+                value={form.telegramChatId}
+                onChange={(event) => setForm((prev) => ({ ...prev, telegramChatId: event.target.value }))}
                       placeholder={isEnglish ? 'Group or chat ID' : '群组或私聊 ID'}
                       disabled={!canEdit || loading}
                       style={{ flex: 1, minWidth: '200px' }}
@@ -482,15 +454,15 @@ Method 2 - Manual:
                       <>
                         {usesDefaultBot && defaultBotUsername ? (
                           <>
-                            Our default bot <strong>@{defaultBotUsername}</strong> is preconfigured. Click "Get Code" to generate a verification code, send it to <strong>@{defaultBotUsername}</strong> (NOT to @TelegramBotRaw), then click "Auto Get" to retrieve your Chat ID. Or talk to <strong>@TelegramBotRaw</strong> to obtain the ID manually.
+                            Our default bot <strong>@{defaultBotUsername}</strong> is preconfigured. Click "Get Code" to generate a verification code, send it to <strong>@{defaultBotUsername}</strong> (NOT to @TelegramBotRaw), then click "Auto Get" to retrieve your Chat ID.
                           </>
                         ) : usesDefaultBot ? (
                           <>
-                            Our default bot token is preconfigured. Click "Get Code" to generate a verification code, send it to your bot, then click "Auto Get" to retrieve your Chat ID. Or talk to <strong>@TelegramBotRaw</strong> to obtain the ID manually.
+                            Our default bot token is preconfigured. Click "Get Code" to generate a verification code, send it to your bot, then click "Auto Get" to retrieve your Chat ID.
                           </>
                         ) : (
                           <>
-                            Click "Get Code" to generate a verification code, send it to your bot, then click "Auto Get" to retrieve your Chat ID. Or talk to <strong>@TelegramBotRaw</strong> to obtain the ID manually.
+                            Click "Get Code" to generate a verification code, send it to your bot, then click "Auto Get" to retrieve your Chat ID.
                           </>
                         )}
                       </>
@@ -498,15 +470,15 @@ Method 2 - Manual:
                       <>
                         {usesDefaultBot && defaultBotUsername ? (
                           <>
-                            系统已内置默认机器人 <strong>@{defaultBotUsername}</strong>。点击「获取验证码」生成验证码，将验证码发送给 <strong>@{defaultBotUsername}</strong>（不要发送给 @TelegramBotRaw），然后点击「自动获取」按钮即可自动获取 chat_id。或通过 <strong>@TelegramBotRaw</strong> 手动获取。
+                            系统已内置默认机器人 <strong>@{defaultBotUsername}</strong>。点击「获取验证码」生成验证码，将验证码发送给 <strong>@{defaultBotUsername}</strong>（不要发送给 @TelegramBotRaw），然后点击「自动获取」按钮即可自动获取 chat_id。
                           </>
                         ) : usesDefaultBot ? (
                           <>
-                            系统已内置官方机器人 Token。点击「获取验证码」生成验证码，将验证码发送给您的机器人，然后点击「自动获取」按钮即可自动获取 chat_id。或通过 <strong>@TelegramBotRaw</strong> 手动获取。
+                            系统已内置官方机器人 Token。点击「获取验证码」生成验证码，将验证码发送给您的机器人，然后点击「自动获取」按钮即可自动获取 chat_id。
                           </>
                         ) : (
                           <>
-                            如使用自建机器人请填写对应 chat_id。点击「获取验证码」生成验证码，将验证码发送给您的机器人，然后点击「自动获取」按钮即可自动获取 chat_id。或通过 <strong>@TelegramBotRaw</strong> 手动获取。
+                            如使用自建机器人请填写对应 chat_id。点击「获取验证码」生成验证码，将验证码发送给您的机器人，然后点击「自动获取」按钮即可自动获取 chat_id。
                           </>
                         )}
                       </>
@@ -716,14 +688,14 @@ Finally: Enable the "启用企业微信推送" (Enable Enterprise WeChat notific
                       value={form.wecomMentions}
                       onChange={(event) => setForm((prev) => ({ ...prev, wecomMentions: event.target.value }))}
                       placeholder={isEnglish ? 'Separate multiple numbers with comma or newline' : '多个手机号可用逗号或换行分隔'}
-                      disabled={!canEdit || loading}
-                    />
+                disabled={!canEdit || loading}
+              />
                     <small>
                       {isEnglish
                         ? 'These users will be @mentioned in push messages for better visibility.'
                         : '推送消息时会 @ 提醒这些用户，提高消息可见性。'}
                     </small>
-                  </label>
+            </label>
                 </>
               )}
             </div>
@@ -732,13 +704,13 @@ Finally: Enable the "启用企业微信推送" (Enable Enterprise WeChat notific
               <span className="monitor-config__legend">{isEnglish ? 'Wallet Addresses' : '钱包列表'}</span>
               <label className="monitor-config__field">
                 <span>{isEnglish ? 'Addresses to Monitor' : '监控地址'}</span>
-                <textarea
+              <textarea
                   rows={5}
-                  value={form.walletAddresses}
-                  onChange={(event) => setForm((prev) => ({ ...prev, walletAddresses: event.target.value }))}
+                value={form.walletAddresses}
+                onChange={(event) => setForm((prev) => ({ ...prev, walletAddresses: event.target.value }))}
                   placeholder={isEnglish ? '0x1234...\n0xabcd...' : '0x1234...\n0xabcd...'}
-                  disabled={!canEdit || loading}
-                />
+                disabled={!canEdit || loading}
+              />
                 <small>
                   {isEnglish
                     ? 'One address per line (or separated by commas). Up to 2 wallets are monitored.'
@@ -764,13 +736,13 @@ Finally: Enable the "启用企业微信推送" (Enable Enterprise WeChat notific
                     ? 'Selecting English will switch the UI and Telegram notifications to English.'
                     : '选择英语后，前端界面与推送信息将使用英文。'}
                 </small>
-              </label>
+            </label>
             </div>
 
             <div className="monitor-config__actions">
-              <button type="submit" disabled={!canEdit || loading}>
+            <button type="submit" disabled={!canEdit || loading}>
                 {loading ? (isEnglish ? 'Processing…' : '处理中…') : isEnglish ? 'Save' : '保存配置'}
-              </button>
+            </button>
               <p className="monitor-config__hint">
                 {isEnglish
                   ? 'After saving, check the console to confirm the monitoring service is running.'
@@ -789,7 +761,7 @@ Finally: Enable the "启用企业微信推送" (Enable Enterprise WeChat notific
           </form>
 
 
-        </div>
+      </div>
     </section>
   );
 }
