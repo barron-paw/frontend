@@ -430,9 +430,37 @@ Method 2 - Manual:
                         {verificationCode}
                       </div>
                       <div style={{ fontSize: '0.9rem', color: 'var(--text-muted, #999)' }}>
-                        {isEnglish 
-                          ? `Please send this code "${verificationCode}" to your Telegram bot, then click "Auto Get" button. The code is valid for 5 minutes.`
-                          : `请将此验证码 "${verificationCode}" 发送给您的 Telegram 机器人，然后点击「自动获取」按钮。验证码有效期为5分钟。`}
+                        {isEnglish ? (
+                          <>
+                            Please send this code <strong>"{verificationCode}"</strong> to{' '}
+                            {usesDefaultBot && defaultBotUsername ? (
+                              <>your bot <strong>@{defaultBotUsername}</strong></>
+                            ) : (
+                              <>your configured Telegram bot</>
+                            )}
+                            , then click "Auto Get" button. The code is valid for 5 minutes.
+                            {usesDefaultBot && defaultBotUsername && (
+                              <div style={{ marginTop: '8px', color: 'var(--accent-primary, #5b7cfa)' }}>
+                                ⚠️ Important: Send to <strong>@{defaultBotUsername}</strong>, NOT to @TelegramBotRaw!
+                              </div>
+                            )}
+                          </>
+                        ) : (
+                          <>
+                            请将此验证码 <strong>"{verificationCode}"</strong> 发送给{' '}
+                            {usesDefaultBot && defaultBotUsername ? (
+                              <>您的机器人 <strong>@{defaultBotUsername}</strong></>
+                            ) : (
+                              <>您配置的 Telegram 机器人</>
+                            )}
+                            ，然后点击「自动获取」按钮。验证码有效期为5分钟。
+                            {usesDefaultBot && defaultBotUsername && (
+                              <div style={{ marginTop: '8px', color: 'var(--accent-primary, #5b7cfa)' }}>
+                                ⚠️ 重要：请发送给 <strong>@{defaultBotUsername}</strong>，不要发送给 @TelegramBotRaw！
+                              </div>
+                            )}
+                          </>
+                        )}
                       </div>
                     </div>
                   )}
