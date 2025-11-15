@@ -26,6 +26,7 @@ export default function MonitorConfigPanel() {
   const [verificationCode, setVerificationCode] = useState('');
   const [showVerificationCode, setShowVerificationCode] = useState(false);
   const [lastSaveTime, setLastSaveTime] = useState(0);
+  const [isSaving, setIsSaving] = useState(false);
 
   const canEdit = user?.can_access_monitor;
 
@@ -82,7 +83,7 @@ export default function MonitorConfigPanel() {
     // 防抖：5秒内不能重复点击
     const now = Date.now();
     const timeSinceLastSave = now - lastSaveTime;
-    if (timeSinceLastSave < 5000) {
+    if (timeSinceLastSave < 5000 && lastSaveTime > 0) {
       const remainingSeconds = Math.ceil((5000 - timeSinceLastSave) / 1000);
       setStatus(isEnglish 
         ? `Please wait ${remainingSeconds} second(s) before saving again.` 
@@ -90,8 +91,13 @@ export default function MonitorConfigPanel() {
       return;
     }
     
+    // 如果正在保存，直接返回
+    if (isSaving) {
+      return;
+    }
+    
     setStatus('');
-    setLastSaveTime(now);
+    setIsSaving(true);
     try {
       setLoading(true);
       // Save monitor config
@@ -137,10 +143,14 @@ export default function MonitorConfigPanel() {
       setUsesDefaultBot(Boolean(monitorResponse.usesDefaultBot));
       setDefaultBotUsername(monitorResponse.defaultBotUsername || '');
       setStatus(isEnglish ? 'Configuration saved.' : '配置已保存。');
+      // 请求成功后才设置 lastSaveTime，用于防抖
+      setLastSaveTime(Date.now());
     } catch (err) {
       setStatus(err.message || (isEnglish ? 'Save failed, please retry later.' : '保存失败，请稍后重试'));
+      // 请求失败时不设置 lastSaveTime，允许用户立即重试
     } finally {
       setLoading(false);
+      setIsSaving(false);
     }
   };
 
@@ -762,9 +772,9 @@ Finally: Enable the "启用企业微信推送" (Enable Enterprise WeChat notific
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <button 
                   type="submit" 
-                  disabled={!canEdit || loading || (Date.now() - lastSaveTime < 5000)}
+                  disabled={!canEdit || loading || isSaving}
                 >
-                  {loading ? (isEnglish ? 'Processing…' : '处理中…') : isEnglish ? 'Save' : '保存配置'}
+                  {loading || isSaving ? (isEnglish ? 'Processing…' : '处理中…') : isEnglish ? 'Save' : '保存配置'}
                 </button>
                 <button
                   type="button"
