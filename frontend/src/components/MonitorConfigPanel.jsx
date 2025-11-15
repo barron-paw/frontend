@@ -178,19 +178,32 @@ export default function MonitorConfigPanel() {
                       type="button"
                       className="monitor-config__help-button"
                       onClick={() => {
+                        const botHint = usesDefaultBot && defaultBotUsername 
+                          ? `send this verification code to the default bot <strong>@${defaultBotUsername}</strong> (NOT to @TelegramBotRaw)`
+                          : 'send this verification code to your bot (the bot configured in your settings, or the default bot if using the default token)';
+                        const botWarning = usesDefaultBot && defaultBotUsername 
+                          ? `\n\n⚠️ Important: If you're using the default bot, make sure to send the verification code to <strong>@${defaultBotUsername}</strong>, NOT to @TelegramBotRaw!`
+                          : '';
+                        const botHintZh = usesDefaultBot && defaultBotUsername 
+                          ? `将此验证码发送给默认机器人 <strong>@${defaultBotUsername}</strong>（不要发送给 @TelegramBotRaw）`
+                          : '将此验证码发送给您的机器人（使用您配置的机器人，或使用默认机器人）';
+                        const botWarningZh = usesDefaultBot && defaultBotUsername 
+                          ? `\n\n⚠️ 重要提示：如果您使用默认机器人，请务必将验证码发送给 <strong>@${defaultBotUsername}</strong>，而不是 @TelegramBotRaw！`
+                          : '';
+                        
                         const guideContent = isEnglish
                           ? `Telegram Chat ID Setup Guide:
 
 Method 1 - Automatic (Recommended):
 1. Click the "Get Code" button to generate a unique verification code.
 
-2. Open Telegram and send this verification code to your bot (the bot configured in your settings, or the default bot if using the default token).
+2. Open Telegram and ${botHint}.
 
 3. After sending the code, click the "Auto Get" button next to the Chat ID input field.
 
 4. The system will automatically find your message containing the verification code and retrieve your Chat ID, then save it.
 
-Note: Each user gets a unique verification code based on their account, so the system can correctly identify which chat_id belongs to you. The verification code is valid for 5 minutes.
+Note: Each user gets a unique verification code based on their account, so the system can correctly identify which chat_id belongs to you. The verification code is valid for 5 minutes.${botWarning}
 
 Method 2 - Manual:
 1. Open Telegram and search for @TelegramBotRaw (or use your own bot).
@@ -209,13 +222,13 @@ Method 2 - Manual:
 方法一 - 自动获取（推荐）：
 1. 点击「获取验证码」按钮生成一个唯一的验证码。
 
-2. 打开 Telegram，将此验证码发送给您的机器人（使用您配置的机器人，或使用默认机器人）。
+2. 打开 Telegram，${botHintZh}。
 
 3. 发送验证码后，点击 Chat ID 输入框旁边的「自动获取」按钮。
 
 4. 系统将自动找到包含验证码的消息，获取您的 Chat ID 并保存。
 
-注意：每个用户都会获得基于其账户的唯一验证码，因此系统可以正确识别哪个 chat_id 属于您。验证码有效期为5分钟。
+注意：每个用户都会获得基于其账户的唯一验证码，因此系统可以正确识别哪个 chat_id 属于您。验证码有效期为5分钟。${botWarningZh}
 
 方法二 - 手动获取：
 1. 打开 Telegram，搜索 @TelegramBotRaw（或使用您自己的机器人）。
@@ -467,15 +480,35 @@ Method 2 - Manual:
                   <small>
                     {isEnglish ? (
                       <>
-                        {usesDefaultBot
-                          ? 'Our default bot token is preconfigured. Click "Get Code" to generate a verification code, send it to your bot, then click "Auto Get" to retrieve your Chat ID. Or talk to '
-                          : 'Click "Get Code" to generate a verification code, send it to your bot, then click "Auto Get" to retrieve your Chat ID. Or talk to '}
-                        <strong>@TelegramBotRaw</strong> to obtain the ID manually.
+                        {usesDefaultBot && defaultBotUsername ? (
+                          <>
+                            Our default bot <strong>@{defaultBotUsername}</strong> is preconfigured. Click "Get Code" to generate a verification code, send it to <strong>@{defaultBotUsername}</strong> (NOT to @TelegramBotRaw), then click "Auto Get" to retrieve your Chat ID. Or talk to <strong>@TelegramBotRaw</strong> to obtain the ID manually.
+                          </>
+                        ) : usesDefaultBot ? (
+                          <>
+                            Our default bot token is preconfigured. Click "Get Code" to generate a verification code, send it to your bot, then click "Auto Get" to retrieve your Chat ID. Or talk to <strong>@TelegramBotRaw</strong> to obtain the ID manually.
+                          </>
+                        ) : (
+                          <>
+                            Click "Get Code" to generate a verification code, send it to your bot, then click "Auto Get" to retrieve your Chat ID. Or talk to <strong>@TelegramBotRaw</strong> to obtain the ID manually.
+                          </>
+                        )}
                       </>
                     ) : (
                       <>
-                        {usesDefaultBot ? '系统已内置官方机器人 Token。' : '如使用自建机器人请填写对应 chat_id。'}
-                        点击「获取验证码」生成验证码，将验证码发送给您的机器人，然后点击「自动获取」按钮即可自动获取 chat_id。或通过 <strong>@TelegramBotRaw</strong> 手动获取。
+                        {usesDefaultBot && defaultBotUsername ? (
+                          <>
+                            系统已内置默认机器人 <strong>@{defaultBotUsername}</strong>。点击「获取验证码」生成验证码，将验证码发送给 <strong>@{defaultBotUsername}</strong>（不要发送给 @TelegramBotRaw），然后点击「自动获取」按钮即可自动获取 chat_id。或通过 <strong>@TelegramBotRaw</strong> 手动获取。
+                          </>
+                        ) : usesDefaultBot ? (
+                          <>
+                            系统已内置官方机器人 Token。点击「获取验证码」生成验证码，将验证码发送给您的机器人，然后点击「自动获取」按钮即可自动获取 chat_id。或通过 <strong>@TelegramBotRaw</strong> 手动获取。
+                          </>
+                        ) : (
+                          <>
+                            如使用自建机器人请填写对应 chat_id。点击「获取验证码」生成验证码，将验证码发送给您的机器人，然后点击「自动获取」按钮即可自动获取 chat_id。或通过 <strong>@TelegramBotRaw</strong> 手动获取。
+                          </>
+                        )}
                       </>
                     )}
                   </small>
