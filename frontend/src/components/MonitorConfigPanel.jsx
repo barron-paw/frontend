@@ -215,9 +215,11 @@ Note: Each user gets a unique verification code based on their account, so the s
 
 注意：每个用户都会获得基于其账户的唯一验证码，因此系统可以正确识别哪个 chat_id 属于您。验证码有效期为5分钟。${botWarningZh}`;
                         
+                        // 添加时间戳参数避免缓存，确保加载最新图片
+                        const cacheBuster = `?v=${Date.now()}`;
                         const images = [
-                          'https://raw.githubusercontent.com/barron-paw/frontend/main/tg1.png',
-                          'https://raw.githubusercontent.com/barron-paw/frontend/main/tg2.png',
+                          `https://raw.githubusercontent.com/barron-paw/frontend/main/tg1.png${cacheBuster}`,
+                          `https://raw.githubusercontent.com/barron-paw/frontend/main/tg2.png${cacheBuster}`,
                         ];
                         
                         const imageHtml = images.map((img, idx) => 
