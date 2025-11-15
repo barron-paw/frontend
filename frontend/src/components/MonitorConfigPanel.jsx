@@ -101,8 +101,10 @@ export default function MonitorConfigPanel() {
     try {
       setLoading(true);
       // Save monitor config
-      // 如果用户没有勾选 Telegram，清除 chat_id
-      // 如果用户勾选了 Telegram，保留 chat_id
+      // 互斥逻辑：
+      // - 如果只勾选微信，清除 Telegram chat_id
+      // - 如果只勾选 Telegram，企业微信会被后端停用
+      // - 如果两个都勾选，两个都推送
       const telegramChatIdValue = form.telegramEnabled ? (form.telegramChatId.trim() || null) : null;
       const monitorPayload = {
         telegramChatId: telegramChatIdValue,
@@ -139,10 +141,9 @@ export default function MonitorConfigPanel() {
         walletAddresses: prev.walletAddresses,
         language: monitorResponse.language || 'zh',
         // 保持用户的选择，不要因为后端返回了 chat_id 就自动勾选
-        // 只有当用户之前已经勾选了，或者后端明确返回了 enabled 状态时才更新
         telegramEnabled: prev.telegramEnabled, // 保持用户的选择，不自动勾选
-        // 只有当后端返回了 enabled 时才更新 wecomEnabled，否则保持用户的选择
-        wecomEnabled: wecomResponse.enabled !== undefined ? Boolean(wecomResponse.enabled) : prev.wecomEnabled,
+        // 保持用户的选择，不要因为后端返回了 enabled 就自动勾选
+        wecomEnabled: prev.wecomEnabled, // 保持用户的选择，不自动勾选
         wecomWebhookUrl: wecomResponse.webhookUrl || '',
         wecomMentions: (wecomResponse.mentions || []).join('\n'),
       }));
@@ -188,7 +189,16 @@ export default function MonitorConfigPanel() {
                   <input
                     type="checkbox"
                     checked={form.telegramEnabled}
-                    onChange={(event) => setForm((prev) => ({ ...prev, telegramEnabled: event.target.checked }))}
+                    onChange={(event) => {
+                      const checked = event.target.checked;
+                      setForm((prev) => ({
+                        ...prev,
+                        telegramEnabled: checked,
+                        // 如果勾选 Telegram，取消企业微信（互斥逻辑）
+                        // 如果两个都勾选，则两个都推送（允许同时勾选）
+                        // 这里不自动取消，允许用户同时勾选两个
+                      }));
+                    }}
                     disabled={!canEdit || loading}
                   />
                   <span>{isEnglish ? 'Enable Telegram notifications' : '启用 Telegram 推送'}</span>
@@ -197,7 +207,16 @@ export default function MonitorConfigPanel() {
               <input
                     type="checkbox"
                     checked={form.wecomEnabled}
-                    onChange={(event) => setForm((prev) => ({ ...prev, wecomEnabled: event.target.checked }))}
+                    onChange={(event) => {
+                      const checked = event.target.checked;
+                      setForm((prev) => ({
+                        ...prev,
+                        wecomEnabled: checked,
+                        // 如果勾选企业微信，取消 Telegram（互斥逻辑）
+                        // 如果两个都勾选，则两个都推送（允许同时勾选）
+                        // 这里不自动取消，允许用户同时勾选两个
+                      }));
+                    }}
                 disabled={!canEdit || loading}
               />
                   <span>{isEnglish ? 'Enable Enterprise WeChat notifications' : '启用企业微信推送'}</span>
