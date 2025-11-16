@@ -685,7 +685,34 @@ Step 6: Security Note: The API Secret will be encrypted using industry-standard 
 
           <div className="monitor-config__input-row">
             <label className="monitor-config__field">
-              <span>{isEnglish ? 'Stop-loss threshold (USDT)' : '止损金额阈值 (USDT)'}</span>
+              <div className="monitor-config__field-header">
+                <span>{isEnglish ? 'Stop-loss threshold (USDT)' : '止损金额阈值 (USDT)'}</span>
+                <button
+                  type="button"
+                  className="monitor-config__help-button"
+                  onClick={() => {
+                    const text = isEnglish
+                      ? `How stop loss is calculated:
+
+• When you enable auto follow, the system records your Binance futures wallet balance as the baseline.
+• It then continuously checks: loss = baseline_balance - current_balance.
+• If the cumulative loss is greater than or equal to this amount, all Binance positions will be closed and auto follow will stop.
+
+Tip: This only counts the loss after you enabled auto follow. Any profit or loss before that is treated as your starting point.`
+                      : `止损金额的计算方式：
+
+• 启用自动跟单时，系统会记录当时 Binance 合约账户的总余额，作为“基准余额”。
+• 之后持续检查：亏损 = 基准余额 - 当前余额。
+• 当累计亏损大于等于这里填写的金额时，会自动平掉币安所有持仓并停止跟单。
+
+提示：这里只统计“开启自动跟单之后”的亏损，之前的历史盈亏会被当作你的起点。`;
+                    alert(text);
+                  }}
+                  title={isEnglish ? 'Explain stop-loss threshold' : '解释止损金额含义'}
+                >
+                  ?
+                </button>
+              </div>
               <input
                 type="number"
                 step="0.01"
@@ -702,7 +729,34 @@ Step 6: Security Note: The API Secret will be encrypted using industry-standard 
             </label>
 
             <label className="monitor-config__field">
-              <span>{isEnglish ? 'Maximum position (USDT)' : '最大持仓（USDT）'}</span>
+              <div className="monitor-config__field-header">
+                <span>{isEnglish ? 'Maximum position (USDT)' : '最大持仓（USDT）'}</span>
+                <button
+                  type="button"
+                  className="monitor-config__help-button"
+                  onClick={() => {
+                    const text = isEnglish
+                      ? `How maximum position is used:
+
+• Before each new follow order, the bot checks your current Binance position size for this symbol (converted to USDT).
+• It also converts this maximum position value into a “maximum allowed position value” in USDT.
+• If current_position_value + planned_order_value would exceed this maximum, the new order will be skipped (only reducing/closing is allowed).
+
+Tip: If you turn on auto follow while already holding a position, that existing position is also counted into the maximum.`
+                      : `最大持仓的作用：
+
+• 每次准备开新单前，系统会先读取你在该合约上的当前仓位，并按当前价格折算成 USDT。
+• 再把“最大持仓（USDT）”也按价格换算成一笔“允许的最大仓位价值”。
+• 如果 当前仓位价值 + 这次计划下单的价值 > 最大持仓，则这笔开仓会被跳过（只允许后续减仓 / 平仓）。
+
+提示：如果你在开启自动跟单之前已经有仓位，这部分仓位也会被一起计入最大持仓的限制中。`;
+                    alert(text);
+                  }}
+                  title={isEnglish ? 'Explain maximum position' : '解释最大持仓含义'}
+                >
+                  ?
+                </button>
+              </div>
               <input
                 type="number"
                 step="0.01"
