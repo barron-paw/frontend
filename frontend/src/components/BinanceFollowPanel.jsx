@@ -57,11 +57,12 @@ export default function BinanceFollowPanel() {
   const [resetCredentials, setResetCredentials] = useState(false);
 
   useEffect(() => {
+    // 只有在有监控权限时才加载 Binance 配置
+    if (!canEdit) {
+      return;
+    }
     let ignore = false;
     const load = async () => {
-      if (!canEdit) {
-        return;
-      }
       setLoading(true);
       setStatusMessage('');
       try {
@@ -109,7 +110,8 @@ export default function BinanceFollowPanel() {
     return () => {
       ignore = true;
     };
-  }, []); // 只在组件挂载时加载一次
+    // 当用户权限状态变化（例如登录完成、订阅生效）时也重新加载一次
+  }, [canEdit, isEnglish]);
 
   const statusLabel = useMemo(() => {
     const pack = STATUS_LABELS[followStatus] || STATUS_LABELS.disabled;
