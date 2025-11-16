@@ -405,13 +405,17 @@ Step 8: Paste the copied API Key into the "API Key" field in the form above. Mak
                 </button>
               </div>
               <input
-                type="text"
-                value={form.apiKey}
-                onChange={handleChange('apiKey')}
-                placeholder={isEnglish ? (hasApiKey ? 'Already stored' : 'Paste Binance API Key') : hasApiKey ? '已保存' : '粘贴 Binance API Key'}
-                disabled={!canEdit || loading}
-                autoComplete="off"
-              />
+  type="text"
+  value={form.apiKey}
+  onChange={handleChange('apiKey')}
+  placeholder={
+    isEnglish
+      ? (hasApiKey ? '******** (saved)' : 'Paste Binance API Key')
+      : hasApiKey ? '********（已保存）' : '粘贴 Binance API Key'
+  }
+  disabled={!canEdit || loading}
+  autoComplete="off"
+/>
               {hasApiKey ? (
                 <small>{isEnglish ? 'A key is stored on the server.' : '服务器已保存一份 API Key。'}</small>
               ) : null}
@@ -543,14 +547,18 @@ Step 6: Security Note: The API Secret will be encrypted using industry-standard 
                   ?
                 </button>
               </div>
-              <input
-                type="password"
-                value={form.apiSecret}
-                onChange={handleChange('apiSecret')}
-                placeholder={isEnglish ? (hasApiSecret ? 'Already stored' : 'Paste Binance API Secret') : hasApiSecret ? '已保存' : '粘贴 Binance API Secret'}
-                disabled={!canEdit || loading}
-                autoComplete="off"
-              />
+         <input
+  type="password"
+  value={form.apiSecret}
+  onChange={handleChange('apiSecret')}
+  placeholder={
+    isEnglish
+      ? (hasApiSecret ? '******** (saved)' : 'Paste Binance API Secret')
+      : hasApiSecret ? '********（已保存）' : '粘贴 Binance API Secret'
+  }
+  disabled={!canEdit || loading}
+  autoComplete="off"
+/>
               {hasApiSecret ? (
                 <small>
                   {isEnglish ? 'A secret is stored on the server.' : '服务器已保存一份 API Secret。'}
@@ -709,4 +717,5 @@ Step 6: Security Note: The API Secret will be encrypted using industry-standard 
     </section>
   );
 }
+
 
