@@ -107,8 +107,13 @@ export default function MonitorConfigPanel() {
       // - 如果只勾选微信，停掉所有tg推送（但保留 chat_id，用户下次启用时不需要重新填写）
       // - 如果只勾选 Telegram，企业微信会被后端停用（但保留 webhook_url，用户下次启用时不需要重新填写）
       // - 如果两个都勾选，两个都推送
-      // 注意：保留 chat_id，不清除（即使没有勾选 Telegram，也保留配置，用户下次启用时不需要重新填写）
-      const telegramChatIdValue = form.telegramChatId.trim() || null;
+      // Telegram 勾选与否只影响是否推送：
+      // - 如果勾选 Telegram，则把 chat_id 发送给后端，启用 Telegram 推送
+      // - 如果没有勾选 Telegram，则不把 chat_id 发送给后端（但前端仍保留输入内容，下次勾选时直接生效）
+      const telegramChatIdValue =
+        form.telegramEnabled && form.telegramChatId.trim()
+          ? form.telegramChatId.trim()
+          : null;
       const walletAddressesList = form.walletAddresses
         .split(/[\s,;]+/)
         .map((addr) => addr.trim())
