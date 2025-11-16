@@ -5,8 +5,8 @@ import { useLanguage } from '../context/LanguageContext.jsx';
 import { copyToClipboard as copyText } from '../utils/clipboard.js';
 
 const PAYMENT_ADDRESS = '0xc00f356d7d7977ac9ef6399d4bb2da26da139190';
-const PAYMENT_AMOUNT_EN = '7.9 USDT monthly';
-const PAYMENT_AMOUNT_ZH = '7.9 USDT 月费';
+const PAYMENT_AMOUNT_EN = '9.9 USDT monthly';
+const PAYMENT_AMOUNT_ZH = '9.9 USDT 月费';
 
 function formatRemaining(user, language) {
   const isEnglish = language === 'en';
@@ -138,8 +138,8 @@ export default function SubscriptionPanel() {
           </ul>
           <p className="subscription-panel__notice">
             {isEnglish
-              ? 'Note: the payment amount must be ≥ 7.9 USDT, otherwise the subscription may fail.'
-              : '注意：支付金额必须 ≥ 7.9 USDT，否则可能会订阅失败。'}
+              ? 'Note: the payment amount must be ≥ 9.9 USDT, otherwise the subscription may fail.'
+              : '注意：支付金额必须 ≥ 9.9 USDT，否则可能会订阅失败。'}
           </p>
         </div>
         <form className="subscription-panel__form" onSubmit={handleSubmit}>
@@ -167,7 +167,7 @@ Step 4: Copy the complete transaction hash. Make sure to copy the entire string 
 Step 5: Paste the transaction hash into the "Transaction Hash (Tx Hash)" field above and click "Submit" to verify your payment and activate your subscription.
 
 Important Notes:
-- The payment amount must be ≥ 7.9 USDT, otherwise the subscription verification may fail.
+- The payment amount must be ≥ 9.9 USDT, otherwise the subscription verification may fail.
 - The transaction must be sent to the correct recipient address shown above.
 - The transaction hash is case-sensitive, so make sure to copy it exactly as shown.`
                     : `交易哈希 (Tx Hash) 指南：
@@ -186,7 +186,7 @@ Important Notes:
 步骤 5：将交易哈希粘贴到上方的「交易哈希 (Tx Hash)」输入框中，然后点击「提交验证」来验证您的支付并激活订阅。
 
 重要提示：
-- 支付金额必须 ≥ 7.9 USDT，否则订阅验证可能会失败。
+- 支付金额必须 ≥ 9.9 USDT，否则订阅验证可能会失败。
 - 交易必须发送到上方显示的正确收款地址。
 - 交易哈希区分大小写，因此请确保完全按照显示的方式复制。`;
 
