@@ -405,18 +405,32 @@ Step 8: Paste the copied API Key into the "API Key" field in the form above. Mak
                 </button>
               </div>
               <input
-  type="text"
-  value={form.apiKey}
-  onChange={handleChange('apiKey')}
-  placeholder={
-    isEnglish
-      ? (hasApiKey ? '******** (saved)' : 'Paste Binance API Key')
-      : hasApiKey ? '********（已保存）' : '粘贴 Binance API Key'
-  }
-  disabled={!canEdit || loading}
-  autoComplete="off"
-/>
-              {hasApiKey ? (
+                type="text"
+                value={
+                  hasApiKey && !resetCredentials
+                    ? (isEnglish ? '******** (saved)' : '********（已保存）')
+                    : form.apiKey
+                }
+                onChange={handleChange('apiKey')}
+                placeholder={
+                  isEnglish
+                    ? hasApiKey
+                      ? '******** (saved)'
+                      : 'Paste Binance API Key'
+                    : hasApiKey
+                      ? '********（已保存）'
+                      : '粘贴 Binance API Key'
+                }
+                disabled={!canEdit || loading || (hasApiKey && !resetCredentials)}
+                autoComplete="off"
+              />
+              {hasApiKey && !resetCredentials ? (
+                <small>
+                  {isEnglish
+                    ? 'API Key is securely stored. Click "Reset saved credentials" below if you want to replace it.'
+                    : 'API Key 已安全保存。如需更换，请点击下方“重置已保存的凭证”。'}
+                </small>
+              ) : hasApiKey ? (
                 <small>{isEnglish ? 'A key is stored on the server.' : '服务器已保存一份 API Key。'}</small>
               ) : null}
             </label>
@@ -547,19 +561,33 @@ Step 6: Security Note: The API Secret will be encrypted using industry-standard 
                   ?
                 </button>
               </div>
-         <input
-  type="password"
-  value={form.apiSecret}
-  onChange={handleChange('apiSecret')}
-  placeholder={
-    isEnglish
-      ? (hasApiSecret ? '******** (saved)' : 'Paste Binance API Secret')
-      : hasApiSecret ? '********（已保存）' : '粘贴 Binance API Secret'
-  }
-  disabled={!canEdit || loading}
-  autoComplete="off"
-/>
-              {hasApiSecret ? (
+              <input
+                type="password"
+                value={
+                  hasApiSecret && !resetCredentials
+                    ? (isEnglish ? '******** (saved)' : '********（已保存）')
+                    : form.apiSecret
+                }
+                onChange={handleChange('apiSecret')}
+                placeholder={
+                  isEnglish
+                    ? hasApiSecret
+                      ? '******** (saved)'
+                      : 'Paste Binance API Secret'
+                    : hasApiSecret
+                      ? '********（已保存）'
+                      : '粘贴 Binance API Secret'
+                }
+                disabled={!canEdit || loading || (hasApiSecret && !resetCredentials)}
+                autoComplete="off"
+              />
+              {hasApiSecret && !resetCredentials ? (
+                <small>
+                  {isEnglish
+                    ? 'API Secret is securely stored. Click "Reset saved credentials" below if you want to replace it.'
+                    : 'API Secret 已安全保存。如需更换，请点击下方“重置已保存的凭证”。'}
+                </small>
+              ) : hasApiSecret ? (
                 <small>
                   {isEnglish ? 'A secret is stored on the server.' : '服务器已保存一份 API Secret。'}
                 </small>
@@ -717,5 +745,4 @@ Step 6: Security Note: The API Secret will be encrypted using industry-standard 
     </section>
   );
 }
-
 
