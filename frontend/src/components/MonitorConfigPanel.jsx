@@ -826,24 +826,26 @@ Finally: Enable the "启用企业微信推送" (Enable Enterprise WeChat notific
                     const helpText = isEnglish
                       ? `Configuration Save Help:
 
-• When wallet addresses change, a position snapshot will be pushed immediately for each NEW wallet address.
+• Snapshots: Only when wallet addresses CHANGE will the system push a snapshot; the first snapshot for a wallet means monitoring for that wallet has started.
+• 4-hour snapshots: After monitoring starts, a consolidated position snapshot is automatically pushed every 4 hours for all monitored wallets.
+• Trade events: While monitoring is active, every open, close, and partial close will generate a real-time notification.
 • Push behavior:
   - Enable Telegram only → Push to Telegram only
   - Enable WeChat only → Push to WeChat only
   - Enable both → Push to both Telegram and WeChat
-• After monitoring is enabled, you will receive push notifications for all dynamic trades (open, close, partial close) in real-time.
-• A position snapshot will be automatically pushed every 4 hours for all monitored wallets.
+• Stop monitoring: If you save configuration with the wallet list EMPTY, monitoring stops and no further snapshots or trade notifications are sent.
 
 Note: The save button can only be clicked once every 5 seconds.`
                       : `保存配置帮助说明：
 
-• 钱包地址改变时，会立即推送每个新钱包地址的持仓快照。
+• 快照：只有当钱包地址发生变化时，系统才会为新的钱包地址推送持仓快照；第一次收到某个钱包的快照，就表示该钱包的监控已经开始。
+• 每 4 小时快照：监控开始后，系统会每 4 小时自动推送一次当前所有监控钱包的持仓快照。
+• 交易消息：在监控开启期间，钱包有开仓、平仓、部分平仓等动态交易时，都会实时发送通知。
 • 推送行为：
   - 只启用 Telegram → 只推送到 Telegram
   - 只启用企业微信 → 只推送到企业微信
   - 同时启用 → 同时推送到 Telegram 和企业微信
-• 启用监控后，钱包有动态交易（开仓、平仓、部分平仓）时，都会实时收到推送消息。
-• 系统会每 4 小时自动推送一次所有监控钱包的持仓快照。
+• 停止监控：如果监控地址列表为空时保存配置，则视为停止监控，不再发送快照和交易提醒。
 
 注意：保存配置按钮每 5 秒只能点击一次。`;
                     alert(helpText);
@@ -873,13 +875,14 @@ Note: The save button can only be clicked once every 5 seconds.`
               </p>
             </div>
 
-            <div className="monitor-config__details">
+              <div className="monitor-config__details">
               <p className="monitor-config__details-title">{isEnglish ? 'Monitoring Behaviour' : '监控提醒说明'}</p>
               <ul className="monitor-config__details-list">
-                <li>{isEnglish ? 'When wallet addresses change, a position snapshot will be pushed immediately for each NEW wallet address.' : '钱包地址改变时，会立即推送每个新钱包地址的持仓快照。'}</li>
+                <li>{isEnglish ? 'Snapshots are sent only when wallet addresses change; the first snapshot for a wallet means monitoring for that wallet has started.' : '只有当钱包地址发生变化时才发送快照；第一次收到某个钱包的快照，就表示该钱包的监控已经开始。'}</li>
                 <li>{isEnglish ? 'Push behavior: Enable Telegram only → Telegram only; Enable WeChat only → WeChat only; Enable both → both.' : '推送行为：只启用 Telegram → 只推送到 Telegram；只启用企业微信 → 只推送到企业微信；同时启用 → 同时推送。'}</li>
-                <li>{isEnglish ? 'After monitoring is enabled, every open or close event triggers a notification.' : '保存配置并启用监控后，每次开仓或平仓都会推送提醒。'}</li>
-                <li>{isEnglish ? 'A consolidated position snapshot is delivered every 4 hours automatically.' : '系统会每 4 小时自动发送一次持仓快照。'}</li>
+                <li>{isEnglish ? 'While monitoring is active, every open, close, and partial close event triggers a real-time notification.' : '监控开启期间，每次开仓、平仓和部分平仓都会实时推送提醒。'}</li>
+                <li>{isEnglish ? 'A consolidated position snapshot is automatically delivered every 4 hours for all monitored wallets.' : '系统会每 4 小时自动为所有监控钱包发送一次持仓快照。'}</li>
+                <li>{isEnglish ? 'If you save with an empty wallet list, monitoring stops and no further snapshots or trade notifications are sent.' : '如果监控地址列表为空时保存配置，则停止监控，不再发送快照和交易通知。'}</li>
               </ul>
             </div>
           </form>
