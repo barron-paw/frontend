@@ -576,7 +576,28 @@ Step 6: Security Note: The API Secret will be encrypted using industry-standard 
 
           <div className="monitor-config__input-row">
             <label className="monitor-config__field">
-              <span>{isEnglish ? 'Size mode' : '份额模式'}</span>
+              <div className="monitor-config__field-header">
+                <span>{isEnglish ? 'Size mode' : '份额模式'}</span>
+                <button
+                  type="button"
+                  className="monitor-config__help-button"
+                  onClick={() => {
+                    const text = isEnglish
+                      ? `Order Size Modes:
+
+• Fixed size (USDT): Every time the followed wallet opens a position, your Binance account uses a fixed USDT amount (converted to contracts at the mark price) to open or close. When the followed wallet fully closes, Binance will fully close your remaining position for that symbol.
+• Percentage (%): Your order size is calculated as (followed wallet position size × percentage). When the followed wallet increases or reduces position, your Binance position will increase / reduce by the same percentage. On a full close, Binance will also fully close your current position for that symbol.`
+                      : `份额模式说明：
+
+• 固定份额（USDT）：跟单钱包每次开仓时，您的 Binance 账户都会按固定的 USDT 金额下单（按标记价格换算为合约数量）。当跟单钱包完全平仓时，Binance 侧会按您当前实际持仓一次性全部平仓。
+• 按百分比（%）：您的下单金额 = 跟单钱包持仓名义金额 × 设置的百分比。跟单钱包加仓 / 减仓时，您的 Binance 仓位会按相同比例增减；当跟单钱包完全平仓时，Binance 侧也会把当前持仓全部平掉。`;
+                    alert(text);
+                  }}
+                  title={isEnglish ? 'Explain size modes' : '解释份额模式'}
+                >
+                  ?
+                </button>
+              </div>
               <select value={form.mode} onChange={handleChange('mode')} disabled={loading}>
                 {MODE_OPTIONS.map((option) => (
                   <option key={option.value} value={option.value}>
@@ -587,11 +608,32 @@ Step 6: Security Note: The API Secret will be encrypted using industry-standard 
             </label>
 
             <label className="monitor-config__field">
-              <span>
-                {form.mode === 'percentage'
-                  ? (isEnglish ? 'Percentage (%)' : '百分比 (%)')
-                  : (isEnglish ? 'Fixed size (USDT)' : '固定份额（USDT）')}
-              </span>
+              <div className="monitor-config__field-header">
+                <span>
+                  {form.mode === 'percentage'
+                    ? (isEnglish ? 'Percentage (%)' : '百分比 (%)')
+                    : (isEnglish ? 'Fixed size (USDT)' : '固定份额（USDT）')}
+                </span>
+                <button
+                  type="button"
+                  className="monitor-config__help-button"
+                  onClick={() => {
+                    const text = isEnglish
+                      ? `How this value is used:
+
+• Fixed size (USDT): This is the USDT amount you want to use per followed trade. It will be converted to contracts using the Binance mark price. If the resulting quantity is smaller than Binance’s minimum lot size (for example, 0.001 BTC), the order will be skipped.
+• Percentage (%): This is the percentage of the followed wallet’s position size. For example, 50% means your position target is half of the followed wallet’s size; open / reduce / close events will follow this ratio.`
+                      : `该数值的含义：
+
+• 固定份额（USDT）：表示每次跟单使用的 USDT 金额，系统会按 Binance 标记价格换算成合约数量。如果换算后的数量小于该合约在 Binance 的最小下单量（例如 BTC 通常是 0.001），该笔订单会被跳过。
+• 百分比（%）：表示跟单钱包持仓规模的百分比。例如设置 50%，则目标是对方仓位的一半，开仓 / 减仓 / 平仓都会按这个比例同步。`;
+                    alert(text);
+                  }}
+                  title={isEnglish ? 'Explain amount field' : '解释该数值含义'}
+                >
+                  ?
+                </button>
+              </div>
               <input
                 type="number"
                 step="0.01"
