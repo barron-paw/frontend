@@ -33,8 +33,10 @@ export default function SimulatedFollowPanel() {
 
     try {
       console.log('[SimulatedFollowPanel] Starting simulation:', { address: walletAddress.trim(), days: validDayCount });
-      const result = await apiClient.get(`/simulated-follow?address=${encodeURIComponent(walletAddress.trim())}&days=${validDayCount}`);
-      console.log('[SimulatedFollowPanel] API response:', result);
+      const apiUrl = `/simulated-follow?address=${encodeURIComponent(walletAddress.trim())}&days=${validDayCount}`;
+      console.log('[SimulatedFollowPanel] API URL:', apiUrl);
+      const result = await apiClient.get(apiUrl);
+      console.log('[SimulatedFollowPanel] API response received:', result);
       
       // 验证返回的数据格式
       if (!result || typeof result !== 'object') {
@@ -42,10 +44,27 @@ export default function SimulatedFollowPanel() {
         throw new Error(isEnglish ? 'Invalid response from server' : '服务器返回数据格式错误');
       }
       
+      // 检查返回的数据结构
+      console.log('[SimulatedFollowPanel] Checking response structure:', {
+        hasDailyProfits: 'dailyProfits' in result,
+        hasTrades: 'trades' in result,
+        hasDayCount: 'dayCount' in result,
+        hasTradeCount: 'tradeCount' in result,
+        keys: Object.keys(result)
+      });
+      
+      // 兼容旧版本 API（如果返回的是 trades 而不是 dailyProfits）
+      if (result.trades && Array.isArray(result.trades) && !result.dailyProfits) {
+        console.warn('[SimulatedFollowPanel] Received old API format (trades), converting to dailyProfits format');
+        throw new Error(isEnglish 
+          ? 'API returned old format. Please update the backend or wait for deployment.' 
+          : 'API 返回了旧格式。请更新后端或等待部署。');
+      }
+      
       // 确保 dailyProfits 存在且是数组
       if (!result.dailyProfits) {
-        console.error('[SimulatedFollowPanel] Missing dailyProfits field:', result);
-        throw new Error(isEnglish ? 'Missing daily profits data' : '缺少每日利润数据');
+        console.error('[SimulatedFollowPanel] Missing dailyProfits field. Full response:', JSON.stringify(result, null, 2));
+        throw new Error(isEnglish ? 'Missing daily profits data. Please check backend API.' : '缺少每日利润数据。请检查后端 API。');
       }
       
       if (!Array.isArray(result.dailyProfits)) {
@@ -53,7 +72,7 @@ export default function SimulatedFollowPanel() {
         throw new Error(isEnglish ? 'Invalid daily profits data format' : '每日利润数据格式错误');
       }
       
-      console.log('[SimulatedFollowPanel] Data validated, setting state with', result.dailyProfits.length, 'daily profits');
+      console.log('[SimulatedFollowPanel] Data validated successfully, setting state with', result.dailyProfits.length, 'daily profits');
       setData(result);
       setError(''); // 清除之前的错误
     } catch (err) {
@@ -208,7 +227,7 @@ export default function SimulatedFollowPanel() {
         </div>
       )}
 
-      {!loading && data && data.dailyProfits && Array.isArray(data.dailyProfits) && (
+      {!loading && !error && data && data.dailyProfits && Array.isArray(data.dailyProfits) && data.dailyProfits.length > 0 && (
         <div className="simulated-follow__results">
           <div className="simulated-follow__summary">
             <div className="simulated-follow__summary-item">
