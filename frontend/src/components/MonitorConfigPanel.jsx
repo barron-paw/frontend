@@ -37,6 +37,7 @@ export default function MonitorConfigPanel() {
       }
       setLoading(true);
       try {
+        // 强制不使用缓存，确保获取最新数据
         const [monitorData, wecomData] = await Promise.all([
           fetchMonitorConfig(),
           fetchWecomConfig().catch(() => ({ enabled: false, webhookUrl: '', mentions: [] })),
@@ -50,6 +51,8 @@ export default function MonitorConfigPanel() {
           language: monitorData.language,
           userAgent: navigator.userAgent,
           isMobile: /Mobile|Android|iPhone|iPad/i.test(navigator.userAgent),
+          rawUsesDefaultBot: monitorData.usesDefaultBot,
+          rawDefaultBotUsername: monitorData.defaultBotUsername,
         });
         
         setForm({
@@ -62,8 +65,8 @@ export default function MonitorConfigPanel() {
           wecomMentions: (wecomData.mentions || []).join('\n'),
         });
         setLanguage(monitorData.language || 'zh');
-        // 确保布尔值转换正确
-        const usesDefault = Boolean(monitorData.usesDefaultBot);
+        // 确保布尔值转换正确，处理各种可能的类型
+        const usesDefault = Boolean(monitorData.usesDefaultBot === true || monitorData.usesDefaultBot === 'true' || monitorData.usesDefaultBot === 1);
         const defaultUsername = String(monitorData.defaultBotUsername || '').trim();
         setUsesDefaultBot(usesDefault);
         setDefaultBotUsername(defaultUsername);
@@ -71,6 +74,8 @@ export default function MonitorConfigPanel() {
         console.log('[MonitorConfigPanel] Set state:', {
           usesDefaultBot: usesDefault,
           defaultBotUsername: defaultUsername,
+          originalUsesDefaultBot: monitorData.usesDefaultBot,
+          originalDefaultBotUsername: monitorData.defaultBotUsername,
         });
       } catch (err) {
         console.error('Failed to load monitor config:', err);
@@ -185,8 +190,17 @@ export default function MonitorConfigPanel() {
         wecomMentions: (wecomResponse.mentions || []).join('\n'),
       }));
       setLanguage(monitorResponse.language || 'zh');
-      setUsesDefaultBot(Boolean(monitorResponse.usesDefaultBot));
-      setDefaultBotUsername(monitorResponse.defaultBotUsername || '');
+      // 确保布尔值转换正确，处理各种可能的类型
+      const usesDefault = Boolean(monitorResponse.usesDefaultBot === true || monitorResponse.usesDefaultBot === 'true' || monitorResponse.usesDefaultBot === 1);
+      const defaultUsername = String(monitorResponse.defaultBotUsername || '').trim();
+      setUsesDefaultBot(usesDefault);
+      setDefaultBotUsername(defaultUsername);
+      console.log('[MonitorConfigPanel] After save - Set state:', {
+        usesDefaultBot: usesDefault,
+        defaultBotUsername: defaultUsername,
+        originalUsesDefaultBot: monitorResponse.usesDefaultBot,
+        originalDefaultBotUsername: monitorResponse.defaultBotUsername,
+      });
       setStatus(isEnglish ? 'Configuration saved.' : '配置已保存。');
       // 请求成功后才设置 lastSaveTime，用于防抖
       setLastSaveTime(Date.now());
