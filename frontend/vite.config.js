@@ -12,7 +12,9 @@ export default defineConfig({
         chunkFileNames: `assets/[name]-[hash].js`,
         assetFileNames: `assets/[name]-[hash].[ext]`
       }
-    }
+    },
+    // 确保 HTML 文件正确处理
+    minify: 'esbuild'
   },
   // 确保开发服务器不缓存
   server: {
