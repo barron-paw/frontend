@@ -305,6 +305,11 @@
   font-size: 0.75rem;
   color: var(--text-muted);
   line-height: 1.4;
+  word-wrap: break-word;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  display: block;
+  width: 100%;
 }
 
 .monitor-config__field-note {
@@ -346,17 +351,12 @@
   color: var(--text-muted);
 }
 
-/* 移动端优化：Telegram Chat ID 说明文字 */
-.monitor-config__field small {
-  word-wrap: break-word;
-  word-break: break-word;
-  overflow-wrap: break-word;
-}
-
+/* 移动端优化：确保和桌面端显示一致 */
 @media (max-width: 480px) {
   .monitor-config__field small {
-    font-size: 0.7rem;
-    line-height: 1.5;
+    font-size: 0.75rem;
+    line-height: 1.6;
+    color: var(--text-muted);
   }
   
   .monitor-config__actions {
@@ -366,6 +366,11 @@
   .monitor-config__actions button {
     width: 100%;
     justify-content: center;
+  }
+  
+  .monitor-config__field-note {
+    font-size: 0.75rem;
+    line-height: 1.6;
   }
 }
 
