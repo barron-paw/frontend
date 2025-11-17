@@ -333,9 +333,12 @@ Note: Each user gets a unique verification code based on their account, so the s
                         const fullContent = `
                           <div style="max-width: 600px; padding: 20px;">
                             <h3 style="margin-top: 0;">${isEnglish ? 'Telegram Chat ID Setup Guide' : 'Telegram Chat ID 配置指南'}</h3>
-                            <div style="white-space: pre-line; margin-bottom: 20px;">${guideContent}</div>
+                            <div style="white-space: pre-line; margin-bottom: 20px; line-height: 1.8;">${guideContent}</div>
                             <div style="margin-top: 20px;">
                               ${imageHtml}
+                            </div>
+                            <div style="margin-top: 20px; padding-top: 15px; border-top: 1px solid rgba(255, 255, 255, 0.1); font-size: 0.85rem; color: #999;">
+                              ${isEnglish ? 'Guide Version: 2024.11.17' : '指南版本：2024.11.17'}
                             </div>
                           </div>
                         `;
