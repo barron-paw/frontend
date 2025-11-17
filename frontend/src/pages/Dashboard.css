@@ -346,6 +346,29 @@
   color: var(--text-muted);
 }
 
+/* 移动端优化：Telegram Chat ID 说明文字 */
+.monitor-config__field small {
+  word-wrap: break-word;
+  word-break: break-word;
+  overflow-wrap: break-word;
+}
+
+@media (max-width: 480px) {
+  .monitor-config__field small {
+    font-size: 0.7rem;
+    line-height: 1.5;
+  }
+  
+  .monitor-config__actions {
+    gap: var(--space-sm);
+  }
+  
+  .monitor-config__actions button {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
 .monitor-config__guide {
   margin-top: var(--space-xl);
   padding-top: var(--space-lg);
