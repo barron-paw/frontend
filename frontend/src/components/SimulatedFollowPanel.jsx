@@ -32,32 +32,68 @@ export default function SimulatedFollowPanel() {
     setData(null);
 
     try {
+      console.log('[SimulatedFollowPanel] Starting simulation:', { address: walletAddress.trim(), days: validDayCount });
       const result = await apiClient.get(`/simulated-follow?address=${encodeURIComponent(walletAddress.trim())}&days=${validDayCount}`);
+      console.log('[SimulatedFollowPanel] API response:', result);
+      
       // 验证返回的数据格式
       if (!result || typeof result !== 'object') {
+        console.error('[SimulatedFollowPanel] Invalid response type:', typeof result, result);
         throw new Error(isEnglish ? 'Invalid response from server' : '服务器返回数据格式错误');
       }
+      
       // 确保 dailyProfits 存在且是数组
-      if (!result.dailyProfits || !Array.isArray(result.dailyProfits)) {
-        console.error('Invalid dailyProfits data:', result);
-        throw new Error(isEnglish ? 'Invalid daily profits data' : '每日利润数据格式错误');
+      if (!result.dailyProfits) {
+        console.error('[SimulatedFollowPanel] Missing dailyProfits field:', result);
+        throw new Error(isEnglish ? 'Missing daily profits data' : '缺少每日利润数据');
       }
+      
+      if (!Array.isArray(result.dailyProfits)) {
+        console.error('[SimulatedFollowPanel] dailyProfits is not an array:', typeof result.dailyProfits, result.dailyProfits);
+        throw new Error(isEnglish ? 'Invalid daily profits data format' : '每日利润数据格式错误');
+      }
+      
+      console.log('[SimulatedFollowPanel] Data validated, setting state with', result.dailyProfits.length, 'daily profits');
       setData(result);
+      setError(''); // 清除之前的错误
     } catch (err) {
-      console.error('Simulate follow error:', err);
-      let errorMessage = err.response?.data?.detail || err.message || (isEnglish ? 'Failed to simulate follow' : '模拟跟单失败');
+      console.error('[SimulatedFollowPanel] Error details:', {
+        error: err,
+        message: err.message,
+        response: err.response,
+        stack: err.stack
+      });
+      
+      let errorMessage = '';
+      
+      // 尝试从不同位置获取错误信息
+      if (err.response?.data?.detail) {
+        errorMessage = err.response.data.detail;
+      } else if (err.message) {
+        errorMessage = err.message;
+      } else {
+        errorMessage = isEnglish ? 'Failed to simulate follow' : '模拟跟单失败';
+      }
       
       // 处理 429 限流错误
-      if (err.message && (err.message.includes('429') || err.message.includes('rate limit') || err.message.includes('Too Many Requests'))) {
+      if (errorMessage.includes('429') || errorMessage.includes('rate limit') || errorMessage.includes('Too Many Requests')) {
         errorMessage = isEnglish 
           ? 'API rate limit exceeded. Please wait a few minutes and try again.' 
           : 'API 请求过于频繁，请稍等几分钟后重试。';
+      }
+      
+      // 处理网络错误
+      if (errorMessage.includes('Failed to fetch') || errorMessage.includes('无法连接到服务器')) {
+        errorMessage = isEnglish
+          ? 'Cannot connect to server. Please check if the backend service is running.'
+          : '无法连接到服务器。请检查后端服务是否正在运行。';
       }
       
       setError(errorMessage);
       setData(null);
     } finally {
       setLoading(false);
+      console.log('[SimulatedFollowPanel] Simulation completed, loading set to false');
     }
   };
 
@@ -149,12 +185,30 @@ export default function SimulatedFollowPanel() {
       </div>
 
       {error && (
-        <div className="simulated-follow__error">
-          {error}
+        <div className="simulated-follow__error" style={{ 
+          padding: '12px', 
+          backgroundColor: 'rgba(244, 67, 54, 0.1)', 
+          border: '1px solid #f44336', 
+          borderRadius: '4px',
+          marginTop: '16px',
+          color: '#f44336'
+        }}>
+          <strong>{isEnglish ? 'Error: ' : '错误：'}</strong>{error}
         </div>
       )}
 
-      {data && data.dailyProfits && Array.isArray(data.dailyProfits) && (
+      {loading && (
+        <div style={{ 
+          padding: '20px', 
+          textAlign: 'center', 
+          color: 'var(--text-secondary)',
+          marginTop: '16px'
+        }}>
+          {isEnglish ? 'Calculating...' : '计算中...'}
+        </div>
+      )}
+
+      {!loading && data && data.dailyProfits && Array.isArray(data.dailyProfits) && (
         <div className="simulated-follow__results">
           <div className="simulated-follow__summary">
             <div className="simulated-follow__summary-item">
