@@ -41,6 +41,17 @@ export default function MonitorConfigPanel() {
           fetchMonitorConfig(),
           fetchWecomConfig().catch(() => ({ enabled: false, webhookUrl: '', mentions: [] })),
         ]);
+        
+        // 调试日志：确保移动端和桌面端获取到相同的数据
+        console.log('[MonitorConfigPanel] Loaded config:', {
+          usesDefaultBot: monitorData.usesDefaultBot,
+          defaultBotUsername: monitorData.defaultBotUsername,
+          telegramChatId: monitorData.telegramChatId ? '***' : null,
+          language: monitorData.language,
+          userAgent: navigator.userAgent,
+          isMobile: /Mobile|Android|iPhone|iPad/i.test(navigator.userAgent),
+        });
+        
         setForm({
           telegramChatId: monitorData.telegramChatId || '',
           walletAddresses: (monitorData.walletAddresses || []).join('\n'),
@@ -51,8 +62,16 @@ export default function MonitorConfigPanel() {
           wecomMentions: (wecomData.mentions || []).join('\n'),
         });
         setLanguage(monitorData.language || 'zh');
-        setUsesDefaultBot(Boolean(monitorData.usesDefaultBot));
-        setDefaultBotUsername(monitorData.defaultBotUsername || '');
+        // 确保布尔值转换正确
+        const usesDefault = Boolean(monitorData.usesDefaultBot);
+        const defaultUsername = String(monitorData.defaultBotUsername || '').trim();
+        setUsesDefaultBot(usesDefault);
+        setDefaultBotUsername(defaultUsername);
+        
+        console.log('[MonitorConfigPanel] Set state:', {
+          usesDefaultBot: usesDefault,
+          defaultBotUsername: defaultUsername,
+        });
       } catch (err) {
         console.error('Failed to load monitor config:', err);
         setStatus(isEnglish ? err.message || 'Failed to load monitor configuration' : err.message || '无法加载监控配置');
@@ -523,6 +542,17 @@ Note: Each user gets a unique verification code based on their account, so the s
                     </div>
                   )}
                   <small>
+                    {(() => {
+                      // 调试日志：记录渲染时使用的值
+                      const renderValues = {
+                        usesDefaultBot,
+                        defaultBotUsername,
+                        isEnglish,
+                        condition: usesDefaultBot && defaultBotUsername ? 'hasUsername' : usesDefaultBot ? 'hasDefaultBot' : 'noDefaultBot',
+                      };
+                      console.log('[MonitorConfigPanel] Rendering help text with:', renderValues);
+                      return null;
+                    })()}
                     {isEnglish ? (
                       <>
                         {usesDefaultBot && defaultBotUsername ? (
