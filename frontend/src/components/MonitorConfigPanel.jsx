@@ -813,13 +813,18 @@ Finally: Enable the "启用企业微信推送" (Enable Enterprise WeChat notific
             </div>
 
             <div className="monitor-config__actions">
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
                 <button 
                   type="submit" 
                   disabled={!canEdit || loading || isSaving}
                 >
                   {loading || isSaving ? (isEnglish ? 'Processing…' : '处理中…') : isEnglish ? 'Save' : '保存配置'}
                 </button>
+                <span style={{ color: '#ff4444', fontSize: '0.9em', fontWeight: '500' }}>
+                  {isEnglish 
+                    ? '○ Only wallet changes trigger snapshots; a snapshot means monitoring has started.'
+                    : '○ 只有钱包变化才会发快照，快照意味监控开始。'}
+                </span>
                 <button
                   type="button"
                   onClick={() => {

@@ -120,7 +120,7 @@ export default function SubscriptionPanel() {
                         {priceInfo.price_usdt} USDT
                       </span>
                       <span style={{ marginLeft: '8px', color: '#4caf50', fontSize: '0.9em' }}>
-                        {isEnglish ? '(Early Bird Price - First Subscription)' : '（早鸟优惠价 - 首次订阅）'}
+                        {isEnglish ? '(First Subscription)' : '（首次订阅）'}
                       </span>
                       <div style={{ marginTop: '4px', fontSize: '0.85em', color: '#888' }}>
                         {isEnglish
@@ -136,8 +136,8 @@ export default function SubscriptionPanel() {
                       {priceInfo.is_first_subscription && priceInfo.early_bird_price_usdt && (
                         <div style={{ marginTop: '4px', fontSize: '0.85em', color: '#888' }}>
                           {isEnglish
-                            ? `Early bird price: ${priceInfo.early_bird_price_usdt} USDT (first subscription only)`
-                            : `早鸟优惠价：${priceInfo.early_bird_price_usdt} USDT（仅首次订阅）`}
+                            ? `First subscription price: ${priceInfo.early_bird_price_usdt} USDT (first subscription only)`
+                            : `首次订阅价格：${priceInfo.early_bird_price_usdt} USDT（仅首次订阅）`}
                         </div>
                       )}
                     </>
@@ -207,8 +207,8 @@ export default function SubscriptionPanel() {
           </ul>
           <p className="subscription-panel__notice">
             {isEnglish
-              ? `Note: the payment amount must be ≥ ${priceInfo?.price_usdt || 19.9} USDT, otherwise the subscription may fail.`
-              : `注意：支付金额必须 ≥ ${priceInfo?.price_usdt || 19.9} USDT，否则可能会订阅失败。`}
+              ? `Note: the payment amount must be ≥ ${priceInfo?.price_usdt || 19.9} USDT, otherwise the subscription may fail. Except for the first subscription, the price is ${priceInfo?.regular_price_usdt || 19.9} USDT/month.`
+              : `注意：支付金额必须 ≥ ${priceInfo?.price_usdt || 19.9} USDT，否则可能会订阅失败。除了首次订阅，后续订阅价格为 ${priceInfo?.regular_price_usdt || 19.9} USDT/月。`}
           </p>
         </div>
         <form className="subscription-panel__form" onSubmit={handleSubmit}>
