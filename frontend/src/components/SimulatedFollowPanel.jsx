@@ -45,7 +45,15 @@ export default function SimulatedFollowPanel() {
       setData(result);
     } catch (err) {
       console.error('Simulate follow error:', err);
-      const errorMessage = err.response?.data?.detail || err.message || (isEnglish ? 'Failed to simulate follow' : '模拟跟单失败');
+      let errorMessage = err.response?.data?.detail || err.message || (isEnglish ? 'Failed to simulate follow' : '模拟跟单失败');
+      
+      // 处理 429 限流错误
+      if (err.message && (err.message.includes('429') || err.message.includes('rate limit') || err.message.includes('Too Many Requests'))) {
+        errorMessage = isEnglish 
+          ? 'API rate limit exceeded. Please wait a few minutes and try again.' 
+          : 'API 请求过于频繁，请稍等几分钟后重试。';
+      }
+      
       setError(errorMessage);
       setData(null);
     } finally {
