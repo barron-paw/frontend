@@ -7,7 +7,7 @@ export default function SimulatedFollowPanel() {
   const { language } = useLanguage();
   const isEnglish = language === 'en';
   const [walletAddress, setWalletAddress] = useState('');
-  const [tradeCount, setTradeCount] = useState(10);
+  const [dayCount, setDayCount] = useState(7);
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState(null);
   const [error, setError] = useState('');
@@ -19,11 +19,11 @@ export default function SimulatedFollowPanel() {
       return;
     }
 
-    // 确保 tradeCount 是有效的数字
-    const validTradeCount = Number(tradeCount);
-    if (isNaN(validTradeCount) || validTradeCount < 1 || validTradeCount > 30) {
-      setError(isEnglish ? 'Please enter a valid number of trades (1-30)' : '请输入有效的交易笔数（1-30）');
-      setTradeCount(10); // 恢复为默认值
+    // 确保 dayCount 是有效的数字
+    const validDayCount = Number(dayCount);
+    if (isNaN(validDayCount) || validDayCount < 1 || validDayCount > 30) {
+      setError(isEnglish ? 'Please enter a valid number of days (1-30)' : '请输入有效的交易天数（1-30）');
+      setDayCount(7); // 恢复为默认值
       return;
     }
 
@@ -32,7 +32,7 @@ export default function SimulatedFollowPanel() {
     setData(null);
 
     try {
-      const result = await apiClient.get(`/simulated-follow?address=${encodeURIComponent(walletAddress.trim())}&limit=${validTradeCount}`);
+      const result = await apiClient.get(`/simulated-follow?address=${encodeURIComponent(walletAddress.trim())}&days=${validDayCount}`);
       setData(result);
     } catch (err) {
       setError(err.message || (isEnglish ? 'Failed to simulate follow' : '模拟跟单失败'));
@@ -41,9 +41,17 @@ export default function SimulatedFollowPanel() {
     }
   };
 
-  const formatTime = (timeMs) => {
-    const date = new Date(timeMs);
-    return date.toLocaleString(language === 'en' ? 'en-US' : 'zh-CN');
+  const formatDate = (dateStr) => {
+    try {
+      const date = new Date(dateStr + 'T00:00:00Z');
+      return date.toLocaleDateString(language === 'en' ? 'en-US' : 'zh-CN', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+      });
+    } catch (e) {
+      return dateStr;
+    }
   };
 
   return (
@@ -73,30 +81,30 @@ export default function SimulatedFollowPanel() {
           </label>
 
           <label className="simulated-follow__field">
-            <span>{isEnglish ? 'Number of Trades (Max 30)' : '交易笔数（最多30笔）'}</span>
+            <span>{isEnglish ? 'Number of Days (Max 30)' : '交易天数（最多30天）'}</span>
             <input
               type="number"
               inputMode="numeric"
               pattern="[0-9]*"
-              value={tradeCount}
+              value={dayCount}
               onChange={(e) => {
                 const inputValue = e.target.value;
                 // 允许空值，以便用户可以清空输入
                 if (inputValue === '') {
-                  setTradeCount('');
+                  setDayCount('');
                   return;
                 }
                 const value = Number(inputValue);
                 // 只接受1-30之间的数字
                 if (!isNaN(value) && value >= 1 && value <= 30) {
-                  setTradeCount(value);
+                  setDayCount(value);
                 }
               }}
               onBlur={(e) => {
-                // 失去焦点时，如果值无效，恢复为默认值10
+                // 失去焦点时，如果值无效，恢复为默认值7
                 const value = Number(e.target.value);
                 if (isNaN(value) || value < 1 || value > 30) {
-                  setTradeCount(10);
+                  setDayCount(7);
                 }
               }}
               min={1}
@@ -112,7 +120,7 @@ export default function SimulatedFollowPanel() {
           <button
             type="button"
             onClick={handleSimulate}
-            disabled={loading || !walletAddress.trim() || !tradeCount || Number(tradeCount) < 1 || Number(tradeCount) > 30}
+            disabled={loading || !walletAddress.trim() || !dayCount || Number(dayCount) < 1 || Number(dayCount) > 30}
             className="simulated-follow__button"
           >
             {loading ? (isEnglish ? 'Calculating...' : '计算中...') : (isEnglish ? 'Simulate' : '开始模拟')}
@@ -194,9 +202,9 @@ export default function SimulatedFollowPanel() {
               onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
             >
               <h3 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: 'var(--space-xs)' }}>
-                <span>{isEnglish ? 'Recent Trades' : '最近交易'}</span>
+                <span>{isEnglish ? 'Daily Profits' : '每日利润'}</span>
                 <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
-                  ({data.trades.length})
+                  ({data.dailyProfits.length})
                 </span>
               </h3>
               <button
@@ -227,47 +235,31 @@ export default function SimulatedFollowPanel() {
                 <table>
                 <thead>
                   <tr>
-                    <th>{isEnglish ? 'Time' : '时间'}</th>
-                    <th>{isEnglish ? 'Coin' : '币种'}</th>
-                    <th>{isEnglish ? 'Side' : '方向'}</th>
-                    <th>{isEnglish ? 'Price' : '价格'}</th>
-                    <th>{isEnglish ? 'Size' : '数量'}</th>
+                    <th>{isEnglish ? 'Date' : '日期'}</th>
                     <th>{isEnglish ? 'PnL' : '盈亏'}</th>
                     <th>{isEnglish ? 'PnL %' : '盈亏率'}</th>
+                    <th>{isEnglish ? 'Trades' : '交易笔数'}</th>
+                    <th>{isEnglish ? 'Winning' : '盈利'}</th>
+                    <th>{isEnglish ? 'Losing' : '亏损'}</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {data.trades.map((trade, index) => (
+                  {data.dailyProfits.map((day, index) => (
                     <tr key={index}>
-                      <td>{formatTime(trade.timeMs)}</td>
-                      <td>{trade.coin}</td>
+                      <td>{formatDate(day.date)}</td>
                       <td>
-                        <span
-                          className={`simulated-follow__side simulated-follow__side--${trade.side}`}
-                        >
-                          {trade.side === 'buy' ? (isEnglish ? 'Buy' : '买入') : (isEnglish ? 'Sell' : '卖出')}
+                        <span style={{ color: day.pnl >= 0 ? '#4caf50' : '#f44336' }}>
+                          {day.pnl >= 0 ? '+' : ''}${day.pnl.toFixed(2)}
                         </span>
                       </td>
-                      <td>${trade.price.toFixed(4)}</td>
-                      <td>{trade.size.toFixed(4)}</td>
                       <td>
-                        {trade.pnl !== null ? (
-                          <span style={{ color: trade.pnl >= 0 ? '#4caf50' : '#f44336' }}>
-                            {trade.pnl >= 0 ? '+' : ''}${trade.pnl.toFixed(2)}
-                          </span>
-                        ) : (
-                          <span style={{ color: '#888' }}>-</span>
-                        )}
+                        <span style={{ color: day.pnlPercent >= 0 ? '#4caf50' : '#f44336' }}>
+                          {day.pnlPercent >= 0 ? '+' : ''}{day.pnlPercent.toFixed(2)}%
+                        </span>
                       </td>
-                      <td>
-                        {trade.pnlPercent !== null ? (
-                          <span style={{ color: trade.pnlPercent >= 0 ? '#4caf50' : '#f44336' }}>
-                            {trade.pnlPercent >= 0 ? '+' : ''}{trade.pnlPercent.toFixed(2)}%
-                          </span>
-                        ) : (
-                          <span style={{ color: '#888' }}>-</span>
-                        )}
-                      </td>
+                      <td>{day.tradesCount}</td>
+                      <td style={{ color: '#4caf50' }}>{day.winningTrades}</td>
+                      <td style={{ color: '#f44336' }}>{day.losingTrades}</td>
                     </tr>
                   ))}
                 </tbody>
