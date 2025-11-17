@@ -45,10 +45,10 @@ export default function SubscriptionPanel() {
       })
       .catch((err) => {
         console.error('Failed to fetch subscription price:', err);
-        // 使用默认值
+        // 使用默认值：假设是首次订阅，显示早鸟价格
         setPriceInfo({
-          price_usdt: 19.9,
-          is_early_bird: false,
+          price_usdt: 9.9,
+          is_early_bird: true,
           is_first_subscription: true,
           early_bird_price_usdt: 9.9,
           regular_price_usdt: 19.9,
@@ -114,29 +114,49 @@ export default function SubscriptionPanel() {
               {isEnglish ? 'Price: ' : '费用：'}
               {priceInfo ? (
                 <>
-                  <span style={{ fontSize: '1.2em', fontWeight: 'bold', color: priceInfo.is_early_bird ? '#4caf50' : 'inherit' }}>
-                    {priceInfo.price_usdt} USDT
-                  </span>
-                  {priceInfo.is_early_bird && (
-                    <span style={{ marginLeft: '8px', color: '#4caf50', fontSize: '0.9em' }}>
-                      {isEnglish ? '(Early Bird Price)' : '（早鸟优惠价）'}
-                    </span>
-                  )}
-                  {priceInfo.is_first_subscription && !priceInfo.is_early_bird && priceInfo.early_bird_price_usdt && (
-                    <span style={{ marginLeft: '8px', color: '#888', fontSize: '0.9em', textDecoration: 'line-through' }}>
-                      {priceInfo.early_bird_price_usdt} USDT
-                    </span>
+                  {priceInfo.is_early_bird ? (
+                    <>
+                      <span style={{ fontSize: '1.2em', fontWeight: 'bold', color: '#4caf50' }}>
+                        {priceInfo.price_usdt} USDT
+                      </span>
+                      <span style={{ marginLeft: '8px', color: '#4caf50', fontSize: '0.9em' }}>
+                        {isEnglish ? '(Early Bird Price - First Subscription)' : '（早鸟优惠价 - 首次订阅）'}
+                      </span>
+                      <div style={{ marginTop: '4px', fontSize: '0.85em', color: '#888' }}>
+                        {isEnglish
+                          ? `Regular price: ${priceInfo.regular_price_usdt} USDT/month (after first subscription)`
+                          : `标准价格：${priceInfo.regular_price_usdt} USDT/月（首次订阅后）`}
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <span style={{ fontSize: '1.2em', fontWeight: 'bold' }}>
+                        {priceInfo.price_usdt} USDT
+                      </span>
+                      {priceInfo.is_first_subscription && priceInfo.early_bird_price_usdt && (
+                        <div style={{ marginTop: '4px', fontSize: '0.85em', color: '#888' }}>
+                          {isEnglish
+                            ? `Early bird price: ${priceInfo.early_bird_price_usdt} USDT (first subscription only)`
+                            : `早鸟优惠价：${priceInfo.early_bird_price_usdt} USDT（仅首次订阅）`}
+                        </div>
+                      )}
+                    </>
                   )}
                 </>
               ) : (
-                <span>19.9 USDT</span>
-              )}
-              {priceInfo?.is_early_bird && (
-                <div style={{ marginTop: '4px', fontSize: '0.85em', color: '#4caf50' }}>
-                  {isEnglish
-                    ? `Regular price: ${priceInfo.regular_price_usdt} USDT/month (after first subscription)`
-                    : `标准价格：${priceInfo.regular_price_usdt} USDT/月（首次订阅后）`}
-                </div>
+                <>
+                  <span style={{ fontSize: '1.2em', fontWeight: 'bold', color: '#4caf50' }}>
+                    9.9 USDT
+                  </span>
+                  <span style={{ marginLeft: '8px', color: '#4caf50', fontSize: '0.9em' }}>
+                    {isEnglish ? '(Early Bird Price - First Subscription)' : '（早鸟优惠价 - 首次订阅）'}
+                  </span>
+                  <div style={{ marginTop: '4px', fontSize: '0.85em', color: '#888' }}>
+                    {isEnglish
+                      ? 'Regular price: 19.9 USDT/month (after first subscription)'
+                      : '标准价格：19.9 USDT/月（首次订阅后）'}
+                  </div>
+                </>
               )}
             </li>
             <li>
