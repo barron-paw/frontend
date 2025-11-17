@@ -44,14 +44,17 @@ async function request(path, options = {}) {
     const response = await fetch(url, config);
     if (!response.ok) {
       let message = response.statusText || 'Request failed';
+      let errorData = null;
       try {
-        const data = await response.json();
-        message = data?.detail || data?.message || JSON.stringify(data);
+        errorData = await response.json();
+        message = errorData?.detail || errorData?.message || JSON.stringify(errorData);
       } catch (err) {
         const text = await response.text().catch(() => message);
         message = text || message;
       }
-      throw new Error(message || `Request failed with status ${response.status}`);
+      const error = new Error(message || `Request failed with status ${response.status}`);
+      error.response = { status: response.status, data: errorData };
+      throw error;
     }
     if (response.status === 204) {
       return null;

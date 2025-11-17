@@ -33,9 +33,21 @@ export default function SimulatedFollowPanel() {
 
     try {
       const result = await apiClient.get(`/simulated-follow?address=${encodeURIComponent(walletAddress.trim())}&days=${validDayCount}`);
+      // 验证返回的数据格式
+      if (!result || typeof result !== 'object') {
+        throw new Error(isEnglish ? 'Invalid response from server' : '服务器返回数据格式错误');
+      }
+      // 确保 dailyProfits 存在且是数组
+      if (!result.dailyProfits || !Array.isArray(result.dailyProfits)) {
+        console.error('Invalid dailyProfits data:', result);
+        throw new Error(isEnglish ? 'Invalid daily profits data' : '每日利润数据格式错误');
+      }
       setData(result);
     } catch (err) {
-      setError(err.message || (isEnglish ? 'Failed to simulate follow' : '模拟跟单失败'));
+      console.error('Simulate follow error:', err);
+      const errorMessage = err.response?.data?.detail || err.message || (isEnglish ? 'Failed to simulate follow' : '模拟跟单失败');
+      setError(errorMessage);
+      setData(null);
     } finally {
       setLoading(false);
     }
@@ -134,7 +146,7 @@ export default function SimulatedFollowPanel() {
         </div>
       )}
 
-      {data && (
+      {data && data.dailyProfits && Array.isArray(data.dailyProfits) && (
         <div className="simulated-follow__results">
           <div className="simulated-follow__summary">
             <div className="simulated-follow__summary-item">
@@ -143,9 +155,9 @@ export default function SimulatedFollowPanel() {
               </span>
               <span
                 className="simulated-follow__summary-value"
-                style={{ color: data.totalPnl >= 0 ? '#4caf50' : '#f44336' }}
+                style={{ color: (data.totalPnl || 0) >= 0 ? '#4caf50' : '#f44336' }}
               >
-                ${data.totalPnl >= 0 ? '+' : ''}{data.totalPnl.toFixed(2)}
+                ${(data.totalPnl || 0) >= 0 ? '+' : ''}{(data.totalPnl || 0).toFixed(2)}
               </span>
             </div>
             <div className="simulated-follow__summary-item">
@@ -154,9 +166,9 @@ export default function SimulatedFollowPanel() {
               </span>
               <span
                 className="simulated-follow__summary-value"
-                style={{ color: data.totalPnlPercent >= 0 ? '#4caf50' : '#f44336' }}
+                style={{ color: (data.totalPnlPercent || 0) >= 0 ? '#4caf50' : '#f44336' }}
               >
-                {data.totalPnlPercent >= 0 ? '+' : ''}{data.totalPnlPercent.toFixed(2)}%
+                {(data.totalPnlPercent || 0) >= 0 ? '+' : ''}{(data.totalPnlPercent || 0).toFixed(2)}%
               </span>
             </div>
             <div className="simulated-follow__summary-item">
@@ -164,7 +176,7 @@ export default function SimulatedFollowPanel() {
                 {isEnglish ? 'Win Rate' : '胜率'}
               </span>
               <span className="simulated-follow__summary-value">
-                {data.winRate.toFixed(2)}%
+                {(data.winRate || 0).toFixed(2)}%
               </span>
             </div>
             <div className="simulated-follow__summary-item">
@@ -172,7 +184,7 @@ export default function SimulatedFollowPanel() {
                 {isEnglish ? 'Winning Trades' : '盈利交易'}
               </span>
               <span className="simulated-follow__summary-value" style={{ color: '#4caf50' }}>
-                {data.winningTrades}
+                {data.winningTrades || 0}
               </span>
             </div>
             <div className="simulated-follow__summary-item">
@@ -180,7 +192,7 @@ export default function SimulatedFollowPanel() {
                 {isEnglish ? 'Losing Trades' : '亏损交易'}
               </span>
               <span className="simulated-follow__summary-value" style={{ color: '#f44336' }}>
-                {data.losingTrades}
+                {data.losingTrades || 0}
               </span>
             </div>
           </div>
@@ -230,7 +242,7 @@ export default function SimulatedFollowPanel() {
                 {tableExpanded ? '▼' : '▶'}
               </button>
             </div>
-            {tableExpanded && (
+            {tableExpanded && data.dailyProfits.length > 0 && (
               <div className="simulated-follow__trades-table">
                 <table>
                 <thead>
@@ -246,24 +258,29 @@ export default function SimulatedFollowPanel() {
                 <tbody>
                   {data.dailyProfits.map((day, index) => (
                     <tr key={index}>
-                      <td>{formatDate(day.date)}</td>
+                      <td>{formatDate(day.date || '')}</td>
                       <td>
-                        <span style={{ color: day.pnl >= 0 ? '#4caf50' : '#f44336' }}>
-                          {day.pnl >= 0 ? '+' : ''}${day.pnl.toFixed(2)}
+                        <span style={{ color: (day.pnl || 0) >= 0 ? '#4caf50' : '#f44336' }}>
+                          {(day.pnl || 0) >= 0 ? '+' : ''}${(day.pnl || 0).toFixed(2)}
                         </span>
                       </td>
                       <td>
-                        <span style={{ color: day.pnlPercent >= 0 ? '#4caf50' : '#f44336' }}>
-                          {day.pnlPercent >= 0 ? '+' : ''}{day.pnlPercent.toFixed(2)}%
+                        <span style={{ color: (day.pnlPercent || 0) >= 0 ? '#4caf50' : '#f44336' }}>
+                          {(day.pnlPercent || 0) >= 0 ? '+' : ''}{(day.pnlPercent || 0).toFixed(2)}%
                         </span>
                       </td>
-                      <td>{day.tradesCount}</td>
-                      <td style={{ color: '#4caf50' }}>{day.winningTrades}</td>
-                      <td style={{ color: '#f44336' }}>{day.losingTrades}</td>
+                      <td>{day.tradesCount || 0}</td>
+                      <td style={{ color: '#4caf50' }}>{day.winningTrades || 0}</td>
+                      <td style={{ color: '#f44336' }}>{day.losingTrades || 0}</td>
                     </tr>
                   ))}
                 </tbody>
               </table>
+              </div>
+            )}
+            {tableExpanded && data.dailyProfits.length === 0 && (
+              <div style={{ padding: 'var(--space-md)', textAlign: 'center', color: 'var(--text-secondary)' }}>
+                {isEnglish ? 'No daily profits data available' : '暂无每日利润数据'}
               </div>
             )}
           </div>
