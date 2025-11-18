@@ -222,11 +222,23 @@ export default function BinanceFollowPanel() {
         payload.apiSecret = null;
       }
       
-      console.log('[BinanceFollowPanel] 发送的 payload:', {
-        ...payload,
-        apiKey: payload.apiKey ? `${payload.apiKey.substring(0, 10)}...` : null,
-        apiSecret: payload.apiSecret ? `${payload.apiSecret.substring(0, 10)}...` : null,
-      });
+      // 记录 payload，确保 apiKey 和 apiSecret 字段可见
+      const payloadForLog = {
+        enabled: payload.enabled,
+        walletAddress: payload.walletAddress,
+        mode: payload.mode,
+        amount: payload.amount,
+        stopLossAmount: payload.stopLossAmount,
+        maxPosition: payload.maxPosition,
+        minOrderSize: payload.minOrderSize,
+        resetCredentials: payload.resetCredentials,
+        apiKey: payload.apiKey ? `${payload.apiKey.substring(0, 10)}... (length: ${payload.apiKey.length})` : 'null',
+        apiSecret: payload.apiSecret ? `${payload.apiSecret.substring(0, 10)}... (length: ${payload.apiSecret.length})` : 'null',
+      };
+      console.log('[BinanceFollowPanel] 发送的 payload:', payloadForLog);
+      console.log('[BinanceFollowPanel] payload 原始对象:', payload);
+      console.log('[BinanceFollowPanel] payload.apiKey 存在?', 'apiKey' in payload, '值:', payload.apiKey ? '有值' : 'null/undefined');
+      console.log('[BinanceFollowPanel] payload.apiSecret 存在?', 'apiSecret' in payload, '值:', payload.apiSecret ? '有值' : 'null/undefined');
       
       const record = await saveBinanceFollowConfig(payload);
       
