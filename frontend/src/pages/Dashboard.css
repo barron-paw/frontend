@@ -367,9 +367,24 @@
     gap: var(--space-sm);
   }
   
-  .monitor-config__actions button {
+  /* 移动端：保存按钮和帮助按钮在同一行 */
+  .monitor-config__actions > div {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 8px !important;
     width: 100%;
+  }
+  
+  .monitor-config__actions button[type="submit"] {
+    flex: 1;
+    min-width: 0;
     justify-content: center;
+  }
+  
+  .monitor-config__actions button[type="button"] {
+    flex-shrink: 0;
+    width: auto;
   }
   
   .monitor-config__field-note {
