@@ -120,6 +120,20 @@ export default function BinanceFollowPanel() {
 
   const handleChange = (field) => (event) => {
     const value = event.target.type === 'checkbox' ? event.target.checked : event.target.value;
+    
+    // 如果输入框显示占位符文本，用户输入时应该清除占位符
+    if ((field === 'apiKey' || field === 'apiSecret') && value) {
+      const placeholderKey = isEnglish ? '******** (saved)' : '********（已保存）';
+      if (value === placeholderKey) {
+        // 用户开始输入，清除占位符
+        setForm((prev) => ({
+          ...prev,
+          [field]: '',
+        }));
+        return;
+      }
+    }
+    
     setForm((prev) => ({
       ...prev,
       [field]: value,
@@ -134,15 +148,49 @@ export default function BinanceFollowPanel() {
     setStatusMessage('');
     setLoading(true);
     try {
-      // 检查用户是否输入了新的 API Key/Secret
-      const hasNewApiKey = form.apiKey && form.apiKey.trim() && form.apiKey.trim() !== '********（已保存）' && form.apiKey.trim() !== '******** (saved)';
-      const hasNewApiSecret = form.apiSecret && form.apiSecret.trim() && form.apiSecret.trim() !== '********（已保存）' && form.apiSecret.trim() !== '******** (saved)';
+      // 获取实际的输入值（如果输入框被禁用显示占位符，form.apiKey 可能是空字符串）
+      // 需要检查输入框的实际值，而不是 form 状态
+      let actualApiKey = form.apiKey;
+      let actualApiSecret = form.apiSecret;
+      
+      // 如果输入框显示占位符（已保存状态），但用户没有点击重置，则 actualApiKey 可能是空字符串
+      // 此时应该发送 null（保留现有值）
+      // 如果用户输入了新的值，actualApiKey 应该是实际的 API Key
+      
+      // 检查是否是占位符文本
+      const isPlaceholderKey = actualApiKey === '********（已保存）' || actualApiKey === '******** (saved)';
+      const isPlaceholderSecret = actualApiSecret === '********（已保存）' || actualApiSecret === '******** (saved)';
+      
+      // 如果显示占位符且未重置，说明要保留现有值
+      if (isPlaceholderKey && !resetCredentials) {
+        actualApiKey = null;
+      } else if (actualApiKey && actualApiKey.trim()) {
+        actualApiKey = actualApiKey.trim();
+      } else {
+        actualApiKey = null;
+      }
+      
+      if (isPlaceholderSecret && !resetCredentials) {
+        actualApiSecret = null;
+      } else if (actualApiSecret && actualApiSecret.trim()) {
+        actualApiSecret = actualApiSecret.trim();
+      } else {
+        actualApiSecret = null;
+      }
+      
+      // 检查用户是否输入了新的 API Key/Secret（不是占位符，不是空字符串）
+      const hasNewApiKey = actualApiKey !== null && actualApiKey.length > 0;
+      const hasNewApiSecret = actualApiSecret !== null && actualApiSecret.length > 0;
       
       console.log('[BinanceFollowPanel] 保存配置:', {
+        formApiKey: form.apiKey ? `${form.apiKey.substring(0, 10)}...` : 'empty',
+        formApiSecret: form.apiSecret ? `${form.apiSecret.substring(0, 10)}...` : 'empty',
+        actualApiKey: actualApiKey ? `${actualApiKey.substring(0, 10)}...` : 'null',
+        actualApiSecret: actualApiSecret ? `${actualApiSecret.substring(0, 10)}...` : 'null',
         hasNewApiKey,
         hasNewApiSecret,
-        apiKeyLength: form.apiKey ? form.apiKey.length : 0,
-        apiSecretLength: form.apiSecret ? form.apiSecret.length : 0,
+        isPlaceholderKey,
+        isPlaceholderSecret,
         resetCredentials,
         hasApiKey,
         hasApiSecret,
@@ -157,8 +205,9 @@ export default function BinanceFollowPanel() {
         maxPosition: Number(form.maxPosition) || 0,
         minOrderSize: Number(form.minOrderSize) || 0,
         // 如果用户输入了新的 API Key/Secret，发送新值；否则发送 null（保留现有值）
-        apiKey: hasNewApiKey ? form.apiKey.trim() : null,
-        apiSecret: hasNewApiSecret ? form.apiSecret.trim() : null,
+        // 注意：即使 actualApiKey 是 null，也要显式包含在 payload 中，让后端知道要保留现有值
+        apiKey: actualApiKey !== undefined ? actualApiKey : null,
+        apiSecret: actualApiSecret !== undefined ? actualApiSecret : null,
         resetCredentials,
       };
       
