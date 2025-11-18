@@ -196,6 +196,7 @@ export default function BinanceFollowPanel() {
         hasApiSecret,
       });
       
+      // 构建 payload，确保 apiKey 和 apiSecret 字段始终存在（即使是 null）
       const payload = {
         enabled: Boolean(form.enabled),
         walletAddress: form.walletAddress.trim() || null,
@@ -204,12 +205,22 @@ export default function BinanceFollowPanel() {
         stopLossAmount: Number(form.stopLossAmount) || 0,
         maxPosition: Number(form.maxPosition) || 0,
         minOrderSize: Number(form.minOrderSize) || 0,
-        // 如果用户输入了新的 API Key/Secret，发送新值；否则发送 null（保留现有值）
-        // 注意：即使 actualApiKey 是 null，也要显式包含在 payload 中，让后端知道要保留现有值
-        apiKey: actualApiKey !== undefined ? actualApiKey : null,
-        apiSecret: actualApiSecret !== undefined ? actualApiSecret : null,
         resetCredentials,
       };
+      
+      // 显式添加 apiKey 和 apiSecret，确保它们始终在 payload 中
+      // 如果 actualApiKey 是 null，也要包含，让后端知道要保留现有值
+      if (actualApiKey !== undefined) {
+        payload.apiKey = actualApiKey;
+      } else {
+        payload.apiKey = null;
+      }
+      
+      if (actualApiSecret !== undefined) {
+        payload.apiSecret = actualApiSecret;
+      } else {
+        payload.apiSecret = null;
+      }
       
       console.log('[BinanceFollowPanel] 发送的 payload:', {
         ...payload,
