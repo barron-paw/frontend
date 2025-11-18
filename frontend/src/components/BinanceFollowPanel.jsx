@@ -134,6 +134,20 @@ export default function BinanceFollowPanel() {
     setStatusMessage('');
     setLoading(true);
     try {
+      // 检查用户是否输入了新的 API Key/Secret
+      const hasNewApiKey = form.apiKey && form.apiKey.trim() && form.apiKey.trim() !== '********（已保存）' && form.apiKey.trim() !== '******** (saved)';
+      const hasNewApiSecret = form.apiSecret && form.apiSecret.trim() && form.apiSecret.trim() !== '********（已保存）' && form.apiSecret.trim() !== '******** (saved)';
+      
+      console.log('[BinanceFollowPanel] 保存配置:', {
+        hasNewApiKey,
+        hasNewApiSecret,
+        apiKeyLength: form.apiKey ? form.apiKey.length : 0,
+        apiSecretLength: form.apiSecret ? form.apiSecret.length : 0,
+        resetCredentials,
+        hasApiKey,
+        hasApiSecret,
+      });
+      
       const payload = {
         enabled: Boolean(form.enabled),
         walletAddress: form.walletAddress.trim() || null,
@@ -142,11 +156,26 @@ export default function BinanceFollowPanel() {
         stopLossAmount: Number(form.stopLossAmount) || 0,
         maxPosition: Number(form.maxPosition) || 0,
         minOrderSize: Number(form.minOrderSize) || 0,
-        apiKey: form.apiKey.trim() || null,
-        apiSecret: form.apiSecret.trim() || null,
+        // 如果用户输入了新的 API Key/Secret，发送新值；否则发送 null（保留现有值）
+        apiKey: hasNewApiKey ? form.apiKey.trim() : null,
+        apiSecret: hasNewApiSecret ? form.apiSecret.trim() : null,
         resetCredentials,
       };
+      
+      console.log('[BinanceFollowPanel] 发送的 payload:', {
+        ...payload,
+        apiKey: payload.apiKey ? `${payload.apiKey.substring(0, 10)}...` : null,
+        apiSecret: payload.apiSecret ? `${payload.apiSecret.substring(0, 10)}...` : null,
+      });
+      
       const record = await saveBinanceFollowConfig(payload);
+      
+      console.log('[BinanceFollowPanel] 保存后的记录:', {
+        hasApiKey: record.hasApiKey,
+        hasApiSecret: record.hasApiSecret,
+        enabled: record.enabled,
+        status: record.status,
+      });
       setHasApiKey(Boolean(record.hasApiKey));
       setHasApiSecret(Boolean(record.hasApiSecret));
       // 如果用户启用了但状态是 disabled，显示为 enabled_but_disabled
@@ -191,8 +220,8 @@ export default function BinanceFollowPanel() {
     setHasApiSecret(false);
     setStatusMessage(
       isEnglish
-        ? 'Credentials will be cleared after saving.'
-        : '保存后将清除已保存的 API 凭证。',
+        ? 'Credentials will be cleared after saving. You can now enter new API Key and Secret.'
+        : '保存后将清除已保存的 API 凭证。现在可以输入新的 API Key 和 Secret。',
     );
   };
 
