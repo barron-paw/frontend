@@ -882,7 +882,7 @@ Finally: Enable the "启用企业微信推送" (Enable Enterprise WeChat notific
                 <span>{isEnglish ? 'Addresses to Monitor' : '监控地址'}</span>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                   {form.walletAddresses.length === 0 ? (
-                    <div style={{ padding: '12px', backgroundColor: '#2a2a2a', borderRadius: '4px', color: '#999', fontSize: '0.9rem', border: '1px solid #555' }}>
+                    <div style={{ padding: '12px', backgroundColor: '#1a1a1a', borderRadius: '4px', color: '#999', fontSize: '0.9rem', border: '1px solid #555' }}>
                       {isEnglish ? 'No wallet addresses added. Click "Add Address" to start monitoring.' : '尚未添加钱包地址。点击「添加地址」开始监控。'}
                     </div>
                   ) : (
@@ -903,7 +903,7 @@ Finally: Enable the "启用企业微信推送" (Enable Enterprise WeChat notific
                             padding: '8px', 
                             borderRadius: '4px', 
                             border: '1px solid #555',
-                            backgroundColor: '#2a2a2a',
+                            backgroundColor: '#1a1a1a',
                             color: '#fff',
                             outline: 'none'
                           }}
