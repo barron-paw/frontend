@@ -11,7 +11,7 @@ export default function MonitorConfigPanel() {
   const isEnglish = language === 'en';
   const [form, setForm] = useState({
     telegramChatId: '',
-    walletAddresses: '',
+    walletAddresses: [], // 改为数组
     language: 'zh',
     telegramEnabled: true,
     wecomEnabled: false,
@@ -57,7 +57,7 @@ export default function MonitorConfigPanel() {
         
         setForm({
           telegramChatId: monitorData.telegramChatId || '',
-          walletAddresses: (monitorData.walletAddresses || []).join('\n'),
+          walletAddresses: (monitorData.walletAddresses || []).slice(0, 2), // 改为数组，最多2个
           language: monitorData.language || 'zh',
           telegramEnabled: Boolean(monitorData.telegramChatId),
           wecomEnabled: Boolean(wecomData.enabled),
@@ -138,26 +138,26 @@ export default function MonitorConfigPanel() {
         form.telegramEnabled && form.telegramChatId.trim()
           ? form.telegramChatId.trim()
           : null;
+      // 处理钱包地址数组：去除空值，最多2个
       const walletAddressesList = form.walletAddresses
-        .split(/[\s,;]+/)
         .map((addr) => addr.trim())
         .filter(Boolean)
         .slice(0, 2);
-      // 如果钱包地址为空，前端提示用户
-      if (walletAddressesList.length === 0) {
-        setStatus(isEnglish 
-          ? 'Please enter at least one wallet address to enable monitoring.'
-          : '请至少输入一个钱包地址以启用监控。');
-        setIsSaving(false);
-        setLoading(false);
-        return;
-      }
+      
+      // 允许空列表保存（用于停止监控）
       const monitorPayload = {
         telegramChatId: telegramChatIdValue,
         walletAddresses: walletAddressesList,
         language: form.language,
       };
       const monitorResponse = await updateMonitorConfig(monitorPayload);
+      
+      // 如果钱包地址为空，提示监控已停止
+      if (walletAddressesList.length === 0) {
+        setStatus(isEnglish 
+          ? 'Configuration saved. Monitoring has been stopped (no wallet addresses).'
+          : '配置已保存。监控已停止（钱包地址列表为空）。');
+      }
       
       // Save WeCom config
       // 处理手机号：去除 @ 符号，只保留数字
@@ -201,7 +201,10 @@ export default function MonitorConfigPanel() {
         originalUsesDefaultBot: monitorResponse.usesDefaultBot,
         originalDefaultBotUsername: monitorResponse.defaultBotUsername,
       });
-      setStatus(isEnglish ? 'Configuration saved.' : '配置已保存。');
+      // 如果钱包地址不为空，显示保存成功消息（空列表的情况已在上面处理）
+      if (walletAddressesList.length > 0) {
+        setStatus(isEnglish ? 'Configuration saved.' : '配置已保存。');
+      }
       // 请求成功后才设置 lastSaveTime，用于防抖
       setLastSaveTime(Date.now());
     } catch (err) {
@@ -824,17 +827,75 @@ Finally: Enable the "启用企业微信推送" (Enable Enterprise WeChat notific
               <span className="monitor-config__legend">{isEnglish ? 'Wallet Addresses' : '钱包列表'}</span>
               <label className="monitor-config__field">
                 <span>{isEnglish ? 'Addresses to Monitor' : '监控地址'}</span>
-              <textarea
-                  rows={5}
-                value={form.walletAddresses}
-                onChange={(event) => setForm((prev) => ({ ...prev, walletAddresses: event.target.value }))}
-                  placeholder={isEnglish ? '0x1234...\n0xabcd...' : '0x1234...\n0xabcd...'}
-                disabled={!canEdit || loading}
-              />
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  {form.walletAddresses.length === 0 ? (
+                    <div style={{ padding: '12px', background: '#f8f9fa', borderRadius: '4px', color: '#666', fontSize: '0.9rem' }}>
+                      {isEnglish ? 'No wallet addresses added. Click "Add Address" to start monitoring.' : '尚未添加钱包地址。点击「添加地址」开始监控。'}
+                    </div>
+                  ) : (
+                    form.walletAddresses.map((address, index) => (
+                      <div key={index} style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                        <input
+                          type="text"
+                          value={address}
+                          onChange={(event) => {
+                            const newAddresses = [...form.walletAddresses];
+                            newAddresses[index] = event.target.value;
+                            setForm((prev) => ({ ...prev, walletAddresses: newAddresses }));
+                          }}
+                          placeholder={isEnglish ? '0x1234...' : '0x1234...'}
+                          disabled={!canEdit || loading}
+                          style={{ flex: 1, padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const newAddresses = form.walletAddresses.filter((_, i) => i !== index);
+                            setForm((prev) => ({ ...prev, walletAddresses: newAddresses }));
+                          }}
+                          disabled={!canEdit || loading}
+                          style={{
+                            padding: '8px 12px',
+                            background: '#dc3545',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '4px',
+                            cursor: !canEdit || loading ? 'not-allowed' : 'pointer',
+                            opacity: !canEdit || loading ? 0.6 : 1,
+                          }}
+                          title={isEnglish ? 'Delete' : '删除'}
+                        >
+                          {isEnglish ? 'Delete' : '删除'}
+                        </button>
+                      </div>
+                    ))
+                  )}
+                  {form.walletAddresses.length < 2 && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setForm((prev) => ({ ...prev, walletAddresses: [...prev.walletAddresses, ''] }));
+                      }}
+                      disabled={!canEdit || loading}
+                      style={{
+                        padding: '8px 12px',
+                        background: '#28a745',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '4px',
+                        cursor: !canEdit || loading ? 'not-allowed' : 'pointer',
+                        opacity: !canEdit || loading ? 0.6 : 1,
+                        alignSelf: 'flex-start',
+                      }}
+                    >
+                      {isEnglish ? '+ Add Address' : '+ 添加地址'}
+                    </button>
+                  )}
+                </div>
                 <small>
                   {isEnglish
-                    ? 'One address per line (or separated by commas). Up to 2 wallets are monitored.'
-                    : '每行一个地址，最多监控 2 个地址。'}
+                    ? 'You can add up to 2 wallet addresses. Each address can be edited or deleted.'
+                    : '最多可添加 2 个钱包地址。每个地址可以编辑或删除。'}
                 </small>
               </label>
             </div>

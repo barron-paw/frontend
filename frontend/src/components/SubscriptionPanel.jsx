@@ -160,7 +160,7 @@ export default function SubscriptionPanel() {
               )}
             </li>
             <li>
-              {isEnglish ? 'Recipient address (BSC):' : '收款地址（BSC）：'}
+              {isEnglish ? 'Recipient address (BNB Smart Chain(BEP 20)):' : '收款地址（BNB Smart Chain(BEP 20)）：'}
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '4px' }}>
                 <code>{PAYMENT_ADDRESS}</code>
                 <button
