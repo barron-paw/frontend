@@ -27,6 +27,7 @@ export default function MonitorConfigPanel() {
   const [showVerificationCode, setShowVerificationCode] = useState(false);
   const [lastSaveTime, setLastSaveTime] = useState(0);
   const [isSaving, setIsSaving] = useState(false);
+  const [previousWalletAddresses, setPreviousWalletAddresses] = useState([]); // 保存上一次的钱包地址，用于检测替换逻辑
 
   const canEdit = user?.can_access_monitor;
 
@@ -55,15 +56,18 @@ export default function MonitorConfigPanel() {
           rawDefaultBotUsername: monitorData.defaultBotUsername,
         });
         
+        const loadedAddresses = (monitorData.walletAddresses || []).slice(0, 2);
         setForm({
           telegramChatId: monitorData.telegramChatId || '',
-          walletAddresses: (monitorData.walletAddresses || []).slice(0, 2), // 改为数组，最多2个
+          walletAddresses: loadedAddresses, // 改为数组，最多2个
           language: monitorData.language || 'zh',
           telegramEnabled: Boolean(monitorData.telegramChatId),
           wecomEnabled: Boolean(wecomData.enabled),
           wecomWebhookUrl: wecomData.webhookUrl || '',
           wecomMentions: (wecomData.mentions || []).join('\n'),
         });
+        // 保存加载的地址，用于检测替换逻辑
+        setPreviousWalletAddresses(loadedAddresses);
         setLanguage(monitorData.language || 'zh');
         // 确保布尔值转换正确，处理各种可能的类型
         const usesDefault = Boolean(monitorData.usesDefaultBot === true || monitorData.usesDefaultBot === 'true' || monitorData.usesDefaultBot === 1);
@@ -144,6 +148,28 @@ export default function MonitorConfigPanel() {
         .filter(Boolean)
         .slice(0, 2);
       
+      // 检测替换逻辑：如果之前有2个地址，现在只填写1个，会替换第一个地址
+      const previousCount = previousWalletAddresses.length;
+      const currentCount = walletAddressesList.length;
+      const previousAddressesSet = new Set(previousWalletAddresses.map(addr => addr.trim().toLowerCase()));
+      const currentAddressesSet = new Set(walletAddressesList.map(addr => addr.trim().toLowerCase()));
+      const isReplacement = previousCount === 2 && currentCount === 1 && 
+                            !currentAddressesSet.has(previousWalletAddresses[0]?.trim().toLowerCase());
+      
+      // 如果检测到替换逻辑，提示用户
+      if (isReplacement) {
+        const shouldProceed = window.confirm(
+          isEnglish 
+            ? 'Warning: You currently have 2 monitored wallets. If you only fill in 1 new wallet address, it will replace the first wallet (the second wallet will be kept).\n\nIf you want to monitor only 1 wallet, please:\n1. Clear all addresses and save\n2. Then fill in the single wallet address and save\n\nDo you want to continue?'
+            : '警告：您当前有 2 个监控钱包。如果只填写 1 个新钱包地址，将会替换第一个钱包（第二个钱包会被保留）。\n\n如果您只想监控 1 个钱包，请：\n1. 先清空所有地址并保存\n2. 然后填写单个钱包地址并保存\n\n是否继续？'
+        );
+        if (!shouldProceed) {
+          setIsSaving(false);
+          setLoading(false);
+          return;
+        }
+      }
+      
       // 允许空列表保存（用于停止监控）
       const monitorPayload = {
         telegramChatId: telegramChatIdValue,
@@ -152,11 +178,19 @@ export default function MonitorConfigPanel() {
       };
       const monitorResponse = await updateMonitorConfig(monitorPayload);
       
+      // 更新上一次的钱包地址
+      setPreviousWalletAddresses(walletAddressesList);
+      
       // 如果钱包地址为空，提示监控已停止
       if (walletAddressesList.length === 0) {
         setStatus(isEnglish 
           ? 'Configuration saved. Monitoring has been stopped (no wallet addresses).'
           : '配置已保存。监控已停止（钱包地址列表为空）。');
+      } else if (isReplacement) {
+        // 如果是替换逻辑，提示用户
+        setStatus(isEnglish 
+          ? 'Configuration saved. Note: The first wallet has been replaced. If you want to monitor only 1 wallet, please clear all addresses first, then add the single wallet address.'
+          : '配置已保存。注意：第一个钱包已被替换。如果您只想监控 1 个钱包，请先清空所有地址，然后添加单个钱包地址。');
       }
       
       // Save WeCom config
@@ -894,8 +928,8 @@ Finally: Enable the "启用企业微信推送" (Enable Enterprise WeChat notific
                 </div>
                 <small>
                   {isEnglish
-                    ? 'You can add up to 2 wallet addresses. Each address can be edited or deleted.'
-                    : '最多可添加 2 个钱包地址。每个地址可以编辑或删除。'}
+                    ? 'You can add up to 2 wallet addresses. Each address can be edited or deleted. Note: The monitoring system uses a replacement logic - if you have 2 addresses and only fill in 1 new address, it will replace the first address. To monitor only 1 wallet, first clear all addresses and save, then add the single wallet address.'
+                    : '最多可添加 2 个钱包地址。每个地址可以编辑或删除。注意：监控系统使用替换逻辑 - 如果您有 2 个地址但只填写 1 个新地址，将会替换第一个地址。如果只想监控 1 个钱包，请先清空所有地址并保存，然后添加单个钱包地址。'}
                 </small>
               </label>
             </div>
@@ -935,6 +969,7 @@ Finally: Enable the "启用企业微信推送" (Enable Enterprise WeChat notific
                       ? `Configuration Save Help:
 
 • Snapshots: Only when wallet addresses CHANGE will the system push a snapshot; the first snapshot for a wallet means monitoring for that wallet has started.
+• Wallet replacement logic: The system uses a replacement mechanism. If you have 2 monitored wallets (A, B) and only fill in 1 new wallet (C), it will replace the first wallet, resulting in (B, C). To monitor only 1 wallet, first clear all addresses and save, then add the single wallet address.
 • 4-hour snapshots: After monitoring starts, a consolidated position snapshot is automatically pushed every 4 hours for all monitored wallets.
 • Trade events: While monitoring is active, every open, close, and partial close will generate a real-time notification.
 • Push behavior:
@@ -947,6 +982,7 @@ Note: The save button can only be clicked once every 5 seconds.`
                       : `保存配置帮助说明：
 
 • 快照：只有当钱包地址发生变化时，系统才会为新的钱包地址推送持仓快照；第一次收到某个钱包的快照，就表示该钱包的监控已经开始。
+• 钱包替换逻辑：系统使用替换机制。如果您有 2 个监控钱包（A, B）但只填写 1 个新钱包（C），将会替换第一个钱包，结果为（B, C）。如果只想监控 1 个钱包，请先清空所有地址并保存，然后添加单个钱包地址。
 • 每 4 小时快照：监控开始后，系统会每 4 小时自动推送一次当前所有监控钱包的持仓快照。
 • 交易消息：在监控开启期间，钱包有开仓、平仓、部分平仓等动态交易时，都会实时发送通知。
 • 推送行为：
@@ -987,6 +1023,7 @@ Note: The save button can only be clicked once every 5 seconds.`
               <p className="monitor-config__details-title">{isEnglish ? 'Monitoring Behaviour' : '监控提醒说明'}</p>
               <ul className="monitor-config__details-list">
                 <li>{isEnglish ? 'Snapshots are sent only when wallet addresses change; the first snapshot for a wallet means monitoring for that wallet has started.' : '只有当钱包地址发生变化时才发送快照；第一次收到某个钱包的快照，就表示该钱包的监控已经开始。'}</li>
+                <li>{isEnglish ? 'Wallet replacement logic: The system uses a replacement mechanism. If you have 2 monitored wallets (A, B) and only fill in 1 new wallet (C), it will replace the first wallet, resulting in (B, C). To monitor only 1 wallet, first clear all addresses and save, then add the single wallet address.' : '钱包替换逻辑：系统使用替换机制。如果您有 2 个监控钱包（A, B）但只填写 1 个新钱包（C），将会替换第一个钱包，结果为（B, C）。如果只想监控 1 个钱包，请先清空所有地址并保存，然后添加单个钱包地址。'}</li>
                 <li>{isEnglish ? 'Push behavior: Enable Telegram only → Telegram only; Enable WeChat only → WeChat only; Enable both → both.' : '推送行为：只启用 Telegram → 只推送到 Telegram；只启用企业微信 → 只推送到企业微信；同时启用 → 同时推送。'}</li>
                 <li>{isEnglish ? 'While monitoring is active, every open, close, and partial close event triggers a real-time notification.' : '监控开启期间，每次开仓、平仓和部分平仓都会实时推送提醒。'}</li>
                 <li>{isEnglish ? 'A consolidated position snapshot is automatically delivered every 4 hours for all monitored wallets.' : '系统会每 4 小时自动为所有监控钱包发送一次持仓快照。'}</li>
