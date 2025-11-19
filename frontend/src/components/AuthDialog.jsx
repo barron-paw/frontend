@@ -214,7 +214,11 @@ export default function AuthDialog({ open, mode = 'login', onClose, onSwitch }) 
           ) : null}
 
           {successMessage ? <div className="auth-dialog__success">{successMessage}</div> : null}
-          {(localError || error) ? <div className="auth-dialog__error">{localError || error}</div> : null}
+          {(localError || error) ? (
+            <div className="auth-dialog__error" style={{ whiteSpace: 'pre-line' }}>
+              {localError || error}
+            </div>
+          ) : null}
 
           <button type="submit" className="auth-dialog__submit" disabled={submitting}>
             {submitting ? (isEnglish ? 'Submitting…' : '提交中…') : metadata.submitText}

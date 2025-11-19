@@ -1,11 +1,24 @@
 const normalizeBaseUrl = (value) => (value ? value.replace(/\/$/, '') : value);
 
+// 检测是否为微信浏览器
+function isWeChatBrowser() {
+  if (typeof window === 'undefined' || !navigator || !navigator.userAgent) {
+    return false;
+  }
+  return /MicroMessenger/i.test(navigator.userAgent);
+}
+
 // 自动检测 API 基础 URL
 function getApiBaseUrl() {
   // 如果环境变量中设置了 API URL，优先使用
   const envBaseUrl = normalizeBaseUrl(import.meta.env.VITE_API_BASE_URL);
   if (envBaseUrl) {
     return envBaseUrl;
+  }
+  
+  // 微信浏览器优先使用相对路径，避免跨域问题
+  if (isWeChatBrowser()) {
+    return '/api';
   }
   
   // 自动检测：如果当前域名是 hypebot.top 或 www.hypebot.top，使用 api.hypebot.top
@@ -69,9 +82,9 @@ async function _requestWithBaseUrl(baseUrl, path, options = {}) {
   const normalizedPath = path.startsWith('/') ? path : `/${path}`;
   // 构建完整 URL
   const url = `${baseUrl}${normalizedPath}`;
-  // 调试日志（仅在开发环境或移动端）
-  if (typeof window !== 'undefined' && (import.meta.env.DEV || /Mobile|Android|iPhone|iPad/i.test(navigator.userAgent))) {
-    console.log('[API Client] Request URL:', url, 'Base URL:', baseUrl, 'Path:', normalizedPath);
+  // 调试日志（仅在开发环境或移动端或微信浏览器）
+  if (typeof window !== 'undefined' && (import.meta.env.DEV || /Mobile|Android|iPhone|iPad|MicroMessenger/i.test(navigator.userAgent))) {
+    console.log('[API Client] Request URL:', url, 'Base URL:', baseUrl, 'Path:', normalizedPath, 'WeChat:', isWeChatBrowser());
   }
   const headers = {
     'Content-Type': 'application/json',
@@ -134,8 +147,11 @@ async function request(path, options = {}, useFallback = true) {
       // 移动端友好的错误信息
       const isMobile = typeof window !== 'undefined' && /Mobile|Android|iPhone|iPad/i.test(navigator.userAgent);
       const isAndroid = typeof window !== 'undefined' && /Android/i.test(navigator.userAgent);
+      const isWeChat = isWeChatBrowser();
       let errorMsg;
-      if (isAndroid) {
+      if (isWeChat) {
+        errorMsg = `无法连接到服务器。\n\n微信浏览器访问提示：\n1. 请确保网络连接正常\n2. 尝试点击右上角"..."菜单，选择"刷新"\n3. 如仍无法访问，请尝试在系统浏览器中打开\n4. 检查是否被微信安全策略拦截\n\n如果问题持续，请联系技术支持。`;
+      } else if (isAndroid) {
         errorMsg = `无法连接到服务器。\n\n可能的原因：\n1. 网络连接问题\n2. DNS解析失败（无法解析 api.hypebot.top）\n3. 防火墙阻止\n\n建议：\n- 检查网络连接\n- 尝试切换网络（WiFi/移动数据）\n- 清除浏览器缓存\n- 如仍无法访问，可能需要使用VPN或联系技术支持`;
       } else if (isMobile) {
         errorMsg = `无法连接到服务器。请检查网络连接或稍后重试。`;
