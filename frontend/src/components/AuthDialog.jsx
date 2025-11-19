@@ -141,11 +141,20 @@ export default function AuthDialog({ open, mode = 'login', onClose, onSwitch }) 
       console.error('[AuthDialog] Login/Register error:', err);
       // 提取错误信息，处理可能的网络错误
       let errorMessage = err.message || (isEnglish ? 'Action failed, please retry later.' : '操作失败，请稍后再试');
+      
+      // 检测是否为 iOS 设备
+      const isIOSDevice = typeof navigator !== 'undefined' && /iPhone|iPad|iPod/i.test(navigator.userAgent);
+      
       // 如果是网络错误，提供更友好的提示
-      if (errorMessage.includes('无法连接到服务器') || errorMessage.includes('Failed to fetch')) {
-        errorMessage = isEnglish 
-          ? 'Unable to connect to server. Please check your network connection and try again.'
-          : '无法连接到服务器，请检查网络连接后重试。';
+      if (errorMessage.includes('无法连接到服务器') || errorMessage.includes('Failed to fetch') || errorMessage.includes('Load failed')) {
+        if (isIOSDevice) {
+          // iOS 设备显示详细的错误信息（已经在 client.js 中设置）
+          errorMessage = errorMessage; // 保持 client.js 中设置的详细错误信息
+        } else {
+          errorMessage = isEnglish 
+            ? 'Unable to connect to server. Please check your network connection and try again.'
+            : '无法连接到服务器，请检查网络连接后重试。';
+        }
       }
       setLocalError(errorMessage);
     } finally {

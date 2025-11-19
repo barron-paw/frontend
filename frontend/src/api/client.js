@@ -24,15 +24,15 @@ function getApiBaseUrl() {
     return envBaseUrl;
   }
   
-  // 微信浏览器和 iOS 设备优先使用相对路径，避免跨域问题
-  if (isWeChatBrowser() || isIOS()) {
+  // 微信浏览器优先使用相对路径，避免跨域问题
+  if (isWeChatBrowser()) {
     return '/api';
   }
   
   // 自动检测：如果当前域名是 hypebot.top 或 www.hypebot.top，使用 api.hypebot.top
   if (typeof window !== 'undefined') {
     const hostname = window.location.hostname;
-    // 如果是主域名，使用 api 子域名
+    // 如果是主域名，使用 api 子域名（iOS 也使用完整 URL，因为相对路径可能有问题）
     if (hostname === 'hypebot.top' || hostname === 'www.hypebot.top') {
       return 'https://api.hypebot.top/api';
     }
@@ -56,6 +56,13 @@ function getFallbackApiBaseUrl() {
     const hostname = window.location.hostname;
     // 如果是主域名，备用URL使用相对路径（通过主域名代理）
     if (hostname === 'hypebot.top' || hostname === 'www.hypebot.top') {
+      // iOS 设备：如果主URL是完整URL，备用URL使用相对路径
+      // 如果主URL是相对路径，备用URL使用完整URL
+      if (isIOS() && API_BASE_URL.startsWith('http')) {
+        return '/api';
+      } else if (isIOS() && API_BASE_URL === '/api') {
+        return 'https://api.hypebot.top/api';
+      }
       return '/api';
     }
   }
@@ -101,13 +108,21 @@ async function _requestWithBaseUrl(baseUrl, path, options = {}) {
   if (authToken) {
     headers.Authorization = `Bearer ${authToken}`;
   }
+  
+  // 判断是否跨域
+  const isCrossOrigin = baseUrl.startsWith('http') && typeof window !== 'undefined' && 
+                        !baseUrl.includes(window.location.hostname);
+  
   const config = {
     ...options,
     headers,
     // iOS Safari 需要明确的 credentials 设置
-    credentials: 'same-origin',
+    // 如果使用完整URL（跨域），使用 'include'；如果使用相对路径（同源），使用 'same-origin'
+    credentials: isCrossOrigin ? 'include' : 'same-origin',
     // 确保 mode 设置正确
     mode: 'cors',
+    // iOS Safari 可能需要明确的 cache 设置
+    cache: 'no-cache',
   };
   if (config.body && typeof config.body !== 'string') {
     config.body = JSON.stringify(config.body);
@@ -160,11 +175,28 @@ async function request(path, options = {}, useFallback = true) {
   try {
     return await _requestWithBaseUrl(API_BASE_URL, path, options);
   } catch (err) {
+    // 记录详细错误信息（iOS 设备）
+    if (isIOS()) {
+      console.error('[API Client] iOS request failed:', {
+        url: `${API_BASE_URL}${path.startsWith('/') ? path : `/${path}`}`,
+        error: err.message,
+        errorType: err.constructor.name,
+        baseUrl: API_BASE_URL,
+        path: path,
+      });
+    }
+    
     // 如果是网络错误（如 Failed to fetch），尝试使用备用URL
-    if (err instanceof TypeError && err.message === 'Failed to fetch' && useFallback) {
+    const isNetworkError = err instanceof TypeError && (
+      err.message === 'Failed to fetch' || 
+      err.message.includes('NetworkError') ||
+      err.message.includes('Load failed')
+    );
+    
+    if (isNetworkError && useFallback) {
       const fallbackBaseUrl = getFallbackApiBaseUrl();
       if (fallbackBaseUrl && fallbackBaseUrl !== API_BASE_URL) {
-        console.log('[API Client] Primary URL failed, trying fallback:', fallbackBaseUrl);
+        console.log('[API Client] Primary URL failed, trying fallback:', fallbackBaseUrl, 'Original:', API_BASE_URL);
         try {
           // 使用备用URL重试（不再次尝试fallback，避免无限循环）
           return await _requestWithBaseUrl(fallbackBaseUrl, path, options);
