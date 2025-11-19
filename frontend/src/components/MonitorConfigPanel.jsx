@@ -178,8 +178,11 @@ export default function MonitorConfigPanel() {
       };
       const monitorResponse = await updateMonitorConfig(monitorPayload);
       
-      // 更新上一次的钱包地址
-      setPreviousWalletAddresses(walletAddressesList);
+      // 使用后端返回的实际监控地址（因为后端可能会处理地址格式、去重等）
+      const savedAddresses = (monitorResponse.walletAddresses || []).slice(0, 2);
+      
+      // 更新上一次的钱包地址（使用后端返回的实际监控地址）
+      setPreviousWalletAddresses(savedAddresses);
       
       // 如果钱包地址为空，提示监控已停止
       if (walletAddressesList.length === 0) {
@@ -208,13 +211,12 @@ export default function MonitorConfigPanel() {
       const wecomResponse = await saveWecomConfig(wecomPayload);
       console.log('WeCom config saved:', wecomResponse); // 调试日志
       
-      // 保持用户的选择，不要根据后端返回的数据自动改变开关状态
-      // 保持用户当前填入的地址，不要用后端返回的地址覆盖
+      // 使用后端返回的实际监控地址，确保前端显示的地址与后端实际监控的地址一致
       setForm((prev) => ({
         ...prev,
         telegramChatId: monitorResponse.telegramChatId || '',
-        // 保持用户当前填入的地址，不要用后端返回的地址覆盖
-        walletAddresses: prev.walletAddresses,
+        // 使用后端返回的实际监控地址
+        walletAddresses: savedAddresses,
         language: monitorResponse.language || 'zh',
         // 保持用户的选择，不要因为后端返回了 chat_id 就自动勾选
         telegramEnabled: prev.telegramEnabled, // 保持用户的选择，不自动勾选
@@ -859,6 +861,23 @@ Finally: Enable the "启用企业微信推送" (Enable Enterprise WeChat notific
 
             <div className="monitor-config__fieldset">
               <span className="monitor-config__legend">{isEnglish ? 'Wallet Addresses' : '钱包列表'}</span>
+              {previousWalletAddresses.length > 0 && (
+                <div style={{ 
+                  marginBottom: '12px', 
+                  padding: '8px 12px', 
+                  background: 'rgba(91, 124, 250, 0.1)', 
+                  border: '1px solid rgba(91, 124, 250, 0.3)', 
+                  borderRadius: '4px',
+                  fontSize: '0.9rem'
+                }}>
+                  <strong style={{ color: 'var(--accent-primary, #5b7cfa)' }}>
+                    {isEnglish ? 'Currently Monitoring: ' : '当前监控：'}
+                  </strong>
+                  <span style={{ color: 'var(--text-primary, #fff)' }}>
+                    {previousWalletAddresses.join(', ')}
+                  </span>
+                </div>
+              )}
               <label className="monitor-config__field">
                 <span>{isEnglish ? 'Addresses to Monitor' : '监控地址'}</span>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
@@ -879,7 +898,14 @@ Finally: Enable the "启用企业微信推送" (Enable Enterprise WeChat notific
                           }}
                           placeholder={isEnglish ? '0x1234...' : '0x1234...'}
                           disabled={!canEdit || loading}
-                          style={{ flex: 1, padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
+                          style={{ 
+                            flex: 1, 
+                            padding: '8px', 
+                            borderRadius: '4px', 
+                            border: '1px solid #555',
+                            background: 'var(--bg-secondary, #2a2a2a)',
+                            color: 'var(--text-primary, #fff)'
+                          }}
                         />
                         <button
                           type="button"
@@ -928,8 +954,8 @@ Finally: Enable the "启用企业微信推送" (Enable Enterprise WeChat notific
                 </div>
                 <small>
                   {isEnglish
-                    ? 'You can add up to 2 wallet addresses. Each address can be edited or deleted. Note: The monitoring system uses a replacement logic - if you have 2 addresses and only fill in 1 new address, it will replace the first address. To monitor only 1 wallet, first clear all addresses and save, then add the single wallet address.'
-                    : '最多可添加 2 个钱包地址。每个地址可以编辑或删除。注意：监控系统使用替换逻辑 - 如果您有 2 个地址但只填写 1 个新地址，将会替换第一个地址。如果只想监控 1 个钱包，请先清空所有地址并保存，然后添加单个钱包地址。'}
+                    ? 'Up to 2 addresses can be monitored.'
+                    : '最多监控 2 个地址。'}
                 </small>
               </label>
             </div>
