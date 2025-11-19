@@ -8,6 +8,14 @@ function isWeChatBrowser() {
   return /MicroMessenger/i.test(navigator.userAgent);
 }
 
+// 检测是否为 iOS 设备
+function isIOS() {
+  if (typeof window === 'undefined' || !navigator || !navigator.userAgent) {
+    return false;
+  }
+  return /iPhone|iPad|iPod/i.test(navigator.userAgent);
+}
+
 // 自动检测 API 基础 URL
 function getApiBaseUrl() {
   // 如果环境变量中设置了 API URL，优先使用
@@ -16,8 +24,8 @@ function getApiBaseUrl() {
     return envBaseUrl;
   }
   
-  // 微信浏览器优先使用相对路径，避免跨域问题
-  if (isWeChatBrowser()) {
+  // 微信浏览器和 iOS 设备优先使用相对路径，避免跨域问题
+  if (isWeChatBrowser() || isIOS()) {
     return '/api';
   }
   
@@ -84,7 +92,7 @@ async function _requestWithBaseUrl(baseUrl, path, options = {}) {
   const url = `${baseUrl}${normalizedPath}`;
   // 调试日志（仅在开发环境或移动端或微信浏览器）
   if (typeof window !== 'undefined' && (import.meta.env.DEV || /Mobile|Android|iPhone|iPad|MicroMessenger/i.test(navigator.userAgent))) {
-    console.log('[API Client] Request URL:', url, 'Base URL:', baseUrl, 'Path:', normalizedPath, 'WeChat:', isWeChatBrowser());
+    console.log('[API Client] Request URL:', url, 'Base URL:', baseUrl, 'Path:', normalizedPath, 'WeChat:', isWeChatBrowser(), 'iOS:', isIOS());
   }
   const headers = {
     'Content-Type': 'application/json',
@@ -96,34 +104,56 @@ async function _requestWithBaseUrl(baseUrl, path, options = {}) {
   const config = {
     ...options,
     headers,
+    // iOS Safari 需要明确的 credentials 设置
+    credentials: 'same-origin',
+    // 确保 mode 设置正确
+    mode: 'cors',
   };
   if (config.body && typeof config.body !== 'string') {
     config.body = JSON.stringify(config.body);
   }
 
-  const response = await fetch(url, config);
-  if (!response.ok) {
-    let message = response.statusText || 'Request failed';
-    let errorData = null;
-    try {
-      errorData = await response.json();
-      message = errorData?.detail || errorData?.message || JSON.stringify(errorData);
-    } catch (err) {
-      const text = await response.text().catch(() => message);
-      message = text || message;
+  // iOS Safari 可能需要更长的超时时间
+  const controller = isIOS() ? new AbortController() : null;
+  const timeoutId = controller ? setTimeout(() => controller.abort(), 30000) : null;
+  if (controller) {
+    config.signal = controller.signal;
+  }
+
+  try {
+    const response = await fetch(url, config);
+    if (timeoutId) clearTimeout(timeoutId);
+    
+    if (!response.ok) {
+      let message = response.statusText || 'Request failed';
+      let errorData = null;
+      try {
+        errorData = await response.json();
+        message = errorData?.detail || errorData?.message || JSON.stringify(errorData);
+      } catch (err) {
+        const text = await response.text().catch(() => message);
+        message = text || message;
+      }
+      const error = new Error(message || `Request failed with status ${response.status}`);
+      error.response = { status: response.status, data: errorData };
+      throw error;
     }
-    const error = new Error(message || `Request failed with status ${response.status}`);
-    error.response = { status: response.status, data: errorData };
-    throw error;
+    if (response.status === 204) {
+      return null;
+    }
+    const contentType = response.headers.get('Content-Type') || '';
+    if (contentType.includes('application/json')) {
+      return response.json();
+    }
+    return response.text();
+  } catch (fetchError) {
+    if (timeoutId) clearTimeout(timeoutId);
+    // iOS Safari 特定的错误处理
+    if (isIOS() && fetchError.name === 'AbortError') {
+      throw new TypeError('Request timeout. Please check your network connection.');
+    }
+    throw fetchError;
   }
-  if (response.status === 204) {
-    return null;
-  }
-  const contentType = response.headers.get('Content-Type') || '';
-  if (contentType.includes('application/json')) {
-    return response.json();
-  }
-  return response.text();
 }
 
 async function request(path, options = {}, useFallback = true) {
@@ -147,10 +177,13 @@ async function request(path, options = {}, useFallback = true) {
       // 移动端友好的错误信息
       const isMobile = typeof window !== 'undefined' && /Mobile|Android|iPhone|iPad/i.test(navigator.userAgent);
       const isAndroid = typeof window !== 'undefined' && /Android/i.test(navigator.userAgent);
+      const isIOSDevice = isIOS();
       const isWeChat = isWeChatBrowser();
       let errorMsg;
       if (isWeChat) {
         errorMsg = `无法连接到服务器。\n\n微信浏览器访问提示：\n1. 请确保网络连接正常\n2. 尝试点击右上角"..."菜单，选择"刷新"\n3. 如仍无法访问，请尝试在系统浏览器中打开\n4. 检查是否被微信安全策略拦截\n\n如果问题持续，请联系技术支持。`;
+      } else if (isIOSDevice) {
+        errorMsg = `无法连接到服务器。\n\niOS 设备访问提示：\n1. 请确保网络连接正常（WiFi 或移动数据）\n2. 尝试关闭并重新打开 Safari 浏览器\n3. 清除 Safari 缓存：设置 > Safari > 清除历史记录和网站数据\n4. 检查是否启用了内容拦截器或 VPN\n5. 尝试切换到其他网络（WiFi ↔ 移动数据）\n\n如果问题持续，请联系技术支持。`;
       } else if (isAndroid) {
         errorMsg = `无法连接到服务器。\n\n可能的原因：\n1. 网络连接问题\n2. DNS解析失败（无法解析 api.hypebot.top）\n3. 防火墙阻止\n\n建议：\n- 检查网络连接\n- 尝试切换网络（WiFi/移动数据）\n- 清除浏览器缓存\n- 如仍无法访问，可能需要使用VPN或联系技术支持`;
       } else if (isMobile) {
