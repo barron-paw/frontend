@@ -1,7 +1,35 @@
 const normalizeBaseUrl = (value) => (value ? value.replace(/\/$/, '') : value);
 
-const envBaseUrl = normalizeBaseUrl(import.meta.env.VITE_API_BASE_URL);
-const API_BASE_URL = envBaseUrl || '/api';
+// 自动检测 API 基础 URL
+function getApiBaseUrl() {
+  // 如果环境变量中设置了 API URL，优先使用
+  const envBaseUrl = normalizeBaseUrl(import.meta.env.VITE_API_BASE_URL);
+  if (envBaseUrl) {
+    return envBaseUrl;
+  }
+  
+  // 自动检测：如果当前域名是 hypebot.top 或 www.hypebot.top，使用 api.hypebot.top
+  if (typeof window !== 'undefined') {
+    const hostname = window.location.hostname;
+    // 如果是主域名，使用 api 子域名
+    if (hostname === 'hypebot.top' || hostname === 'www.hypebot.top') {
+      return 'https://api.hypebot.top/api';
+    }
+    // 如果已经是 api 子域名，使用相对路径
+    if (hostname === 'api.hypebot.top') {
+      return '/api';
+    }
+    // 开发环境或 localhost，使用相对路径
+    if (hostname === 'localhost' || hostname === '127.0.0.1' || hostname.startsWith('192.168.') || hostname.startsWith('10.')) {
+      return '/api';
+    }
+  }
+  
+  // 默认使用相对路径
+  return '/api';
+}
+
+const API_BASE_URL = getApiBaseUrl();
 const TOKEN_STORAGE_KEY = 'hm_auth_token';
 
 let authToken = (typeof window !== 'undefined' && window.localStorage)
@@ -24,7 +52,14 @@ export function getAuthToken() {
 }
 
 async function request(path, options = {}) {
-  const url = `${API_BASE_URL}${path}`;
+  // 确保路径以 / 开头
+  const normalizedPath = path.startsWith('/') ? path : `/${path}`;
+  // 构建完整 URL
+  const url = `${API_BASE_URL}${normalizedPath}`;
+  // 调试日志（仅在开发环境或移动端）
+  if (typeof window !== 'undefined' && (import.meta.env.DEV || /Mobile|Android|iPhone|iPad/i.test(navigator.userAgent))) {
+    console.log('[API Client] Request URL:', url, 'Base URL:', API_BASE_URL, 'Path:', normalizedPath);
+  }
   const headers = {
     'Content-Type': 'application/json',
     ...(options.headers || {}),
@@ -67,7 +102,11 @@ async function request(path, options = {}) {
   } catch (err) {
     // 如果是网络错误（如 Failed to fetch），提供更详细的错误信息
     if (err instanceof TypeError && err.message === 'Failed to fetch') {
-      const errorMsg = `无法连接到服务器 (${url})。请检查：\n1. 后端服务是否正在运行\n2. API 地址是否正确\n3. 网络连接是否正常\n4. CORS 配置是否正确`;
+      // 移动端友好的错误信息
+      const isMobile = typeof window !== 'undefined' && /Mobile|Android|iPhone|iPad/i.test(navigator.userAgent);
+      const errorMsg = isMobile
+        ? `无法连接到服务器。请检查网络连接或稍后重试。`
+        : `无法连接到服务器 (${url})。请检查：\n1. 后端服务是否正在运行\n2. API 地址是否正确\n3. 网络连接是否正常\n4. CORS 配置是否正确`;
       throw new Error(errorMsg);
     }
     throw err;

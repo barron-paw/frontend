@@ -1,11 +1,17 @@
 import apiClient, { setAuthToken, getAuthToken } from './client';
 
 export async function loginUser(payload) {
-  const response = await apiClient.post('/auth/login', payload);
-  if (response?.token) {
-    setAuthToken(response.token);
+  try {
+    const response = await apiClient.post('/auth/login', payload);
+    if (response?.token) {
+      setAuthToken(response.token);
+    }
+    return response?.user || null;
+  } catch (err) {
+    // 记录详细错误信息用于调试
+    console.error('[loginUser] Error:', err);
+    throw err;
   }
-  return response?.user || null;
 }
 
 export async function registerUser(payload) {

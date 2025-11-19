@@ -122,6 +122,7 @@ export default function AuthDialog({ open, mode = 'login', onClose, onSwitch }) 
       setSubmitting(true);
       if (mode === 'login') {
         await login({ email: form.email, password: form.password });
+        onClose();
       } else {
         if (!form.verificationCode.trim()) {
           setLocalError(isEnglish ? 'Verification code is required.' : '请输入邮箱验证码。');
@@ -133,10 +134,20 @@ export default function AuthDialog({ open, mode = 'login', onClose, onSwitch }) 
           password: form.password,
           verification_code: form.verificationCode.trim(),
         });
+        onClose();
       }
-      onClose();
     } catch (err) {
-      setLocalError(err.message || (isEnglish ? 'Action failed, please retry later.' : '操作失败，请稍后再试'));
+      // 记录详细错误信息用于调试
+      console.error('[AuthDialog] Login/Register error:', err);
+      // 提取错误信息，处理可能的网络错误
+      let errorMessage = err.message || (isEnglish ? 'Action failed, please retry later.' : '操作失败，请稍后再试');
+      // 如果是网络错误，提供更友好的提示
+      if (errorMessage.includes('无法连接到服务器') || errorMessage.includes('Failed to fetch')) {
+        errorMessage = isEnglish 
+          ? 'Unable to connect to server. Please check your network connection and try again.'
+          : '无法连接到服务器，请检查网络连接后重试。';
+      }
+      setLocalError(errorMessage);
     } finally {
       setSubmitting(false);
     }
