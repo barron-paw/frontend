@@ -146,6 +146,34 @@ export default function BinanceFollowPanel() {
   const handleSubmit = async (event) => {
     event.preventDefault();
     setStatusMessage('');
+    
+    // 验证最小下单量
+    const minOrderSize = Number(form.minOrderSize) || 0;
+    const amount = Number(form.amount) || 0;
+    
+    if (minOrderSize > 0 && amount > 0) {
+      if (form.mode === 'fixed') {
+        // 固定模式：最小下单量不能大于固定金额
+        if (minOrderSize > amount) {
+          setStatusMessage(
+            isEnglish
+              ? `Error: Minimum order size (${minOrderSize} USDT) cannot be greater than fixed amount (${amount} USDT). All orders will be skipped if this setting is saved.`
+              : `错误：最小下单量（${minOrderSize} USDT）不能大于固定份额（${amount} USDT）。保存此设置后，所有订单都会被跳过。`
+          );
+          setLoading(false);
+          return;
+        }
+      } else if (form.mode === 'percentage') {
+        // 百分比模式：最小下单量不能大于百分比（理论上百分比模式的目标金额是动态的，这里只做提示）
+        // 由于百分比模式的目标金额取决于跟单钱包的持仓，无法完全验证
+        // 但可以提示用户注意
+        if (minOrderSize > 0 && amount > 0) {
+          // 这里可以添加一个警告，但不阻止保存
+          // 因为百分比模式的实际下单金额是动态的
+        }
+      }
+    }
+    
     setLoading(true);
     try {
       // 获取实际的输入值（如果输入框被禁用显示占位符，form.apiKey 可能是空字符串）
@@ -837,17 +865,17 @@ Tip: This only counts the loss after you enabled auto follow. Any profit or loss
                   className="monitor-config__help-button"
                   onClick={() => {
                     const text = isEnglish
-                      ? `How maximum position is used:
+                      ? `Maximum position logic:
 
+• If your current position exceeds the set amount, the system will automatically close positions down to the set amount.
 • Before each new follow order, the bot checks your current Binance position size for this symbol (converted to USDT).
-• It also converts this maximum position value into a “maximum allowed position value” in USDT.
 • If current_position_value + planned_order_value would exceed this maximum, the new order will be skipped (only reducing/closing is allowed).
 
 Tip: If you turn on auto follow while already holding a position, that existing position is also counted into the maximum.`
-                      : `最大持仓的作用：
+                      : `最大持仓配置逻辑：
 
+• 如果当前仓位大于设置金额，会自动平仓至设置金额。
 • 每次准备开新单前，系统会先读取你在该合约上的当前仓位，并按当前价格折算成 USDT。
-• 再把“最大持仓（USDT）”也按价格换算成一笔“允许的最大仓位价值”。
 • 如果 当前仓位价值 + 这次计划下单的价值 > 最大持仓，则这笔开仓会被跳过（只允许后续减仓 / 平仓）。
 
 提示：如果你在开启自动跟单之前已经有仓位，这部分仓位也会被一起计入最大持仓的限制中。`;
@@ -870,7 +898,34 @@ Tip: If you turn on auto follow while already holding a position, that existing 
           </div>
 
           <label className="monitor-config__field">
-            <span>{isEnglish ? 'Minimum order size (USDT)' : '最小下单量（USDT）'}</span>
+            <div className="monitor-config__field-header">
+              <span>{isEnglish ? 'Minimum order size (USDT)' : '最小下单量（USDT）'}</span>
+              <button
+                type="button"
+                className="monitor-config__help-button"
+                onClick={() => {
+                  const text = isEnglish
+                    ? `Minimum order size logic:
+
+• Orders smaller than this value (in USDT) will be skipped to avoid Binance minimum lot errors.
+• IMPORTANT: The minimum order size must NOT be greater than:
+  - Fixed size mode: The fixed amount you set
+  - Percentage mode: Percentage × Target order amount
+• If the minimum order size is too large, all orders will be skipped and auto-follow will not work.`
+                    : `最小下单量配置逻辑：
+
+• 订单金额（USDT）低于该值时将被跳过，以避免 Binance 最小下单量限制。
+• 重要：最小下单量不能大于：
+  - 固定份额模式：您设置的固定金额
+  - 百分比模式：百分比 × 目标下单金额
+• 如果最小下单量设置过大，所有订单都会被跳过，自动跟单将无法完成。`;
+                  alert(text);
+                }}
+                title={isEnglish ? 'Explain minimum order size' : '解释最小下单量含义'}
+              >
+                ?
+              </button>
+            </div>
             <input
               type="number"
               step="0.01"
@@ -891,7 +946,7 @@ Tip: If you turn on auto follow while already holding a position, that existing 
           <button type="submit" disabled={!canEdit || loading}>
             {loading ? (isEnglish ? 'Processing…' : '处理中…') : isEnglish ? 'Save' : '保存配置'}
           </button>
-          <p className="monitor-config__hint">
+          <p className="monitor-config__hint" style={{ color: 'red' }}>
             {isEnglish
               ? 'Use trade-only API keys. Withdraw permission must remain disabled.'
               : '请使用仅开放交易权限的 API Key，禁止开启提现权限。'}
