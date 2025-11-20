@@ -177,13 +177,25 @@ async function request(path, options = {}, useFallback = true) {
   } catch (err) {
     // 记录详细错误信息（iOS 设备）
     if (isIOS()) {
+      const fullUrl = `${API_BASE_URL}${path.startsWith('/') ? path : `/${path}`}`;
       console.error('[API Client] iOS request failed:', {
-        url: `${API_BASE_URL}${path.startsWith('/') ? path : `/${path}`}`,
+        url: fullUrl,
         error: err.message,
         errorType: err.constructor.name,
         baseUrl: API_BASE_URL,
         path: path,
+        hostname: typeof window !== 'undefined' ? window.location.hostname : 'unknown',
+        protocol: typeof window !== 'undefined' ? window.location.protocol : 'unknown',
       });
+      // 在页面上也显示调试信息（仅开发环境）
+      if (import.meta.env.DEV && typeof window !== 'undefined') {
+        console.error('[API Client] iOS Debug Info:', {
+          'Current URL': window.location.href,
+          'API Base URL': API_BASE_URL,
+          'Request URL': fullUrl,
+          'Error': err.message,
+        });
+      }
     }
     
     // 如果是网络错误（如 Failed to fetch），尝试使用备用URL

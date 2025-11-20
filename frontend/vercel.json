@@ -2,6 +2,12 @@
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
   "framework": "vite",
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "https://api.hypebot.top/api/:path*"
+    }
+  ],
   "headers": [
     {
       "source": "/(.*)",
