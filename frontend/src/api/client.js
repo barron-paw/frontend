@@ -16,6 +16,14 @@ function isIOS() {
   return /iPhone|iPad|iPod/i.test(navigator.userAgent);
 }
 
+// 检测是否为 Android 设备
+function isAndroid() {
+  if (typeof window === 'undefined' || !navigator || !navigator.userAgent) {
+    return false;
+  }
+  return /Android/i.test(navigator.userAgent);
+}
+
 // 自动检测 API 基础 URL
 function getApiBaseUrl() {
   // 如果环境变量中设置了 API URL，优先使用
@@ -24,17 +32,21 @@ function getApiBaseUrl() {
     return envBaseUrl;
   }
   
-  // 微信浏览器优先使用相对路径，避免跨域问题
-  if (isWeChatBrowser()) {
+  // 微信浏览器和Android设备优先使用相对路径，避免跨域问题
+  if (isWeChatBrowser() || isAndroid()) {
     return '/api';
   }
   
   // 自动检测：如果当前域名是 hypebot.top 或 www.hypebot.top，使用 api.hypebot.top
   if (typeof window !== 'undefined') {
     const hostname = window.location.hostname;
-    // 如果是主域名，使用 api 子域名（iOS 也使用完整 URL，因为相对路径可能有问题）
+    // 如果是主域名，iOS使用完整URL，其他使用相对路径（通过Vercel代理）
     if (hostname === 'hypebot.top' || hostname === 'www.hypebot.top') {
-      return 'https://api.hypebot.top/api';
+      // iOS设备使用完整URL，Android和其他设备使用相对路径
+      if (isIOS()) {
+        return 'https://api.hypebot.top/api';
+      }
+      return '/api';
     }
     // 如果已经是 api 子域名，使用相对路径
     if (hostname === 'api.hypebot.top') {

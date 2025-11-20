@@ -142,11 +142,26 @@ export default function MonitorConfigPanel() {
         form.telegramEnabled && form.telegramChatId.trim()
           ? form.telegramChatId.trim()
           : null;
-      // 处理钱包地址数组：去除空值，最多2个
+      // 处理钱包地址数组：去除空值，去重，最多2个
       const walletAddressesList = form.walletAddresses
         .map((addr) => addr.trim())
         .filter(Boolean)
+        .filter((addr, index, self) => {
+          // 去重：保留第一次出现的地址
+          return self.findIndex(a => a.toLowerCase() === addr.toLowerCase()) === index;
+        })
         .slice(0, 2);
+      
+      // 检查是否有重复地址
+      const uniqueAddresses = new Set(walletAddressesList.map(addr => addr.toLowerCase()));
+      if (uniqueAddresses.size < walletAddressesList.length) {
+        setStatus(isEnglish 
+          ? 'Error: Duplicate wallet addresses detected. Please use different addresses.' 
+          : '错误：检测到重复的钱包地址，请使用不同的地址。');
+        setIsSaving(false);
+        setLoading(false);
+        return;
+      }
       
       // 检测替换逻辑：如果之前有2个地址，现在只填写1个，会替换第一个地址
       const previousCount = previousWalletAddresses.length;
@@ -212,11 +227,18 @@ export default function MonitorConfigPanel() {
       console.log('WeCom config saved:', wecomResponse); // 调试日志
       
       // 使用后端返回的实际监控地址，确保前端显示的地址与后端实际监控的地址一致
+      // 确保 savedAddresses 是数组，且去重
+      const finalAddresses = Array.isArray(savedAddresses) 
+        ? savedAddresses.filter((addr, index, self) => 
+            addr && self.findIndex(a => a.toLowerCase() === addr.toLowerCase()) === index
+          ).slice(0, 2)
+        : [];
+      
       setForm((prev) => ({
         ...prev,
         telegramChatId: monitorResponse.telegramChatId || '',
-        // 使用后端返回的实际监控地址
-        walletAddresses: savedAddresses,
+        // 使用后端返回的实际监控地址（去重后）
+        walletAddresses: finalAddresses,
         language: monitorResponse.language || 'zh',
         // 保持用户的选择，不要因为后端返回了 chat_id 就自动勾选
         telegramEnabled: prev.telegramEnabled, // 保持用户的选择，不自动勾选
@@ -225,6 +247,8 @@ export default function MonitorConfigPanel() {
         wecomWebhookUrl: wecomResponse.webhookUrl || '',
         wecomMentions: (wecomResponse.mentions || []).join('\n'),
       }));
+      // 更新 previousWalletAddresses 为最终保存的地址
+      setPreviousWalletAddresses(finalAddresses);
       setLanguage(monitorResponse.language || 'zh');
       // 确保布尔值转换正确，处理各种可能的类型
       const usesDefault = Boolean(monitorResponse.usesDefaultBot === true || monitorResponse.usesDefaultBot === 'true' || monitorResponse.usesDefaultBot === 1);
@@ -892,8 +916,21 @@ Finally: Enable the "启用企业微信推送" (Enable Enterprise WeChat notific
                           type="text"
                           value={address}
                           onChange={(event) => {
+                            const newValue = event.target.value;
                             const newAddresses = [...form.walletAddresses];
-                            newAddresses[index] = event.target.value;
+                            newAddresses[index] = newValue;
+                            // 检查是否有重复地址（不区分大小写）
+                            const trimmedValue = newValue.trim().toLowerCase();
+                            const hasDuplicate = newAddresses.some((addr, idx) => 
+                              idx !== index && addr.trim().toLowerCase() === trimmedValue && trimmedValue !== ''
+                            );
+                            if (hasDuplicate) {
+                              setStatus(isEnglish 
+                                ? 'Warning: Duplicate wallet address detected. Please use different addresses.' 
+                                : '警告：检测到重复的钱包地址，请使用不同的地址。');
+                            } else {
+                              setStatus('');
+                            }
                             setForm((prev) => ({ ...prev, walletAddresses: newAddresses }));
                           }}
                           placeholder={isEnglish ? '0x1234...' : '0x1234...'}
@@ -1046,17 +1083,6 @@ Note: The save button can only be clicked once every 5 seconds.`
               </p>
             </div>
 
-              <div className="monitor-config__details">
-              <p className="monitor-config__details-title">{isEnglish ? 'Monitoring Behaviour' : '监控提醒说明'}</p>
-              <ul className="monitor-config__details-list">
-                <li>{isEnglish ? 'Snapshots are sent only when wallet addresses change; the first snapshot for a wallet means monitoring for that wallet has started.' : '只有当钱包地址发生变化时才发送快照；第一次收到某个钱包的快照，就表示该钱包的监控已经开始。'}</li>
-                <li>{isEnglish ? 'Wallet replacement logic: The system uses a replacement mechanism. If you have 2 monitored wallets (A, B) and only fill in 1 new wallet (C), it will replace the first wallet, resulting in (B, C). To monitor only 1 wallet, first clear all addresses and save, then add the single wallet address.' : '钱包替换逻辑：系统使用替换机制。如果您有 2 个监控钱包（A, B）但只填写 1 个新钱包（C），将会替换第一个钱包，结果为（B, C）。如果只想监控 1 个钱包，请先清空所有地址并保存，然后添加单个钱包地址。'}</li>
-                <li>{isEnglish ? 'Push behavior: Enable Telegram only → Telegram only; Enable WeChat only → WeChat only; Enable both → both.' : '推送行为：只启用 Telegram → 只推送到 Telegram；只启用企业微信 → 只推送到企业微信；同时启用 → 同时推送。'}</li>
-                <li>{isEnglish ? 'While monitoring is active, every open, close, and partial close event triggers a real-time notification.' : '监控开启期间，每次开仓、平仓和部分平仓都会实时推送提醒。'}</li>
-                <li>{isEnglish ? 'A consolidated position snapshot is automatically delivered every 4 hours for all monitored wallets.' : '系统会每 4 小时自动为所有监控钱包发送一次持仓快照。'}</li>
-                <li>{isEnglish ? 'If you save with an empty wallet list, monitoring stops and no further snapshots or trade notifications are sent.' : '如果监控地址列表为空时保存配置，则停止监控，不再发送快照和交易通知。'}</li>
-              </ul>
-            </div>
           </form>
 
 
