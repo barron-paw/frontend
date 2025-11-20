@@ -32,20 +32,16 @@ function getApiBaseUrl() {
     return envBaseUrl;
   }
   
-  // 微信浏览器和Android设备优先使用相对路径，避免跨域问题
-  if (isWeChatBrowser() || isAndroid()) {
+  // 所有移动设备（iOS、Android、微信浏览器）都优先使用相对路径，通过Vercel代理
+  // 这样可以避免跨域问题，并且利用Vercel的CDN加速
+  if (isWeChatBrowser() || isAndroid() || isIOS()) {
     return '/api';
   }
   
-  // 自动检测：如果当前域名是 hypebot.top 或 www.hypebot.top，使用 api.hypebot.top
+  // 桌面端：如果当前域名是 hypebot.top 或 www.hypebot.top，使用相对路径（通过Vercel代理）
   if (typeof window !== 'undefined') {
     const hostname = window.location.hostname;
-    // 如果是主域名，iOS使用完整URL，其他使用相对路径（通过Vercel代理）
     if (hostname === 'hypebot.top' || hostname === 'www.hypebot.top') {
-      // iOS设备使用完整URL，Android和其他设备使用相对路径
-      if (isIOS()) {
-        return 'https://api.hypebot.top/api';
-      }
       return '/api';
     }
     // 如果已经是 api 子域名，使用相对路径
@@ -66,16 +62,16 @@ function getApiBaseUrl() {
 function getFallbackApiBaseUrl() {
   if (typeof window !== 'undefined') {
     const hostname = window.location.hostname;
-    // 如果是主域名，备用URL使用相对路径（通过主域名代理）
+    // 如果是主域名，备用URL尝试完整URL（如果主URL是相对路径）
     if (hostname === 'hypebot.top' || hostname === 'www.hypebot.top') {
-      // iOS 设备：如果主URL是完整URL，备用URL使用相对路径
       // 如果主URL是相对路径，备用URL使用完整URL
-      if (isIOS() && API_BASE_URL.startsWith('http')) {
-        return '/api';
-      } else if (isIOS() && API_BASE_URL === '/api') {
+      if (API_BASE_URL === '/api') {
         return 'https://api.hypebot.top/api';
       }
-      return '/api';
+      // 如果主URL是完整URL，备用URL使用相对路径
+      if (API_BASE_URL.startsWith('http')) {
+        return '/api';
+      }
     }
   }
   return null;
