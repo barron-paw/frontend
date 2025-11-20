@@ -28,6 +28,7 @@ export default function MonitorConfigPanel() {
   const [lastSaveTime, setLastSaveTime] = useState(0);
   const [isSaving, setIsSaving] = useState(false);
   const [previousWalletAddresses, setPreviousWalletAddresses] = useState([]); // 保存上一次的钱包地址，用于检测替换逻辑
+  const [currentMonitoredAddresses, setCurrentMonitoredAddresses] = useState([]); // 保存后端实际监控的地址，用于显示"当前监控"
 
   const canEdit = user?.can_access_monitor;
 
@@ -57,9 +58,12 @@ export default function MonitorConfigPanel() {
         });
         
         const loadedAddresses = (monitorData.walletAddresses || []).slice(0, 2);
+        // 重要：monitorData.walletAddresses 是后端实际监控的地址（从运行中的监控线程获取）
+        // 这个地址用于显示"当前监控"，而不是用于输入框
+        setCurrentMonitoredAddresses(loadedAddresses);
         setForm({
           telegramChatId: monitorData.telegramChatId || '',
-          walletAddresses: loadedAddresses, // 改为数组，最多2个
+          walletAddresses: loadedAddresses, // 改为数组，最多2个（用于输入框显示）
           language: monitorData.language || 'zh',
           telegramEnabled: Boolean(monitorData.telegramChatId),
           wecomEnabled: Boolean(wecomData.enabled),
@@ -279,10 +283,14 @@ export default function MonitorConfigPanel() {
       };
       const monitorResponse = await updateMonitorConfig(monitorPayload);
       
-      // 使用后端返回的实际监控地址（因为后端可能会处理地址格式、去重等）
+      // 使用后端返回的实际监控地址（从运行中的监控线程获取）
+      // 这是后端实际正在监控的地址，用于显示"当前监控"
       const savedAddresses = (monitorResponse.walletAddresses || []).slice(0, 2);
       
-      // 更新上一次的钱包地址（使用后端返回的实际监控地址）
+      // 更新"当前监控"显示的地址（使用后端返回的实际监控地址）
+      setCurrentMonitoredAddresses(savedAddresses);
+      
+      // 更新上一次的钱包地址（使用后端返回的实际监控地址，用于检测替换逻辑）
       setPreviousWalletAddresses(savedAddresses);
       
       // 如果钱包地址为空，提示监控已停止
@@ -980,9 +988,9 @@ Finally: Enable the "启用企业微信推送" (Enable Enterprise WeChat notific
 
             <div className="monitor-config__fieldset">
               <span className="monitor-config__legend">{isEnglish ? 'Wallet Addresses' : '钱包列表'}</span>
-              {/* 显示当前监控的地址：使用后端返回的实际监控地址（form.walletAddresses） */}
-              {/* 这确保前端显示与后端实际监控的地址完全一致 */}
-              {form.walletAddresses && form.walletAddresses.length > 0 && (
+              {/* 显示当前监控的地址：使用后端实际正在运行的监控线程中的地址 */}
+              {/* 这个地址从后端API获取，反映后端实际监控的钱包地址，而不是前端输入框的地址 */}
+              {currentMonitoredAddresses && currentMonitoredAddresses.length > 0 && (
                 <div style={{ 
                   marginBottom: '12px', 
                   padding: '8px 12px', 
@@ -995,7 +1003,7 @@ Finally: Enable the "启用企业微信推送" (Enable Enterprise WeChat notific
                     {isEnglish ? 'Currently Monitoring: ' : '当前监控：'}
                   </strong>
                   <span style={{ color: 'var(--text-primary, #fff)' }}>
-                    {form.walletAddresses.join(', ')}
+                    {currentMonitoredAddresses.join(', ')}
                   </span>
                 </div>
               )}
