@@ -180,9 +180,15 @@ export default function MonitorConfigPanel() {
                              (currentAddressesSet.has(previousWalletAddresses[0]?.trim().toLowerCase()) ||
                               currentAddressesSet.has(previousWalletAddresses[1]?.trim().toLowerCase()));
       
-      // 检测是否是添加场景：之前有1个地址，现在只填写1个新地址（且这个新地址不在之前的地址中）
+      // 检测是否是添加场景：
+      // 1. 之前有1个地址，现在只填写1个新地址（且这个新地址不在之前的地址中）
+      // 2. 之前有1个地址，现在填写2个地址（包含原有地址和新地址）
       const isAddNew = previousCount === 1 && currentCount === 1 && 
                        !currentAddressesSet.has(previousWalletAddresses[0]?.trim().toLowerCase());
+      
+      // 检测是否是添加场景（填写2个地址，包含原有地址）
+      const isAddNewWithTwo = previousCount === 1 && currentCount === 2 && 
+                              currentAddressesSet.has(previousWalletAddresses[0]?.trim().toLowerCase());
       
       let finalWalletAddresses = walletAddressesList;
       
@@ -213,6 +219,28 @@ export default function MonitorConfigPanel() {
         console.log('[MonitorConfigPanel] 添加逻辑：之前有1个地址，现在只填写1个新地址，保留原有地址，添加新地址', {
           previousAddresses: previousWalletAddresses,
           newAddress: newAddress,
+          finalWalletAddresses: finalWalletAddresses,
+        });
+      } else if (isAddNewWithTwo) {
+        // 如果之前有1个地址，现在填写2个地址（包含原有地址），直接使用用户填写的地址
+        // 确保原有地址在前，新地址在后（保持顺序）
+        const existingAddress = previousWalletAddresses[0];
+        const existingIndex = walletAddressesList.findIndex(addr => 
+          addr.trim().toLowerCase() === existingAddress.trim().toLowerCase()
+        );
+        if (existingIndex === 0) {
+          // 原有地址在第一位，直接使用
+          finalWalletAddresses = walletAddressesList;
+        } else {
+          // 原有地址不在第一位，调整顺序：原有地址在前，新地址在后
+          const newAddress = walletAddressesList.find(addr => 
+            addr.trim().toLowerCase() !== existingAddress.trim().toLowerCase()
+          );
+          finalWalletAddresses = [existingAddress, newAddress].filter(Boolean);
+        }
+        console.log('[MonitorConfigPanel] 添加逻辑：之前有1个地址，现在填写2个地址（包含原有地址），保留原有地址，添加新地址', {
+          previousAddresses: previousWalletAddresses,
+          userInput: walletAddressesList,
           finalWalletAddresses: finalWalletAddresses,
         });
       }
