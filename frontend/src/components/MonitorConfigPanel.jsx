@@ -162,7 +162,9 @@ export default function MonitorConfigPanel() {
         });
       }
       
-      // 实现替换逻辑：如果之前有2个地址，现在只填写1个新地址，保留第二个地址，替换第一个地址
+      // 实现替换逻辑：
+      // 1. 如果之前有2个地址，现在只填写1个新地址，保留第二个地址，替换第一个地址
+      // 2. 如果之前有1个地址，现在只填写1个新地址，保留原有地址，添加新地址（变成2个地址）
       const previousCount = previousWalletAddresses.length;
       const currentCount = walletAddressesList.length;
       const previousAddressesSet = new Set(previousWalletAddresses.map(addr => addr.trim().toLowerCase()));
@@ -177,6 +179,10 @@ export default function MonitorConfigPanel() {
       const isKeepExisting = previousCount === 2 && currentCount === 1 && 
                              (currentAddressesSet.has(previousWalletAddresses[0]?.trim().toLowerCase()) ||
                               currentAddressesSet.has(previousWalletAddresses[1]?.trim().toLowerCase()));
+      
+      // 检测是否是添加场景：之前有1个地址，现在只填写1个新地址（且这个新地址不在之前的地址中）
+      const isAddNew = previousCount === 1 && currentCount === 1 && 
+                       !currentAddressesSet.has(previousWalletAddresses[0]?.trim().toLowerCase());
       
       let finalWalletAddresses = walletAddressesList;
       
@@ -197,6 +203,16 @@ export default function MonitorConfigPanel() {
         console.log('[MonitorConfigPanel] 保留逻辑：之前有2个地址，现在只填写1个已存在的地址，保留原有监控列表', {
           previousAddresses: previousWalletAddresses,
           userInput: walletAddressesList,
+          finalWalletAddresses: finalWalletAddresses,
+        });
+      } else if (isAddNew) {
+        // 如果之前有1个地址，现在只填写1个新地址，保留原有地址，添加新地址
+        const existingAddress = previousWalletAddresses[0];
+        const newAddress = walletAddressesList[0];
+        finalWalletAddresses = [existingAddress, newAddress]; // 结果是 [A, B]
+        console.log('[MonitorConfigPanel] 添加逻辑：之前有1个地址，现在只填写1个新地址，保留原有地址，添加新地址', {
+          previousAddresses: previousWalletAddresses,
+          newAddress: newAddress,
           finalWalletAddresses: finalWalletAddresses,
         });
       }
