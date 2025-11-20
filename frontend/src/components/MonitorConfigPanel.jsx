@@ -186,9 +186,23 @@ export default function MonitorConfigPanel() {
       }
       
       // 允许空列表保存（用于停止监控）
+      // 重要：确保总是发送当前的钱包地址列表，即使没有变化
+      // 如果 walletAddressesList 为空，但 previousWalletAddresses 不为空，说明可能是前端没有正确加载
+      // 在这种情况下，使用 previousWalletAddresses 作为后备
+      const finalWalletAddresses = walletAddressesList.length > 0 
+        ? walletAddressesList 
+        : (previousWalletAddresses.length > 0 ? previousWalletAddresses : []);
+      
+      console.log('[MonitorConfigPanel] 保存配置:', {
+        walletAddressesList,
+        previousWalletAddresses,
+        finalWalletAddresses,
+        language: form.language,
+      });
+      
       const monitorPayload = {
         telegramChatId: telegramChatIdValue,
-        walletAddresses: walletAddressesList,
+        walletAddresses: finalWalletAddresses,
         language: form.language,
       };
       const monitorResponse = await updateMonitorConfig(monitorPayload);
@@ -842,14 +856,14 @@ Finally: Enable the "启用企业微信推送" (Enable Enterprise WeChat notific
                       value={form.wecomWebhookUrl}
                       onChange={(event) => setForm((prev) => ({ ...prev, wecomWebhookUrl: event.target.value }))}
                       placeholder={isEnglish ? 'https://qyapi.weixin.qq.com/cgi-bin/webhook/send?...' : 'https://qyapi.weixin.qq.com/cgi-bin/webhook/send?...'}
-                      disabled={!canEdit || loading}
-                    />
+                disabled={!canEdit || loading}
+              />
                     <small>
                       {isEnglish
                         ? 'Create an Enterprise WeChat bot and copy the webhook address here. Messages are only sent when enabled.'
                         : '在企业微信中添加群机器人，并将生成的 webhook 地址粘贴至此。启用后将推送监控消息。'}
                     </small>
-                  </label>
+            </label>
                   <label className="monitor-config__field">
                     <div className="monitor-config__field-header">
                       <span>{isEnglish ? 'Mobile numbers to @mention (optional)' : '需 @ 的手机号（可选）'}</span>
@@ -866,7 +880,7 @@ Finally: Enable the "启用企业微信推送" (Enable Enterprise WeChat notific
                         ?
                       </button>
                     </div>
-                    <textarea
+              <textarea
                       rows={3}
                       value={form.wecomMentions}
                       onChange={(event) => setForm((prev) => ({ ...prev, wecomMentions: event.target.value }))}

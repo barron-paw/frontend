@@ -28,13 +28,13 @@ try {
 
   const root = createRoot(rootElement);
   root.render(
-    <StrictMode>
+  <StrictMode>
       <ErrorBoundary>
         <LanguageProvider>
-          <AuthProvider>
-            <App />
+    <AuthProvider>
+        <App />
           </AuthProvider>
-        </LanguageProvider>
+      </LanguageProvider>
       </ErrorBoundary>
     </StrictMode>
   );
