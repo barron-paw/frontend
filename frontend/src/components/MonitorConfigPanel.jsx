@@ -29,6 +29,7 @@ export default function MonitorConfigPanel() {
   const [isSaving, setIsSaving] = useState(false);
   const [previousWalletAddresses, setPreviousWalletAddresses] = useState([]); // 保存上一次的钱包地址，用于检测替换逻辑
   const [currentMonitoredAddresses, setCurrentMonitoredAddresses] = useState([]); // 保存后端实际监控的地址，用于显示"当前监控"
+  const [previousTelegramChatId, setPreviousTelegramChatId] = useState(''); // 保存之前加载的 telegram_chat_id，用于在用户勾选但未填写时保留
 
   const canEdit = user?.can_access_monitor;
 
@@ -61,8 +62,9 @@ export default function MonitorConfigPanel() {
         // 重要：monitorData.walletAddresses 是后端实际监控的地址（从运行中的监控线程获取）
         // 这个地址用于显示"当前监控"，而不是用于输入框
         setCurrentMonitoredAddresses(loadedAddresses);
+        const loadedTelegramChatId = monitorData.telegramChatId || '';
         setForm({
-          telegramChatId: monitorData.telegramChatId || '',
+          telegramChatId: loadedTelegramChatId,
           walletAddresses: loadedAddresses, // 改为数组，最多2个（用于输入框显示）
           language: monitorData.language || 'zh',
           telegramEnabled: Boolean(monitorData.telegramChatId),
@@ -70,6 +72,8 @@ export default function MonitorConfigPanel() {
           wecomWebhookUrl: wecomData.webhookUrl || '',
           wecomMentions: (wecomData.mentions || []).join('\n'),
         });
+        // 保存之前加载的 telegram_chat_id，用于在用户勾选但未填写时保留
+        setPreviousTelegramChatId(loadedTelegramChatId);
         // 保存加载的地址，用于检测替换逻辑
         setPreviousWalletAddresses(loadedAddresses);
         setLanguage(monitorData.language || 'zh');
@@ -142,10 +146,30 @@ export default function MonitorConfigPanel() {
       // Telegram 勾选与否只影响是否推送：
       // - 如果勾选 Telegram，则把 chat_id 发送给后端，启用 Telegram 推送
       // - 如果没有勾选 Telegram，则不把 chat_id 发送给后端（但前端仍保留输入内容，下次勾选时直接生效）
-      const telegramChatIdValue =
-        form.telegramEnabled && form.telegramChatId.trim()
-          ? form.telegramChatId.trim()
-          : null;
+      // 重要：如果用户勾选了 Telegram，但没有填写 chat_id，应该保留数据库中已有的值
+      // 只有当用户明确清空输入框（从有值变为空）时，才发送 null
+      let telegramChatIdValue = null;
+      if (form.telegramEnabled) {
+        // 用户勾选了 Telegram
+        if (form.telegramChatId.trim()) {
+          // 用户填写了 chat_id，使用用户填写的值
+          telegramChatIdValue = form.telegramChatId.trim();
+        } else {
+          // 用户勾选了但没有填写 chat_id
+          // 如果之前有保存的值，使用之前的值（保留原有配置）
+          // 如果之前没有值，则为 null（禁用 Telegram）
+          if (previousTelegramChatId && previousTelegramChatId.trim()) {
+            telegramChatIdValue = previousTelegramChatId.trim();
+            console.log('[MonitorConfigPanel] 用户勾选了 Telegram 但未填写 chat_id，使用之前保存的值:', telegramChatIdValue);
+          } else {
+            telegramChatIdValue = null;
+            console.log('[MonitorConfigPanel] 用户勾选了 Telegram 但未填写 chat_id，且之前没有保存的值，禁用 Telegram');
+          }
+        }
+      } else {
+        // 用户没有勾选 Telegram，发送 null 以禁用
+        telegramChatIdValue = null;
+      }
       // 处理钱包地址数组：去除空值，去重（相同地址自动合并为一个），最多2个
       const walletAddressesList = form.walletAddresses
         .map((addr) => addr.trim())
