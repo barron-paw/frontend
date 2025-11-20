@@ -202,11 +202,23 @@ export default function MonitorConfigPanel() {
       }
       
       // 允许空列表保存（用于停止监控）
-      // 重要：确保总是发送当前的钱包地址列表，即使没有变化
-      // 如果 finalWalletAddresses 为空，但 previousWalletAddresses 不为空，说明可能是前端没有正确加载
-      // 在这种情况下，使用 previousWalletAddresses 作为后备
-      if (finalWalletAddresses.length === 0 && previousWalletAddresses.length > 0) {
+      // 重要：检查用户是否真的清空了所有输入框
+      // 如果 form.walletAddresses 中所有地址都是空的，说明用户主动清空了地址，应该发送空列表
+      // 如果 finalWalletAddresses 为空，但 form.walletAddresses 中有非空地址，说明可能是去重后变空了，应该保留原有地址
+      const allInputsEmpty = form.walletAddresses.every(addr => !addr || !addr.trim());
+      if (finalWalletAddresses.length === 0 && previousWalletAddresses.length > 0 && !allInputsEmpty) {
+        // 用户没有清空所有输入框，但去重后变空了（例如输入了重复地址），保留原有地址
         finalWalletAddresses = previousWalletAddresses;
+        console.log('[MonitorConfigPanel] 输入框未全部清空，但去重后变空，保留原有地址', {
+          formWalletAddresses: form.walletAddresses,
+          previousWalletAddresses: previousWalletAddresses,
+        });
+      } else if (allInputsEmpty) {
+        // 用户主动清空了所有输入框，发送空列表以停止监控
+        finalWalletAddresses = [];
+        console.log('[MonitorConfigPanel] 用户主动清空所有地址，发送空列表以停止监控', {
+          formWalletAddresses: form.walletAddresses,
+        });
       }
       
       console.log('[MonitorConfigPanel] 保存配置:', {
