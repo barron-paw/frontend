@@ -936,7 +936,9 @@ Finally: Enable the "启用企业微信推送" (Enable Enterprise WeChat notific
 
             <div className="monitor-config__fieldset">
               <span className="monitor-config__legend">{isEnglish ? 'Wallet Addresses' : '钱包列表'}</span>
-              {previousWalletAddresses.length > 0 && (
+              {/* 显示当前监控的地址：使用后端返回的实际监控地址（form.walletAddresses） */}
+              {/* 这确保前端显示与后端实际监控的地址完全一致 */}
+              {form.walletAddresses && form.walletAddresses.length > 0 && (
                 <div style={{ 
                   marginBottom: '12px', 
                   padding: '8px 12px', 
@@ -949,7 +951,7 @@ Finally: Enable the "启用企业微信推送" (Enable Enterprise WeChat notific
                     {isEnglish ? 'Currently Monitoring: ' : '当前监控：'}
                   </strong>
                   <span style={{ color: 'var(--text-primary, #fff)' }}>
-                    {previousWalletAddresses.join(', ')}
+                    {form.walletAddresses.join(', ')}
                   </span>
                 </div>
               )}
