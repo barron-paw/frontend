@@ -142,56 +142,72 @@ export default function MonitorConfigPanel() {
         form.telegramEnabled && form.telegramChatId.trim()
           ? form.telegramChatId.trim()
           : null;
-      // 处理钱包地址数组：去除空值，去重，最多2个
+      // 处理钱包地址数组：去除空值，去重（相同地址自动合并为一个），最多2个
       const walletAddressesList = form.walletAddresses
         .map((addr) => addr.trim())
         .filter(Boolean)
         .filter((addr, index, self) => {
-          // 去重：保留第一次出现的地址
+          // 去重：保留第一次出现的地址（不区分大小写）
           return self.findIndex(a => a.toLowerCase() === addr.toLowerCase()) === index;
         })
         .slice(0, 2);
       
-      // 检查是否有重复地址
+      // 如果用户输入了2个相同地址，自动合并为一个（只保留一个）
+      // 这个检查已经在上面通过去重逻辑处理了，但这里添加日志以便调试
       const uniqueAddresses = new Set(walletAddressesList.map(addr => addr.toLowerCase()));
-      if (uniqueAddresses.size < walletAddressesList.length) {
-        setStatus(isEnglish 
-          ? 'Error: Duplicate wallet addresses detected. Please use different addresses.' 
-          : '错误：检测到重复的钱包地址，请使用不同的地址。');
-        setIsSaving(false);
-        setLoading(false);
-        return;
+      if (uniqueAddresses.size < form.walletAddresses.filter(Boolean).length) {
+        console.log('[MonitorConfigPanel] 检测到相同地址，已自动合并为一个', {
+          original: form.walletAddresses.filter(Boolean),
+          merged: walletAddressesList,
+        });
       }
       
-      // 检测替换逻辑：如果之前有2个地址，现在只填写1个，会替换第一个地址
+      // 实现替换逻辑：如果之前有2个地址，现在只填写1个新地址，保留第二个地址，替换第一个地址
       const previousCount = previousWalletAddresses.length;
       const currentCount = walletAddressesList.length;
       const previousAddressesSet = new Set(previousWalletAddresses.map(addr => addr.trim().toLowerCase()));
       const currentAddressesSet = new Set(walletAddressesList.map(addr => addr.trim().toLowerCase()));
-      const isReplacement = previousCount === 2 && currentCount === 1 && 
-                            !currentAddressesSet.has(previousWalletAddresses[0]?.trim().toLowerCase());
       
-      // 如果检测到替换逻辑，提示用户
+      // 检测是否是替换场景：之前有2个地址，现在只填写1个新地址（且这个新地址不在之前的地址中）
+      const isReplacement = previousCount === 2 && currentCount === 1 && 
+                            !currentAddressesSet.has(previousWalletAddresses[0]?.trim().toLowerCase()) &&
+                            !currentAddressesSet.has(previousWalletAddresses[1]?.trim().toLowerCase());
+      
+      // 检测是否是保留场景：之前有2个地址，现在只填写1个地址，但这个地址已经在之前的监控列表中
+      const isKeepExisting = previousCount === 2 && currentCount === 1 && 
+                             (currentAddressesSet.has(previousWalletAddresses[0]?.trim().toLowerCase()) ||
+                              currentAddressesSet.has(previousWalletAddresses[1]?.trim().toLowerCase()));
+      
+      let finalWalletAddresses = walletAddressesList;
+      
+      // 如果检测到替换逻辑，实现替换：保留第二个地址，替换第一个地址
       if (isReplacement) {
-        const shouldProceed = window.confirm(
-          isEnglish 
-            ? 'Warning: You currently have 2 monitored wallets. If you only fill in 1 new wallet address, it will replace the first wallet (the second wallet will be kept).\n\nIf you want to monitor only 1 wallet, please:\n1. Clear all addresses and save\n2. Then fill in the single wallet address and save\n\nDo you want to continue?'
-            : '警告：您当前有 2 个监控钱包。如果只填写 1 个新钱包地址，将会替换第一个钱包（第二个钱包会被保留）。\n\n如果您只想监控 1 个钱包，请：\n1. 先清空所有地址并保存\n2. 然后填写单个钱包地址并保存\n\n是否继续？'
-        );
-        if (!shouldProceed) {
-          setIsSaving(false);
-          setLoading(false);
-          return;
-        }
+        const newAddress = walletAddressesList[0];
+        const secondAddress = previousWalletAddresses[1]; // 保留第二个地址
+        finalWalletAddresses = [secondAddress, newAddress]; // 结果是 [B, C]
+        console.log('[MonitorConfigPanel] 替换逻辑：之前有2个地址，现在只填写1个新地址，保留第二个地址，替换第一个地址', {
+          previousAddresses: previousWalletAddresses,
+          newAddress: newAddress,
+          finalWalletAddresses: finalWalletAddresses,
+        });
+      } else if (isKeepExisting) {
+        // 如果之前有2个地址，现在只填写1个地址，但这个地址已经在之前的监控列表中
+        // 保留原有的监控列表，不改变（因为用户可能只是想确认配置，而不是要改变监控列表）
+        finalWalletAddresses = previousWalletAddresses;
+        console.log('[MonitorConfigPanel] 保留逻辑：之前有2个地址，现在只填写1个已存在的地址，保留原有监控列表', {
+          previousAddresses: previousWalletAddresses,
+          userInput: walletAddressesList,
+          finalWalletAddresses: finalWalletAddresses,
+        });
       }
       
       // 允许空列表保存（用于停止监控）
       // 重要：确保总是发送当前的钱包地址列表，即使没有变化
-      // 如果 walletAddressesList 为空，但 previousWalletAddresses 不为空，说明可能是前端没有正确加载
+      // 如果 finalWalletAddresses 为空，但 previousWalletAddresses 不为空，说明可能是前端没有正确加载
       // 在这种情况下，使用 previousWalletAddresses 作为后备
-      const finalWalletAddresses = walletAddressesList.length > 0 
-        ? walletAddressesList 
-        : (previousWalletAddresses.length > 0 ? previousWalletAddresses : []);
+      if (finalWalletAddresses.length === 0 && previousWalletAddresses.length > 0) {
+        finalWalletAddresses = previousWalletAddresses;
+      }
       
       console.log('[MonitorConfigPanel] 保存配置:', {
         walletAddressesList,
@@ -214,15 +230,24 @@ export default function MonitorConfigPanel() {
       setPreviousWalletAddresses(savedAddresses);
       
       // 如果钱包地址为空，提示监控已停止
-      if (walletAddressesList.length === 0) {
+      if (finalWalletAddresses.length === 0) {
         setStatus(isEnglish 
           ? 'Configuration saved. Monitoring has been stopped (no wallet addresses).'
           : '配置已保存。监控已停止（钱包地址列表为空）。');
       } else if (isReplacement) {
         // 如果是替换逻辑，提示用户
         setStatus(isEnglish 
-          ? 'Configuration saved. Note: The first wallet has been replaced. If you want to monitor only 1 wallet, please clear all addresses first, then add the single wallet address.'
-          : '配置已保存。注意：第一个钱包已被替换。如果您只想监控 1 个钱包，请先清空所有地址，然后添加单个钱包地址。');
+          ? `Configuration saved. The first wallet has been replaced. Currently monitoring: ${savedAddresses.join(', ')}`
+          : `配置已保存。第一个钱包已被替换。当前监控：${savedAddresses.join(', ')}`);
+      } else if (isKeepExisting) {
+        // 如果是保留逻辑，提示用户
+        setStatus(isEnglish 
+          ? `Configuration saved. The existing monitoring list has been preserved. Currently monitoring: ${savedAddresses.join(', ')}`
+          : `配置已保存。已保留原有监控列表。当前监控：${savedAddresses.join(', ')}`);
+      } else {
+        setStatus(isEnglish 
+          ? 'Configuration saved successfully.'
+          : '配置已保存成功。');
       }
       
       // Save WeCom config
