@@ -293,16 +293,26 @@ export default function MonitorConfigPanel() {
         });
       }
       
+      // 确保最多只发送2个钱包地址（即使前端被绕过，也要限制）
+      const limitedWalletAddresses = finalWalletAddresses.slice(0, 2);
+      if (finalWalletAddresses.length > 2) {
+        console.warn('[MonitorConfigPanel] 钱包地址数量超过2个，已限制为前2个:', {
+          original: finalWalletAddresses,
+          limited: limitedWalletAddresses,
+        });
+      }
+      
       console.log('[MonitorConfigPanel] 保存配置:', {
         walletAddressesList,
         previousWalletAddresses,
         finalWalletAddresses,
+        limitedWalletAddresses,
         language: form.language,
       });
       
       const monitorPayload = {
         telegramChatId: telegramChatIdValue,
-        walletAddresses: finalWalletAddresses,
+        walletAddresses: limitedWalletAddresses,
         language: form.language,
       };
       const monitorResponse = await updateMonitorConfig(monitorPayload);
