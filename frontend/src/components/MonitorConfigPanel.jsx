@@ -354,6 +354,14 @@ export default function MonitorConfigPanel() {
         .split(/[\s,]+/)
         .map((item) => item.trim().replace(/^@+/, '')) // 去除开头的 @ 符号
         .filter((item) => item && /^\d+$/.test(item)); // 只保留纯数字
+      // 调试：检查表单状态
+      console.log('[MonitorConfigPanel] Before saving WeCom config - form state:', {
+        wecomEnabled: form.wecomEnabled,
+        wecomWebhookUrl: form.wecomWebhookUrl,
+        wecomWebhookUrlLength: form.wecomWebhookUrl?.length,
+        wecomWebhookUrlTrimmed: form.wecomWebhookUrl?.trim(),
+        wecomWebhookUrlTrimmedLength: form.wecomWebhookUrl?.trim()?.length,
+      });
       const wecomPayload = {
         enabled: form.wecomEnabled,  // 直接使用用户的选择，后端会根据 webhook_url 是否为空来决定是否真正启用
         webhookUrl: form.wecomWebhookUrl.trim() || null,
