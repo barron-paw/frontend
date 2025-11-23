@@ -355,7 +355,12 @@ export default function MonitorConfigPanel() {
         .map((item) => item.trim().replace(/^@+/, '')) // 去除开头的 @ 符号
         .filter((item) => item && /^\d+$/.test(item)); // 只保留纯数字
       // 调试：检查表单状态和输入框的实际值
-      const webhookInputElement = document.querySelector('input[type="text"][placeholder*="webhook"]');
+      // 尝试多种选择器来找到输入框
+      const webhookInputElement = document.querySelector('input[type="text"][placeholder*="webhook"]') 
+        || document.querySelector('input[placeholder*="qyapi.weixin.qq.com"]')
+        || Array.from(document.querySelectorAll('input[type="text"]')).find(input => 
+            input.placeholder && input.placeholder.includes('webhook')
+          );
       const webhookInputValue = webhookInputElement?.value || '';
       console.log('[MonitorConfigPanel] Before saving WeCom config - form state:', {
         wecomEnabled: form.wecomEnabled,
@@ -363,6 +368,7 @@ export default function MonitorConfigPanel() {
         wecomWebhookUrlLength: form.wecomWebhookUrl?.length,
         wecomWebhookUrlTrimmed: form.wecomWebhookUrl?.trim(),
         wecomWebhookUrlTrimmedLength: form.wecomWebhookUrl?.trim()?.length,
+        webhookInputElementFound: !!webhookInputElement,
         webhookInputElementValue: webhookInputValue,
         webhookInputElementValueLength: webhookInputValue?.length,
         webhookInputElementValueTrimmed: webhookInputValue?.trim(),
@@ -374,6 +380,13 @@ export default function MonitorConfigPanel() {
       const effectiveWebhookUrl = (form.wecomWebhookUrl && form.wecomWebhookUrl.trim()) 
         ? form.wecomWebhookUrl 
         : (webhookInputValue && webhookInputValue.trim() ? webhookInputValue : '');
+      
+      console.log('[MonitorConfigPanel] Effective webhook URL:', {
+        formValue: form.wecomWebhookUrl,
+        inputValue: webhookInputValue,
+        effectiveValue: effectiveWebhookUrl,
+        willSend: effectiveWebhookUrl.trim() || null,
+      });
       
       const wecomPayload = {
         enabled: form.wecomEnabled,  // 直接使用用户的选择，后端会根据 webhook_url 是否为空来决定是否真正启用
