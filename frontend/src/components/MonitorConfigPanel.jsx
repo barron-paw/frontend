@@ -354,17 +354,30 @@ export default function MonitorConfigPanel() {
         .split(/[\s,]+/)
         .map((item) => item.trim().replace(/^@+/, '')) // 去除开头的 @ 符号
         .filter((item) => item && /^\d+$/.test(item)); // 只保留纯数字
-      // 调试：检查表单状态
+      // 调试：检查表单状态和输入框的实际值
+      const webhookInputElement = document.querySelector('input[type="text"][placeholder*="webhook"]');
+      const webhookInputValue = webhookInputElement?.value || '';
       console.log('[MonitorConfigPanel] Before saving WeCom config - form state:', {
         wecomEnabled: form.wecomEnabled,
         wecomWebhookUrl: form.wecomWebhookUrl,
         wecomWebhookUrlLength: form.wecomWebhookUrl?.length,
         wecomWebhookUrlTrimmed: form.wecomWebhookUrl?.trim(),
         wecomWebhookUrlTrimmedLength: form.wecomWebhookUrl?.trim()?.length,
+        webhookInputElementValue: webhookInputValue,
+        webhookInputElementValueLength: webhookInputValue?.length,
+        webhookInputElementValueTrimmed: webhookInputValue?.trim(),
+        webhookInputElementValueTrimmedLength: webhookInputValue?.trim()?.length,
       });
+      
+      // 重要：如果表单状态中的 webhookUrl 为空，但输入框有值，使用输入框的值
+      // 这可以解决表单状态和输入框不同步的问题
+      const effectiveWebhookUrl = (form.wecomWebhookUrl && form.wecomWebhookUrl.trim()) 
+        ? form.wecomWebhookUrl 
+        : (webhookInputValue && webhookInputValue.trim() ? webhookInputValue : '');
+      
       const wecomPayload = {
         enabled: form.wecomEnabled,  // 直接使用用户的选择，后端会根据 webhook_url 是否为空来决定是否真正启用
-        webhookUrl: form.wecomWebhookUrl.trim() || null,
+        webhookUrl: effectiveWebhookUrl.trim() || null,
         mentions,
       };
       console.log('Saving WeCom config:', wecomPayload); // 调试日志
@@ -389,7 +402,11 @@ export default function MonitorConfigPanel() {
         telegramEnabled: prev.telegramEnabled, // 保持用户的选择，不自动勾选
         // 保持用户的选择，不要因为后端返回了 enabled 就自动勾选
         wecomEnabled: prev.wecomEnabled, // 保持用户的选择，不自动勾选
-        wecomWebhookUrl: wecomResponse.webhookUrl || '',
+        // 重要：如果用户输入了 webhookUrl，保留用户输入的值；否则使用后端返回的值
+        // 这样可以避免后端返回 null 时覆盖用户输入
+        wecomWebhookUrl: (prev.wecomWebhookUrl && prev.wecomWebhookUrl.trim()) 
+          ? prev.wecomWebhookUrl 
+          : (wecomResponse.webhookUrl || ''),
         wecomMentions: (wecomResponse.mentions || []).join('\n'),
       }));
       // 更新 previousWalletAddresses 为最终保存的地址
