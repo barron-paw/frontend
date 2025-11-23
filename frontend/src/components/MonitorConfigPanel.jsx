@@ -355,7 +355,7 @@ export default function MonitorConfigPanel() {
         .map((item) => item.trim().replace(/^@+/, '')) // 去除开头的 @ 符号
         .filter((item) => item && /^\d+$/.test(item)); // 只保留纯数字
       const wecomPayload = {
-        enabled: form.wecomEnabled && Boolean(form.wecomWebhookUrl.trim()),
+        enabled: form.wecomEnabled,  // 直接使用用户的选择，后端会根据 webhook_url 是否为空来决定是否真正启用
         webhookUrl: form.wecomWebhookUrl.trim() || null,
         mentions,
       };
