@@ -36,8 +36,12 @@ export default function EnterpriseWeChatPanel() {
           mentions: (data.mentions || []).join('\n'),
         });
       } catch (err) {
+        // WeCom 配置获取失败时静默处理，使用默认值（因为 WeCom 是可选的）
+        // 不显示错误消息，避免误导用户（后端可能正常工作，只是 WeCom 配置端点不可用）
+        console.debug('[EnterpriseWeChatPanel] WeCom config fetch failed (optional), using defaults:', err);
         if (!ignore) {
-          setStatus(err.message || (isEnglish ? 'Failed to load Enterprise WeChat settings.' : '无法加载企业微信配置。'));
+          // 使用默认值，不显示错误
+          setForm(DEFAULT_FORM);
         }
       } finally {
         if (!ignore) {

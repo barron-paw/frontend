@@ -96,7 +96,17 @@ export default function MonitorConfigPanel() {
         });
       } catch (err) {
         console.error('Failed to load monitor config:', err);
-        setStatus(isEnglish ? err.message || 'Failed to load monitor configuration' : err.message || '无法加载监控配置');
+        // 如果错误消息包含 WeCom 相关的 URL，说明只是 WeCom 配置获取失败
+        // 这不应该显示错误，因为 WeCom 是可选的，且后端可能正常工作
+        const errorMessage = err.message || '';
+        if (errorMessage.includes('/wecom') || errorMessage.includes('wecom')) {
+          // WeCom 配置获取失败，但不影响监控配置，静默处理
+          console.debug('[MonitorConfigPanel] WeCom config fetch failed in catch block (optional), ignoring:', err);
+          // 不设置错误状态，因为 WeCom 是可选的
+        } else {
+          // 其他错误（如监控配置获取失败），显示错误
+          setStatus(isEnglish ? errorMessage || 'Failed to load monitor configuration' : errorMessage || '无法加载监控配置');
+        }
       } finally {
         setLoading(false);
       }
