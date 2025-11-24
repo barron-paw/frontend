@@ -415,7 +415,7 @@ Step 1: Log in to your Binance account. After logging in, click on your profile 
 
 Step 2: In the dropdown menu that appears, find and click on "API Management" (API 管理) option. This will take you to the API management page.
 
-Step 3: On the API Management page, you will see a list of your existing API keys (if any) and a "Create API" (创建 API) button. Click on the "Create API" button to start creating a new API key. IMPORTANT: Make sure to uncheck or deselect any options that might prevent you from enabling futures trading. You must uncheck these options first, otherwise you will not be able to enable futures trading in the later steps.
+Step 3: On the API Management page, you will see a list of your existing API keys (if any) and a "Create API" (创建 API) button. Click on the "Create API" button to start creating a new API key. IMPORTANT: Make sure to uncheck "Silent Security Control Measures" (静默安全控制措施). You must uncheck this option first, otherwise you will not be able to enable futures trading in the later steps.
 
 Step 4: A dialog box will appear asking you to choose the API Key type. Select "System generated" (系统生成) as the API Key type. This is the recommended option for security.
 
@@ -432,7 +432,7 @@ Step 8: Paste the copied API Key into the "API Key" field in the form above. Mak
 
 步骤 2：在下拉菜单中，找到并点击「API 管理」选项。这将带您进入 API 管理页面。
 
-步骤 3：在 API 管理页面上，您会看到现有 API Key 列表（如果有）和一个「创建 API」按钮。点击「创建 API」按钮开始创建新的 API Key。重要：请务必取消勾选任何可能阻止您启用合约交易的选项。您必须先取消勾选这些选项，否则在后续步骤中将无法启用合约交易。
+步骤 3：在 API 管理页面上，您会看到现有 API Key 列表（如果有）和一个「创建 API」按钮。点击「创建 API」按钮开始创建新的 API Key。重要：请务必取消勾选「静默安全控制措施」。您必须先取消勾选此选项，否则在后续步骤中将无法启用合约交易。
 
 步骤 4：将弹出一个对话框，要求您选择 API Key 类型。选择「系统生成」作为 API Key 类型。这是推荐的安全选项。
 
