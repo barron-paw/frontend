@@ -41,9 +41,14 @@ export default function MonitorConfigPanel() {
       setLoading(true);
       try {
         // 强制不使用缓存，确保获取最新数据
+        // 注意：WeCom 配置是可选的，如果获取失败应该静默处理，不显示错误
         const [monitorData, wecomData] = await Promise.all([
           fetchMonitorConfig(),
-          fetchWecomConfig().catch(() => ({ enabled: false, webhookUrl: '', mentions: [] })),
+          fetchWecomConfig().catch((err) => {
+            // WeCom 配置获取失败时静默处理，不显示错误（因为 WeCom 是可选的）
+            console.debug('[MonitorConfigPanel] WeCom config fetch failed (optional), using defaults:', err);
+            return { enabled: false, webhookUrl: '', mentions: [] };
+          }),
         ]);
         
         // 调试日志：确保移动端和桌面端获取到相同的数据
@@ -1062,7 +1067,7 @@ Finally: Enable the "启用企业微信推送" (Enable Enterprise WeChat notific
               <span className="monitor-config__legend">{isEnglish ? 'Wallet Addresses' : '钱包列表'}</span>
               {/* 显示当前监控的地址：使用后端实际正在运行的监控线程中的地址 */}
               {/* 这个地址从后端API获取，反映后端实际监控的钱包地址，而不是前端输入框的地址 */}
-              {currentMonitoredAddresses && currentMonitoredAddresses.length > 0 && (
+              {currentMonitoredAddresses && currentMonitoredAddresses.length > 0 ? (
                 <div style={{ 
                   marginBottom: '12px', 
                   padding: '8px 12px', 
@@ -1076,6 +1081,22 @@ Finally: Enable the "启用企业微信推送" (Enable Enterprise WeChat notific
                   </strong>
                   <span style={{ color: 'var(--text-primary, #fff)' }}>
                     {currentMonitoredAddresses.join(', ')}
+                  </span>
+                </div>
+              ) : (
+                <div style={{ 
+                  marginBottom: '12px', 
+                  padding: '8px 12px', 
+                  background: 'rgba(255, 152, 0, 0.1)', 
+                  border: '1px solid rgba(255, 152, 0, 0.3)', 
+                  borderRadius: '4px',
+                  fontSize: '0.9rem'
+                }}>
+                  <strong style={{ color: 'var(--accent-warning, #ff9800)' }}>
+                    {isEnglish ? 'Monitoring Status: ' : '监控状态：'}
+                  </strong>
+                  <span style={{ color: 'var(--text-primary, #fff)' }}>
+                    {isEnglish ? 'Monitoring stopped (no wallet addresses)' : '已停止监控（无钱包地址）'}
                   </span>
                 </div>
               )}

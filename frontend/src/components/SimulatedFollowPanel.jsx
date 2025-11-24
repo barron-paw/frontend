@@ -136,8 +136,8 @@ export default function SimulatedFollowPanel() {
           <h2>{isEnglish ? 'Simulated Follow Trading' : '模拟跟单盘'}</h2>
           <p>
             {isEnglish
-              ? 'Simulate following a wallet\'s recent trades and calculate profit/loss. No login required.'
-              : '模拟跟随指定钱包的最近交易，计算盈亏情况。无需登录即可使用。'}
+              ? 'Simulate following a wallet\'s recent trades and calculate profit/loss. Only completed contracts are calculated. No login required.'
+              : '模拟跟随指定钱包的最近交易，计算盈亏情况。仅计算已完成的合约。无需登录即可使用。'}
           </p>
         </div>
       </div>
