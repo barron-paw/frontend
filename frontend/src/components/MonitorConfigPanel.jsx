@@ -99,8 +99,10 @@ export default function MonitorConfigPanel() {
         // 如果错误消息包含 WeCom 相关的 URL，说明只是 WeCom 配置获取失败
         // 这不应该显示错误，因为 WeCom 是可选的，且后端可能正常工作
         const errorMessage = err.message || '';
-        if (errorMessage.includes('/wecom') || errorMessage.includes('wecom')) {
+        if (errorMessage.includes('/wecom') || errorMessage.includes('wecom') || errorMessage.includes('无法连接到服务器')) {
           // WeCom 配置获取失败，但不影响监控配置，静默处理
+          // 注意：如果错误消息是"无法连接到服务器"，可能是 WeCom 配置获取失败导致的
+          // 这种情况下，如果监控配置已经成功加载，不应该显示错误
           console.debug('[MonitorConfigPanel] WeCom config fetch failed in catch block (optional), ignoring:', err);
           // 不设置错误状态，因为 WeCom 是可选的
         } else {
@@ -409,8 +411,18 @@ export default function MonitorConfigPanel() {
         mentions,
       };
       console.log('Saving WeCom config:', wecomPayload); // 调试日志
-      const wecomResponse = await saveWecomConfig(wecomPayload);
-      console.log('WeCom config saved:', wecomResponse); // 调试日志
+      // 保存 WeCom 配置，如果失败则静默处理（因为 WeCom 是可选的）
+      let wecomResponse = null;
+      try {
+        wecomResponse = await saveWecomConfig(wecomPayload);
+        console.log('WeCom config saved:', wecomResponse); // 调试日志
+      } catch (wecomErr) {
+        // WeCom 配置保存失败时静默处理，不显示错误（因为 WeCom 是可选的）
+        // 但记录日志以便调试
+        console.warn('[MonitorConfigPanel] WeCom config save failed (optional), continuing:', wecomErr);
+        // 使用默认值，确保后续代码不会出错
+        wecomResponse = { enabled: false, webhookUrl: null, mentions: [] };
+      }
       
       // 使用后端返回的实际监控地址，确保前端显示的地址与后端实际监控的地址一致
       // 确保 savedAddresses 是数组，且去重
