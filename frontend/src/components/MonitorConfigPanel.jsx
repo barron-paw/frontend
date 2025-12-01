@@ -345,7 +345,7 @@ export default function MonitorConfigPanel() {
       setPreviousWalletAddresses(savedAddresses);
       
       // 如果钱包地址为空，提示监控已停止
-      if (finalWalletAddresses.length === 0) {
+      if (finalWalletAddresses.length === 0 || savedAddresses.length === 0) {
         setStatus(isEnglish 
           ? 'Configuration saved. Monitoring has been stopped (no wallet addresses).'
           : '配置已保存。监控已停止（钱包地址列表为空）。');
