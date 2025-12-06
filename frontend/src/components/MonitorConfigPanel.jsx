@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext.jsx';
 import { fetchMonitorConfig, updateMonitorConfig, fetchTelegramChatId, getTelegramVerificationCode } from '../api/config.js';
 import { fetchWecomConfig, saveWecomConfig } from '../api/wecom.js';
 import { useLanguage } from '../context/LanguageContext.jsx';
+import { fetchCurrentUser } from '../api/auth.js';
 
 export default function MonitorConfigPanel() {
   const { user } = useAuth();
@@ -141,7 +142,49 @@ export default function MonitorConfigPanel() {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    if (!canEdit) {
+    
+    // 重要：在保存前，先刷新用户信息，确保订阅状态是最新的
+    // 这样可以避免因为缓存导致的订阅状态错误
+    let refreshedUser = user;
+    try {
+      refreshedUser = await fetchCurrentUser();
+      console.log('[MonitorConfigPanel] 保存前刷新用户信息:', {
+        old_can_access_monitor: user?.can_access_monitor,
+        new_can_access_monitor: refreshedUser?.can_access_monitor,
+        subscription_active: refreshedUser?.subscription_active,
+        trial_active: refreshedUser?.trial_active,
+        subscription_end: refreshedUser?.subscription_end,
+        user_id: refreshedUser?.email,
+      });
+      
+      // 更新 AuthContext 中的用户信息
+      if (refreshedUser) {
+        refreshUser();
+      }
+      
+      // 重新获取最新的 canEdit 状态
+      if (!refreshedUser?.can_access_monitor) {
+        setStatus(isEnglish 
+          ? 'Subscription or trial expired. Please renew to continue using monitoring features.' 
+          : '订阅或试用已过期。请续费后继续使用监控功能。');
+        setIsSaving(false);
+        setLoading(false);
+        return;
+      }
+    } catch (err) {
+      console.warn('[MonitorConfigPanel] 刷新用户信息失败:', err);
+      // 如果刷新失败，使用当前的 user 状态
+      if (!user?.can_access_monitor) {
+        setStatus(isEnglish 
+          ? 'Unable to verify subscription status. Please refresh the page and try again.' 
+          : '无法验证订阅状态。请刷新页面后重试。');
+        setIsSaving(false);
+        setLoading(false);
+        return;
+      }
+    }
+    
+    if (!canEdit && !refreshedUser?.can_access_monitor) {
       return;
     }
     
@@ -337,7 +380,23 @@ export default function MonitorConfigPanel() {
         finalWalletAddresses,
         limitedWalletAddresses,
         language: form.language,
+        formWalletAddresses: form.walletAddresses,
+        allInputsEmpty: form.walletAddresses.every(addr => !addr || !addr.trim()),
       });
+      
+      // 验证：确保至少有一个有效地址
+      if (limitedWalletAddresses.length === 0 && form.walletAddresses.some(addr => addr && addr.trim())) {
+        console.warn('[MonitorConfigPanel] 警告：用户输入了地址，但处理后地址列表为空，可能是地址格式错误或重复', {
+          formWalletAddresses: form.walletAddresses,
+          limitedWalletAddresses,
+        });
+        setStatus(isEnglish 
+          ? 'Warning: Invalid wallet address format. Please check that addresses start with 0x and are 42 characters long.' 
+          : '警告：钱包地址格式错误。请确保地址以 0x 开头且长度为 42 个字符。');
+        setLoading(false);
+        setIsSaving(false);
+        return;
+      }
       
       const monitorPayload = {
         telegramChatId: telegramChatIdValue,
@@ -1255,6 +1314,27 @@ Finally: Enable the "启用企业微信推送" (Enable Enterprise WeChat notific
                 <button 
                   type="submit" 
                   disabled={!canEdit || loading || isSaving}
+                  onClick={(e) => {
+                    // 调试：记录按钮点击和禁用状态
+                    if (!canEdit || loading || isSaving) {
+                      console.warn('[MonitorConfigPanel] 保存按钮被禁用:', {
+                        canEdit,
+                        loading,
+                        isSaving,
+                        disabled: !canEdit || loading || isSaving,
+                        formWalletAddresses: form.walletAddresses,
+                        formWalletAddressesLength: form.walletAddresses.length,
+                      });
+                    } else {
+                      console.log('[MonitorConfigPanel] 保存按钮点击:', {
+                        canEdit,
+                        loading,
+                        isSaving,
+                        formWalletAddresses: form.walletAddresses,
+                        formWalletAddressesLength: form.walletAddresses.length,
+                      });
+                    }
+                  }}
                 >
                   {loading || isSaving ? (isEnglish ? 'Processing…' : '处理中…') : isEnglish ? 'Save' : '保存配置'}
                 </button>
