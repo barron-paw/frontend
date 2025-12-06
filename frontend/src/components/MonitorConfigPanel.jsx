@@ -143,52 +143,7 @@ export default function MonitorConfigPanel() {
   const handleSubmit = async (event) => {
     event.preventDefault();
     
-    // 重要：在保存前，先刷新用户信息，确保订阅状态是最新的
-    // 这样可以避免因为缓存导致的订阅状态错误
-    let refreshedUser = user;
-    try {
-      refreshedUser = await fetchCurrentUser();
-      console.log('[MonitorConfigPanel] 保存前刷新用户信息:', {
-        old_can_access_monitor: user?.can_access_monitor,
-        new_can_access_monitor: refreshedUser?.can_access_monitor,
-        subscription_active: refreshedUser?.subscription_active,
-        trial_active: refreshedUser?.trial_active,
-        subscription_end: refreshedUser?.subscription_end,
-        user_id: refreshedUser?.email,
-      });
-      
-      // 更新 AuthContext 中的用户信息
-      if (refreshedUser) {
-        refreshUser();
-      }
-      
-      // 重新获取最新的 canEdit 状态
-      if (!refreshedUser?.can_access_monitor) {
-        setStatus(isEnglish 
-          ? 'Subscription or trial expired. Please renew to continue using monitoring features.' 
-          : '订阅或试用已过期。请续费后继续使用监控功能。');
-        setIsSaving(false);
-        setLoading(false);
-        return;
-      }
-    } catch (err) {
-      console.warn('[MonitorConfigPanel] 刷新用户信息失败:', err);
-      // 如果刷新失败，使用当前的 user 状态
-      if (!user?.can_access_monitor) {
-        setStatus(isEnglish 
-          ? 'Unable to verify subscription status. Please refresh the page and try again.' 
-          : '无法验证订阅状态。请刷新页面后重试。');
-        setIsSaving(false);
-        setLoading(false);
-        return;
-      }
-    }
-    
-    if (!canEdit && !refreshedUser?.can_access_monitor) {
-      return;
-    }
-    
-    // 防抖：5秒内不能重复点击
+    // 防抖：5秒内不能重复点击（在刷新用户信息之前检查，避免重复刷新）
     const now = Date.now();
     const timeSinceLastSave = now - lastSaveTime;
     if (timeSinceLastSave < 5000 && lastSaveTime > 0) {
@@ -204,10 +159,69 @@ export default function MonitorConfigPanel() {
       return;
     }
     
+    // 立即设置保存状态，禁用按钮，避免重复点击
     setStatus('');
     setIsSaving(true);
+    setLoading(true);
+    
+    // 重要：在保存前，先刷新用户信息，确保订阅状态是最新的
+    // 这样可以避免因为缓存导致的订阅状态错误
+    let refreshedUser = user;
     try {
-      setLoading(true);
+      // 快速刷新用户信息（设置超时，避免等待太久）
+      refreshedUser = await Promise.race([
+        fetchCurrentUser(),
+        new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 3000))
+      ]);
+      console.log('[MonitorConfigPanel] 保存前刷新用户信息:', {
+        old_can_access_monitor: user?.can_access_monitor,
+        new_can_access_monitor: refreshedUser?.can_access_monitor,
+        subscription_active: refreshedUser?.subscription_active,
+        trial_active: refreshedUser?.trial_active,
+        subscription_end: refreshedUser?.subscription_end,
+        user_id: refreshedUser?.email,
+      });
+      
+      // 更新 AuthContext 中的用户信息（如果 refreshUser 可用）
+      if (refreshedUser && refreshUser) {
+        try {
+          refreshUser();
+        } catch (refreshErr) {
+          console.warn('[MonitorConfigPanel] 更新 AuthContext 失败（不影响保存）:', refreshErr);
+        }
+      }
+      
+      // 重新获取最新的 canEdit 状态
+      if (!refreshedUser?.can_access_monitor) {
+        setStatus(isEnglish 
+          ? 'Subscription or trial expired. Please renew to continue using monitoring features.' 
+          : '订阅或试用已过期。请续费后继续使用监控功能。');
+        setIsSaving(false);
+        setLoading(false);
+        return;
+      }
+    } catch (err) {
+      console.warn('[MonitorConfigPanel] 刷新用户信息失败（使用缓存状态）:', err);
+      // 如果刷新失败，使用当前的 user 状态（不阻止保存）
+      if (!user?.can_access_monitor) {
+        setStatus(isEnglish 
+          ? 'Unable to verify subscription status. Please refresh the page and try again.' 
+          : '无法验证订阅状态。请刷新页面后重试。');
+        setIsSaving(false);
+        setLoading(false);
+        return;
+      }
+      // 如果当前用户状态有效，继续保存（使用缓存的用户信息）
+      refreshedUser = user;
+    }
+    
+    if (!canEdit && !refreshedUser?.can_access_monitor) {
+      setIsSaving(false);
+      setLoading(false);
+      return;
+    }
+    
+    try {
       // Save monitor config
       // 影响是否发送快照、是否继续监控的，只取决于新的钱包变化
       // 如果新的配置为空（钱包地址为空），就不再推送，停止监控
