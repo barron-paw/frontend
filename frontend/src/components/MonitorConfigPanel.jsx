@@ -38,6 +38,18 @@ export default function MonitorConfigPanel() {
       if (!canEdit) {
         return;
       }
+      // 重要：切换账户时，清除旧数据，确保显示新账户的数据
+      setForm({
+        telegramChatId: '',
+        walletAddresses: [],
+        language: 'zh',
+        telegramEnabled: true,
+        wecomEnabled: false,
+        wecomWebhookUrl: '',
+        wecomMentions: '',
+      });
+      setCurrentMonitoredAddresses([]);
+      setPreviousWalletAddresses([]);
       setLoading(true);
       try {
         // 强制不使用缓存，确保获取最新数据
@@ -114,7 +126,7 @@ export default function MonitorConfigPanel() {
       }
     };
     loadConfig();
-  }, [canEdit]); // 只在 canEdit 改变时重新加载
+  }, [canEdit, user?.id]); // 当 canEdit 或 user.id 改变时重新加载（切换账户时 user.id 会改变）
 
 
   const helperText = useMemo(() => {
