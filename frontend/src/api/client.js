@@ -113,8 +113,13 @@ async function _requestWithBaseUrl(baseUrl, path, options = {}) {
     'Content-Type': 'application/json',
     ...(options.headers || {}),
   };
-  if (authToken) {
-    headers.Authorization = `Bearer ${authToken}`;
+  // 重要：每次都从 localStorage 读取最新的 token，而不是使用模块级别的 authToken 变量
+  // 这样可以确保在切换账户时，使用正确的 token
+  const currentToken = (typeof window !== 'undefined' && window.localStorage)
+    ? window.localStorage.getItem(TOKEN_STORAGE_KEY)
+    : authToken;
+  if (currentToken) {
+    headers.Authorization = `Bearer ${currentToken}`;
   }
   
   // 判断是否跨域
