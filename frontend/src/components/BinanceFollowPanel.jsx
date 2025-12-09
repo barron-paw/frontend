@@ -385,7 +385,7 @@ export default function BinanceFollowPanel() {
             <div style={{ marginTop: '8px', color: '#ff4444', fontSize: '14px', fontWeight: 'bold' }}>
               {isEnglish 
                 ? '⚠️ Auto follow requires the wallet to be properly monitored and notifications enabled. Otherwise, auto follow will not work.'
-                : '⚠️ 跟单必须建立该钱包已正确监控及通知，否则不会跟单。'}
+                : '⚠️ 跟单需要该钱包已正确监控并启用通知，否则不会跟单。'}
             </div>
           </label>
 
