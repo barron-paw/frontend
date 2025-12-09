@@ -382,6 +382,11 @@ export default function BinanceFollowPanel() {
                 ? 'Uncheck and save to stop auto follow. Configuration persists after leaving this page.'
                 : '取消勾选并保存即可停止自动跟单。离开此页面后配置仍然有效。'}
             </small>
+            <div style={{ marginTop: '8px', color: '#ff4444', fontSize: '14px', fontWeight: 'bold' }}>
+              {isEnglish 
+                ? '⚠️ Auto follow requires the wallet to be properly monitored and notifications enabled. Otherwise, auto follow will not work.'
+                : '⚠️ 跟单必须建立该钱包已正确监控及通知，否则不会跟单。'}
+            </div>
           </label>
 
           <label className="monitor-config__field">
