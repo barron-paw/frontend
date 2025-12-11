@@ -379,6 +379,12 @@ export default function MonitorConfigPanel() {
         });
       }
       
+      // 如果用户明确清空了所有地址，确保 finalWalletAddresses 是空数组
+      if (allInputsEmpty) {
+        finalWalletAddresses = [];
+        console.log('[MonitorConfigPanel] 用户清空所有地址，确保 finalWalletAddresses 为空数组以停止监控');
+      }
+      
       // 确保最多只发送2个钱包地址（即使前端被绕过，也要限制）
       const limitedWalletAddresses = finalWalletAddresses.slice(0, 2);
       if (finalWalletAddresses.length > 2) {
@@ -396,13 +402,17 @@ export default function MonitorConfigPanel() {
         language: form.language,
         formWalletAddresses: form.walletAddresses,
         allInputsEmpty: form.walletAddresses.every(addr => !addr || !addr.trim()),
+        willStopMonitoring: allInputsEmpty && limitedWalletAddresses.length === 0,
       });
       
-      // 验证：确保至少有一个有效地址
-      if (limitedWalletAddresses.length === 0 && form.walletAddresses.some(addr => addr && addr.trim())) {
+      // 验证：如果用户输入了地址但处理后为空，显示警告
+      // 但如果用户明确清空了所有地址（allInputsEmpty），允许保存空列表以停止监控
+      const hasNonEmptyInput = form.walletAddresses.some(addr => addr && addr.trim());
+      if (limitedWalletAddresses.length === 0 && hasNonEmptyInput && !allInputsEmpty) {
         console.warn('[MonitorConfigPanel] 警告：用户输入了地址，但处理后地址列表为空，可能是地址格式错误或重复', {
           formWalletAddresses: form.walletAddresses,
           limitedWalletAddresses,
+          allInputsEmpty,
         });
         setStatus(isEnglish 
           ? 'Warning: Invalid wallet address format. Please check that addresses start with 0x and are 42 characters long.' 
