@@ -162,7 +162,7 @@ export default function MonitorConfigPanel() {
     // 立即设置保存状态，禁用按钮，避免重复点击
     setStatus('');
     setIsSaving(true);
-    setLoading(true);
+      setLoading(true);
     
     // 重要：在保存前，先刷新用户信息，确保订阅状态是最新的
     // 这样可以避免因为缓存导致的订阅状态错误

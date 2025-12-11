@@ -426,7 +426,7 @@ Step 4: A dialog box will appear asking you to choose the API Key type. Select "
 
 Step 5: You will be prompted to label your API key. Enter a descriptive name such as "Hyperliquid Auto Follow" or "交易跟单" to help you identify this API key later. Then complete the security verification (this may include email verification, SMS verification, or Google Authenticator code depending on your account security settings).
 
-Step 6: IMPORTANT - Permission Settings: On the permission settings page, you will see several permission options. For security reasons, ONLY enable "Futures Trading" (合约交易) permission. DO NOT enable "Enable Withdrawals" (启用提现) or "Enable Reading" (启用读取) permissions. This ensures that even if your API key is compromised, it cannot be used to withdraw funds from your account.
+Step 6: IMPORTANT - Permission Settings: On the permission settings page, you will see several permission options. Enable "Futures Trading" (合约交易) and "Enable Reading" (允许读取) permissions. DO NOT enable "Enable Withdrawals" (允许提现) permission. For IP Access Restriction, select "Unrestricted" (无限制). This ensures that even if your API key is compromised, it cannot be used to withdraw funds from your account.
 
 Step 7: After setting the permissions, click "Next" or "Create" to complete the API key creation process. Binance will display your newly created API Key. Copy the entire API Key string immediately.
 
@@ -443,7 +443,7 @@ Step 8: Paste the copied API Key into the "API Key" field in the form above. Mak
 
 步骤 5：系统会提示您为 API Key 命名。输入一个描述性的名称，例如「Hyperliquid 自动跟单」或「交易跟单」，以便您以后识别此 API Key。然后完成安全验证（这可能包括邮箱验证、短信验证或 Google 验证器代码，具体取决于您的账户安全设置）。
 
-步骤 6：重要 - 权限设置：在权限设置页面上，您会看到多个权限选项。为了安全起见，仅启用「合约交易」权限。请勿启用「启用提现」或「启用读取」权限。这确保即使您的 API Key 被泄露，也无法用于从您的账户提取资金。
+步骤 6：重要 - 权限设置：在权限设置页面上，您会看到多个权限选项。请启用「合约交易」和「允许读取」权限。请勿勾选「允许提现」权限。IP 访问限制请勾选「无限制」。这确保即使您的 API Key 被泄露，也无法用于从您的账户提取资金。
 
 步骤 7：设置权限后，点击「下一步」或「创建」以完成 API Key 创建过程。Binance 将显示您新创建的 API Key。请立即复制整个 API Key 字符串。
 

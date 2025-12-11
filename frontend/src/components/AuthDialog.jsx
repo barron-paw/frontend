@@ -9,7 +9,7 @@ export default function AuthDialog({ open, mode = 'login', onClose, onSwitch }) 
   const { language } = useLanguage();
   const isEnglish = language === 'en';
 
-  const [form, setForm] = useState({ email: '', password: '', verificationCode: '', newPassword: '' });
+  const [form, setForm] = useState({ email: '', password: '', verificationCode: '', newPassword: '', inviteCode: '' });
   const [submitting, setSubmitting] = useState(false);
   const [requestingCode, setRequestingCode] = useState(false);
   const [localError, setLocalError] = useState('');
@@ -17,7 +17,7 @@ export default function AuthDialog({ open, mode = 'login', onClose, onSwitch }) 
 
   useEffect(() => {
     if (!open) {
-      setForm({ email: '', password: '', verificationCode: '', newPassword: '' });
+      setForm({ email: '', password: '', verificationCode: '', newPassword: '', inviteCode: '' });
       setLocalError('');
       setSuccessMessage('');
       setRequestingCode(false);
@@ -104,7 +104,7 @@ export default function AuthDialog({ open, mode = 'login', onClose, onSwitch }) 
         // 3秒后自动切换到登录界面
         setTimeout(() => {
           onSwitch('login');
-          setForm({ email: form.email, password: '', verificationCode: '', newPassword: '' });
+          setForm({ email: form.email, password: '', verificationCode: '', newPassword: '', inviteCode: '' });
         }, 3000);
       } catch (err) {
         setLocalError(err.message || (isEnglish ? 'Password reset failed, please retry later.' : '密码重置失败，请稍后再试'));
@@ -133,6 +133,7 @@ export default function AuthDialog({ open, mode = 'login', onClose, onSwitch }) 
           email: form.email,
           password: form.password,
           verification_code: form.verificationCode.trim(),
+          invite_code: form.inviteCode.trim() || undefined,
         });
         onClose();
       }
@@ -221,6 +222,22 @@ export default function AuthDialog({ open, mode = 'login', onClose, onSwitch }) 
               </div>
             </label>
           ) : null}
+          {mode === 'register' && (
+            <label className="auth-dialog__field">
+              <span>{isEnglish ? 'Invite Code (Optional)' : '邀请码（选填）'}</span>
+              <input
+                type="text"
+                value={form.inviteCode}
+                onChange={(event) => {
+                  // 自动转换为大写，只允许字母和数字
+                  const value = event.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 8);
+                  setForm((prev) => ({ ...prev, inviteCode: value }));
+                }}
+                placeholder={isEnglish ? 'Enter invite code' : '请输入邀请码'}
+                maxLength={8}
+              />
+            </label>
+          )}
 
           {successMessage ? <div className="auth-dialog__success">{successMessage}</div> : null}
           {(localError || error) ? (

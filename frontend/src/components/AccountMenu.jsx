@@ -1,9 +1,10 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext.jsx';
 import AuthDialog from './AuthDialog.jsx';
 import './AccountMenu.css';
 import { useLanguage } from '../context/LanguageContext.jsx';
 import { fetchMonitorConfig, updateMonitorConfig } from '../api/config.js';
+import { getInvitationStats } from '../api/auth.js';
 
 function formatStatus(user, language) {
   const isEnglish = language === 'en';
@@ -34,10 +35,46 @@ export default function AccountMenu() {
   const isEnglish = language === 'en';
   const statusLabel = useMemo(() => formatStatus(user, language), [user, language]);
   const [savingLanguage, setSavingLanguage] = useState(false);
+  const [invitationStats, setInvitationStats] = useState(null);
+  const [loadingStats, setLoadingStats] = useState(false);
+  const [showInvitation, setShowInvitation] = useState(false);
 
   const openDialog = (mode) => {
     setDialogMode(mode);
     setDialogOpen(true);
+  };
+
+  useEffect(() => {
+    if (user) {
+      loadInvitationStats();
+    } else {
+      setInvitationStats(null);
+      setShowInvitation(false);
+    }
+  }, [user]);
+
+  const loadInvitationStats = async () => {
+    if (!user) return;
+    try {
+      setLoadingStats(true);
+      const stats = await getInvitationStats();
+      setInvitationStats(stats);
+    } catch (err) {
+      console.error('Failed to load invitation stats:', err);
+      setInvitationStats(null);
+    } finally {
+      setLoadingStats(false);
+    }
+  };
+
+  const copyInviteCode = async () => {
+    if (!user?.invite_code) return;
+    try {
+      await navigator.clipboard.writeText(user.invite_code);
+      // 可以添加一个提示消息
+    } catch (err) {
+      console.error('Failed to copy invite code:', err);
+    }
   };
 
   const handleLanguageChange = async (event) => {
@@ -77,6 +114,49 @@ export default function AccountMenu() {
           <div className="account-menu__details">
             <div className="account-menu__email">{user.email}</div>
             <div className="account-menu__status" data-active={user.can_access_monitor}>{statusLabel}</div>
+            {user.invite_code && (
+              <div className="account-menu__invitation">
+                <button
+                  type="button"
+                  className="account-menu__invitation-toggle"
+                  onClick={() => setShowInvitation(!showInvitation)}
+                >
+                  {isEnglish ? 'Invitation' : '邀请码'} {showInvitation ? '▼' : '▶'}
+                </button>
+                {showInvitation && (
+                  <div className="account-menu__invitation-details">
+                    <div className="account-menu__invitation-code">
+                      <span>{isEnglish ? 'My Invite Code:' : '我的邀请码：'}</span>
+                      <div className="account-menu__invitation-code-value">
+                        <code>{user.invite_code}</code>
+                        <button
+                          type="button"
+                          onClick={copyInviteCode}
+                          title={isEnglish ? 'Copy' : '复制'}
+                          style={{ marginLeft: '8px', padding: '4px 8px', fontSize: '12px' }}
+                        >
+                          {isEnglish ? 'Copy' : '复制'}
+                        </button>
+                      </div>
+                    </div>
+                    {loadingStats ? (
+                      <div style={{ fontSize: '12px', color: '#666' }}>
+                        {isEnglish ? 'Loading stats...' : '加载统计中...'}
+                      </div>
+                    ) : invitationStats ? (
+                      <div className="account-menu__invitation-stats">
+                        <div>
+                          {isEnglish ? 'Total Invitees:' : '总邀请人数：'} <strong>{invitationStats.total_invitees}</strong>
+                        </div>
+                        <div>
+                          {isEnglish ? 'Subscribed Members:' : '订阅会员数：'} <strong>{invitationStats.subscribed_invitees}</strong>
+                        </div>
+                      </div>
+                    ) : null}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
           <button type="button" className="account-menu__button" onClick={logout}>
             {isEnglish ? 'Sign out' : '退出'}

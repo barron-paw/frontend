@@ -77,3 +77,68 @@
 .account-menu__button--secondary:hover {
   background: var(--surface-control);
 }
+
+.account-menu__invitation {
+  margin-top: var(--space-xs);
+  font-size: 0.85rem;
+}
+
+.account-menu__invitation-toggle {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 0;
+  font-size: 0.85rem;
+  text-align: left;
+  transition: color 0.2s ease;
+}
+
+.account-menu__invitation-toggle:hover {
+  color: var(--accent-primary);
+}
+
+.account-menu__invitation-details {
+  margin-top: var(--space-xs);
+  padding: var(--space-sm);
+  background: var(--surface-control);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-stronger);
+}
+
+.account-menu__invitation-code {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  margin-bottom: var(--space-sm);
+}
+
+.account-menu__invitation-code-value {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+}
+
+.account-menu__invitation-code-value code {
+  font-family: 'Courier New', monospace;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--accent-primary);
+  background: var(--surface);
+  padding: 0.25rem 0.5rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-stronger);
+}
+
+.account-menu__invitation-stats {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.account-menu__invitation-stats strong {
+  color: var(--text-primary);
+  font-weight: 600;
+}

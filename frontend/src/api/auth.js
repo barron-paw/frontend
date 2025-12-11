@@ -51,3 +51,13 @@ export function forgotPassword(payload) {
 export function resetPassword(payload) {
   return apiClient.post('/auth/reset-password', payload);
 }
+
+export async function getInvitationStats() {
+  try {
+    const response = await apiClient.get('/invitation/stats');
+    return response;
+  } catch (err) {
+    console.error('[getInvitationStats] Error:', err);
+    throw err;
+  }
+}
