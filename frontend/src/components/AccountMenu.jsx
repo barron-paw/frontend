@@ -11,16 +11,53 @@ function formatStatus(user, language) {
   if (!user) {
     return null;
   }
+  
+  // 调试日志（仅在开发环境）
+  if (process.env.NODE_ENV === 'development') {
+    console.log('[formatStatus] User data:', {
+      subscription_active: user.subscription_active,
+      subscription_end: user.subscription_end,
+      trial_active: user.trial_active,
+      trial_end: user.trial_end,
+    });
+  }
+  
   const trialEnd = user.trial_end ? new Date(user.trial_end) : null;
   const subscriptionEnd = user.subscription_end ? new Date(user.subscription_end) : null;
   const now = new Date();
 
-  if (user.subscription_active && subscriptionEnd) {
+  // 格式化日期，确保在不同浏览器和时区下都能正确显示
+  const formatDate = (date) => {
+    if (!date || isNaN(date.getTime())) {
+      if (process.env.NODE_ENV === 'development') {
+        console.warn('[formatDate] Invalid date:', date);
+      }
+      return '';
+    }
+    try {
+      // 使用UTC时间格式化，避免时区问题
+      const year = date.getUTCFullYear();
+      const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+      const day = String(date.getUTCDate()).padStart(2, '0');
+      const hours = String(date.getUTCHours()).padStart(2, '0');
+      const minutes = String(date.getUTCMinutes()).padStart(2, '0');
+      return `${year}-${month}-${day} ${hours}:${minutes} UTC`;
+    } catch (e) {
+      console.error('[formatDate] Date formatting error:', e, date);
+      return date.toISOString().split('T')[0]; // 降级到简单的日期格式
+    }
+  };
+
+  if (user.subscription_active && subscriptionEnd && !isNaN(subscriptionEnd.getTime())) {
+    const formattedDate = formatDate(subscriptionEnd);
+    if (process.env.NODE_ENV === 'development') {
+      console.log('[formatStatus] Subscription active, formatted date:', formattedDate);
+    }
     return isEnglish
-      ? `Subscription active, until ${subscriptionEnd.toLocaleString()}`
-      : `订阅有效，截止 ${subscriptionEnd.toLocaleString()}`;
+      ? `Subscription active, until ${formattedDate}`
+      : `订阅有效，截止 ${formattedDate}`;
   }
-  if (user.trial_active && trialEnd) {
+  if (user.trial_active && trialEnd && !isNaN(trialEnd.getTime())) {
     const days = Math.max(0, Math.ceil((trialEnd - now) / (1000 * 60 * 60 * 24)));
     return isEnglish ? `Trial remaining ${days} days` : `试用剩余 ${days} 天`;
   }
@@ -28,7 +65,7 @@ function formatStatus(user, language) {
 }
 
 export default function AccountMenu() {
-  const { user, loading, logout } = useAuth();
+  const { user, loading, logout, refreshUser } = useAuth();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogMode, setDialogMode] = useState('login');
   const { language, setLanguage } = useLanguage();
@@ -38,6 +75,15 @@ export default function AccountMenu() {
   const [invitationStats, setInvitationStats] = useState(null);
   const [loadingStats, setLoadingStats] = useState(false);
   const [showInvitation, setShowInvitation] = useState(false);
+
+  // 定期刷新用户信息（每5分钟），确保订阅信息是最新的
+  useEffect(() => {
+    if (!user) return;
+    const interval = setInterval(() => {
+      refreshUser();
+    }, 5 * 60 * 1000); // 5分钟
+    return () => clearInterval(interval);
+  }, [user, refreshUser]);
 
   const openDialog = (mode) => {
     setDialogMode(mode);
