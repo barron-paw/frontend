@@ -22,21 +22,13 @@ export async function registerUser(payload) {
   return response?.user || null;
 }
 
-export async function fetchCurrentUser(forceRefresh = false) {
+export async function fetchCurrentUser() {
   try {
     const token = getAuthToken();
     if (!token) {
       return null;
     }
-    // 添加强制刷新参数，防止缓存
-    const timestamp = forceRefresh ? `?t=${Date.now()}` : '';
-    const user = await apiClient.get(`/auth/me${timestamp}`, {
-      headers: {
-        'Cache-Control': 'no-cache, no-store, must-revalidate',
-        'Pragma': 'no-cache',
-        'Expires': '0',
-      },
-    });
+    const user = await apiClient.get('/auth/me');
     return user;
   } catch (error) {
     setAuthToken(null);
