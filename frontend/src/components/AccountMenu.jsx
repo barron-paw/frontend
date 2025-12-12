@@ -80,9 +80,21 @@ export default function AccountMenu() {
   useEffect(() => {
     if (!user) return;
     const interval = setInterval(() => {
-      refreshUser();
+      refreshUser(true); // 强制刷新，防止缓存
     }, 5 * 60 * 1000); // 5分钟
     return () => clearInterval(interval);
+  }, [user, refreshUser]);
+
+  // 当页面变为可见时，立即刷新用户信息（用户切换回标签页时）
+  useEffect(() => {
+    if (!user) return;
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        refreshUser(true); // 强制刷新，防止缓存
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
   }, [user, refreshUser]);
 
   const openDialog = (mode) => {

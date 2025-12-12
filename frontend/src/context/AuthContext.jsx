@@ -16,10 +16,10 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  const loadUser = useCallback(async () => {
+  const loadUser = useCallback(async (forceRefresh = false) => {
     setLoading(true);
     try {
-      const current = await fetchCurrentUser();
+      const current = await fetchCurrentUser(forceRefresh);
       setUser(current);
     } finally {
       setLoading(false);
@@ -59,6 +59,10 @@ export function AuthProvider({ children }) {
     setUser(null);
   }, []);
 
+  const refreshUser = useCallback((forceRefresh = false) => {
+    return loadUser(forceRefresh);
+  }, [loadUser]);
+
   const value = {
     user,
     loading,
@@ -66,7 +70,7 @@ export function AuthProvider({ children }) {
     login,
     register,
     logout,
-    refreshUser: loadUser,
+    refreshUser,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
