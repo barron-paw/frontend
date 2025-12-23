@@ -28,7 +28,7 @@ function formatStatus(user, language) {
 }
 
 export default function AccountMenu() {
-  const { user, loading, logout, refreshUser } = useAuth();
+  const { user, loading, logout } = useAuth();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogMode, setDialogMode] = useState('login');
   const { language, setLanguage } = useLanguage();
@@ -38,7 +38,6 @@ export default function AccountMenu() {
   const [invitationStats, setInvitationStats] = useState(null);
   const [loadingStats, setLoadingStats] = useState(false);
   const [showInvitation, setShowInvitation] = useState(false);
-
 
   const openDialog = (mode) => {
     setDialogMode(mode);

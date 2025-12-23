@@ -37,6 +37,18 @@ export default function MonitorConfigPanel() {
   useEffect(() => {
     const loadConfig = async () => {
       if (!canEdit) {
+        // 会员到期：清空监控地址，显示已停止状态
+        setCurrentMonitoredAddresses([]);
+        setPreviousWalletAddresses([]);
+        setForm({
+          telegramChatId: '',
+          walletAddresses: [],
+          language: 'zh',
+          telegramEnabled: true,
+          wecomEnabled: false,
+          wecomWebhookUrl: '',
+          wecomMentions: '',
+        });
         return;
       }
       // 重要：切换账户时，清除旧数据，确保显示新账户的数据
@@ -1184,7 +1196,23 @@ Finally: Enable the "启用企业微信推送" (Enable Enterprise WeChat notific
               <span className="monitor-config__legend">{isEnglish ? 'Wallet Addresses' : '钱包列表'}</span>
               {/* 显示当前监控的地址：使用后端实际正在运行的监控线程中的地址 */}
               {/* 这个地址从后端API获取，反映后端实际监控的钱包地址，而不是前端输入框的地址 */}
-              {currentMonitoredAddresses && currentMonitoredAddresses.length > 0 ? (
+              {!canEdit ? (
+                <div style={{ 
+                  marginBottom: '12px', 
+                  padding: '8px 12px', 
+                  background: 'rgba(255, 152, 0, 0.1)', 
+                  border: '1px solid rgba(255, 152, 0, 0.3)', 
+                  borderRadius: '4px',
+                  fontSize: '0.9rem'
+                }}>
+                  <strong style={{ color: 'var(--warning, #ff9800)' }}>
+                    {isEnglish ? 'Monitoring Stopped: ' : '监控已停止：'}
+                  </strong>
+                  <span style={{ color: 'var(--text-primary, #fff)' }}>
+                    {isEnglish ? 'Subscription expired. Please renew to continue monitoring.' : '会员已到期，请续费后继续使用监控功能。'}
+                  </span>
+                </div>
+              ) : currentMonitoredAddresses && currentMonitoredAddresses.length > 0 ? (
                 <div style={{ 
                   marginBottom: '12px', 
                   padding: '8px 12px', 
