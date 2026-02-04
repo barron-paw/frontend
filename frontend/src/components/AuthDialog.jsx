@@ -73,7 +73,21 @@ export default function AuthDialog({ open, mode = 'login', onClose, onSwitch }) 
         setSuccessMessage(isEnglish ? 'Verification code sent. Please check your inbox.' : '验证码已发送，请查收邮箱。');
       }
     } catch (err) {
-      setLocalError(err.message || (isEnglish ? 'Failed to send verification code.' : '验证码发送失败。'));
+      const status = err.response?.status;
+      let msg = err.message || (isEnglish ? 'Failed to send verification code.' : '验证码发送失败。');
+      // 429：60 秒内只能请求一次，提示中文并建议先查收上一封邮件
+      if (status === 429) {
+        msg = isEnglish
+          ? 'Please wait about 1 minute before requesting again. If you already clicked once, check your inbox (and spam folder) for the code.'
+          : '请约 1 分钟后再点击获取验证码。若您刚才已点击过，请先查收邮箱（含垃圾箱）里的验证码。';
+      } else if (status >= 500) {
+        msg = isEnglish ? 'Server error. Please try again later.' : '服务器错误，请稍后重试。';
+      } else if (msg.includes('无法连接') || msg.includes('Failed to fetch')) {
+        msg = isEnglish
+          ? 'Request failed. If you already clicked "Get Code" once, check your inbox (and spam) for the code, then wait ~1 min before trying again.'
+          : '请求未成功。若您刚才已点击过「获取验证码」，请先查收邮箱（含垃圾箱），约 1 分钟后再试。';
+      }
+      setLocalError(msg);
     } finally {
       setRequestingCode(false);
     }
@@ -140,19 +154,17 @@ export default function AuthDialog({ open, mode = 'login', onClose, onSwitch }) 
     } catch (err) {
       // 记录详细错误信息用于调试
       console.error('[AuthDialog] Login/Register error:', err);
-      // 提取错误信息，处理可能的网络错误
+      const status = err.response?.status;
       let errorMessage = err.message || (isEnglish ? 'Action failed, please retry later.' : '操作失败，请稍后再试');
-      
-      // 检测是否为 iOS 设备
-      const isIOSDevice = typeof navigator !== 'undefined' && /iPhone|iPad|iPod/i.test(navigator.userAgent);
-      
-      // 如果是网络错误，提供更友好的提示
-      if (errorMessage.includes('无法连接到服务器') || errorMessage.includes('Failed to fetch') || errorMessage.includes('Load failed')) {
-        if (isIOSDevice) {
-          // iOS 设备显示详细的错误信息（已经在 client.js 中设置）
-          errorMessage = errorMessage; // 保持 client.js 中设置的详细错误信息
-        } else {
-          errorMessage = isEnglish 
+      // 5xx：服务器内部错误，与「无法连接」区分开
+      if (status >= 500) {
+        errorMessage = isEnglish
+          ? 'Server error. Please try again later or contact support.'
+          : '服务器错误，请稍后重试。若持续出现请联系管理员。';
+      } else if (errorMessage.includes('无法连接到服务器') || errorMessage.includes('Failed to fetch') || errorMessage.includes('Load failed')) {
+        const isIOSDevice = typeof navigator !== 'undefined' && /iPhone|iPad|iPod/i.test(navigator.userAgent);
+        if (!isIOSDevice) {
+          errorMessage = isEnglish
             ? 'Unable to connect to server. Please check your network connection and try again.'
             : '无法连接到服务器，请检查网络连接后重试。';
         }
