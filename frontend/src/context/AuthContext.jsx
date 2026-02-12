@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useState } from 'react';
-import { loginUser, registerUser, fetchCurrentUser, logoutUser } from '../api/auth.js';
+import { loginUser, registerUser, fetchCurrentUser, logoutUser, ensureInstanceForUser } from '../api/auth.js';
 
 const AuthContext = createContext({
   user: null,
@@ -21,6 +21,7 @@ export function AuthProvider({ children }) {
     try {
       const current = await fetchCurrentUser();
       setUser(current);
+      if (current) await ensureInstanceForUser();
     } finally {
       setLoading(false);
     }
@@ -35,6 +36,7 @@ export function AuthProvider({ children }) {
     try {
       const nextUser = await loginUser(payload);
       setUser(nextUser);
+      if (nextUser) await ensureInstanceForUser();
       return nextUser;
     } catch (err) {
       setError(err.message || '登录失败，请稍后重试');
@@ -47,6 +49,7 @@ export function AuthProvider({ children }) {
     try {
       const nextUser = await registerUser(payload);
       setUser(nextUser);
+      if (nextUser) await ensureInstanceForUser();
       return nextUser;
     } catch (err) {
       setError(err.message || '注册失败，请稍后重试');

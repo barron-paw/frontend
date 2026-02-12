@@ -65,11 +65,11 @@ function getFallbackApiBaseUrl() {
     // 如果是主域名，备用URL尝试完整URL（如果主URL是相对路径）
     if (hostname === 'hypebot.top' || hostname === 'www.hypebot.top') {
       // 如果主URL是相对路径，备用URL使用完整URL
-      if (API_BASE_URL === '/api') {
+      if (currentBaseUrl === '/api') {
         return 'https://api.hypebot.top/api';
       }
       // 如果主URL是完整URL，备用URL使用相对路径
-      if (API_BASE_URL.startsWith('http')) {
+      if (currentBaseUrl.startsWith('http')) {
         return '/api';
       }
     }
@@ -77,12 +77,26 @@ function getFallbackApiBaseUrl() {
   return null;
 }
 
-const API_BASE_URL = getApiBaseUrl();
+// 多实例：当前请求使用的 base URL，登录后根据 /api/instance-for-user 切换为对应用户所属实例
+let currentBaseUrl = getApiBaseUrl();
+const INITIAL_BASE_URL = currentBaseUrl;
 const TOKEN_STORAGE_KEY = 'hm_auth_token';
 
 let authToken = (typeof window !== 'undefined' && window.localStorage)
   ? window.localStorage.getItem(TOKEN_STORAGE_KEY)
   : null;
+
+/** 获取当前 API base URL（多实例时可能已切换为对应用户实例） */
+export function getApiBaseUrlCurrent() {
+  return currentBaseUrl;
+}
+
+/** 设置 API base URL（多实例时在获取 /api/instance-for-user 后调用，使后续请求只打对应用户实例） */
+export function setApiBaseUrl(url) {
+  if (url && typeof url === 'string') {
+    currentBaseUrl = normalizeBaseUrl(url);
+  }
+}
 
 export function setAuthToken(token) {
   authToken = token || null;
@@ -186,16 +200,22 @@ async function _requestWithBaseUrl(baseUrl, path, options = {}) {
 
 async function request(path, options = {}, useFallback = true) {
   try {
-    return await _requestWithBaseUrl(API_BASE_URL, path, options);
+    return await _requestWithBaseUrl(currentBaseUrl, path, options);
   } catch (err) {
+    // 多实例：若返回 409 wrong_instance，切换 base_url 并重试一次
+    const data = err.response?.data;
+    if (useFallback && err.response?.status === 409 && data?.code === 'wrong_instance' && data?.base_url) {
+      setApiBaseUrl(data.base_url);
+      return request(path, options, false);
+    }
     // 记录详细错误信息（iOS 设备）
     if (isIOS()) {
-      const fullUrl = `${API_BASE_URL}${path.startsWith('/') ? path : `/${path}`}`;
+      const fullUrl = `${currentBaseUrl}${path.startsWith('/') ? path : `/${path}`}`;
       console.error('[API Client] iOS request failed:', {
         url: fullUrl,
         error: err.message,
         errorType: err.constructor.name,
-        baseUrl: API_BASE_URL,
+        baseUrl: currentBaseUrl,
         path: path,
         hostname: typeof window !== 'undefined' ? window.location.hostname : 'unknown',
         protocol: typeof window !== 'undefined' ? window.location.protocol : 'unknown',
@@ -204,7 +224,7 @@ async function request(path, options = {}, useFallback = true) {
       if (import.meta.env.DEV && typeof window !== 'undefined') {
         console.error('[API Client] iOS Debug Info:', {
           'Current URL': window.location.href,
-          'API Base URL': API_BASE_URL,
+          'API Base URL': currentBaseUrl,
           'Request URL': fullUrl,
           'Error': err.message,
         });
@@ -220,8 +240,8 @@ async function request(path, options = {}, useFallback = true) {
     
     if (isNetworkError && useFallback) {
       const fallbackBaseUrl = getFallbackApiBaseUrl();
-      if (fallbackBaseUrl && fallbackBaseUrl !== API_BASE_URL) {
-        console.log('[API Client] Primary URL failed, trying fallback:', fallbackBaseUrl, 'Original:', API_BASE_URL);
+      if (fallbackBaseUrl && fallbackBaseUrl !== currentBaseUrl) {
+        console.log('[API Client] Primary URL failed, trying fallback:', fallbackBaseUrl, 'Original:', currentBaseUrl);
         try {
           // 使用备用URL重试（不再次尝试fallback，避免无限循环）
           return await _requestWithBaseUrl(fallbackBaseUrl, path, options);
@@ -247,7 +267,7 @@ async function request(path, options = {}, useFallback = true) {
         errorMsg = `无法连接到服务器。请检查网络连接或稍后重试。`;
       } else {
         const normalizedPath = path.startsWith('/') ? path : `/${path}`;
-        const url = `${API_BASE_URL}${normalizedPath}`;
+        const url = `${currentBaseUrl}${normalizedPath}`;
         errorMsg = `无法连接到服务器 (${url})。请检查：\n1. 后端服务是否正在运行\n2. API 地址是否正确\n3. 网络连接是否正常\n4. CORS 配置是否正确`;
       }
       throw new Error(errorMsg);
