@@ -2,7 +2,7 @@ import { useCallback } from 'react';
 import './WalletSelector.css';
 import { useLanguage } from '../context/LanguageContext.jsx';
 
-export function WalletSelector({ value, onChange, onRefresh, isLoading }) {
+export function WalletSelector({ value, onChange, onRefresh, isLoading, inputId = 'wallet-input' }) {
   const { language } = useLanguage();
   const isEnglish = language === 'en';
   const handleInputChange = useCallback(
@@ -25,11 +25,11 @@ export function WalletSelector({ value, onChange, onRefresh, isLoading }) {
   return (
     <div className="wallet-selector">
       <div className="wallet-selector__input-wrapper">
-        <label className="wallet-selector__label" htmlFor="wallet-input">
+        <label className="wallet-selector__label" htmlFor={inputId}>
           {isEnglish ? 'Wallet' : '钱包'}
         </label>
           <input
-            id="wallet-input"
+            id={inputId}
             type="text"
             className="wallet-selector__input"
             value={value}

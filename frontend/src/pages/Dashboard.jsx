@@ -90,10 +90,11 @@ export function Dashboard() {
       <SimulatedFollowPanel />
 
       <WalletSelector
+        inputId="wallet-input-monitor"
         value={selectedWallet}
         onChange={setSelectedWallet}
         onRefresh={refresh}
-          isLoading={loading}
+        isLoading={loading}
       />
 
       <WhaleAddressesPanel />
@@ -118,6 +119,7 @@ export function Dashboard() {
         <WhaleAddressesPanel />
         
         <WalletSelector
+          inputId="wallet-input-automation"
           value={selectedWallet}
           onChange={setSelectedWallet}
           onRefresh={refresh}
