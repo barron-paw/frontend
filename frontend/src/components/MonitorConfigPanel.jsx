@@ -7,7 +7,10 @@ import { useLanguage } from '../context/LanguageContext.jsx';
 import { fetchCurrentUser } from '../api/auth.js';
 
 export default function MonitorConfigPanel() {
-  const { user, refreshUser } = useAuth();
+  const auth = useAuth();
+  const { user } = auth;
+  // 确保 refreshUser 始终存在，避免 ReferenceError 导致保存失败
+  const refreshUser = typeof auth.refreshUser === 'function' ? auth.refreshUser : async () => {};
   const { language, setLanguage } = useLanguage();
   const isEnglish = language === 'en';
   const [form, setForm] = useState({
