@@ -7,7 +7,7 @@ import { useLanguage } from '../context/LanguageContext.jsx';
 import { fetchCurrentUser } from '../api/auth.js';
 
 export default function MonitorConfigPanel() {
-  const { user } = useAuth();
+  const { user, refreshUser } = useAuth();
   const { language, setLanguage } = useLanguage();
   const isEnglish = language === 'en';
   const [form, setForm] = useState({
