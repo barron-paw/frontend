@@ -202,11 +202,19 @@ async function request(path, options = {}, useFallback = true) {
   try {
     return await _requestWithBaseUrl(currentBaseUrl, path, options);
   } catch (err) {
-    // 多实例：若返回 409 wrong_instance，切换 base_url 并重试一次（FastAPI 把内容放在 response.data.detail 里）
+    // 多实例：若返回 409，并且后端返回了 base_url，就认为是打错实例，切换 base_url 并重试一次
+    // 兼容两种结构：
+    // 1) { detail: { code: 'wrong_instance', base_url: '...' } }
+    // 2) { base_url: '...', message: '...' }
     const data = err.response?.data;
-    const detail = data?.detail && typeof data.detail === 'object' ? data.detail : data;
+    const detail =
+      data && typeof data === 'object' && data.detail && typeof data.detail === 'object'
+        ? data.detail
+        : data && typeof data === 'object'
+          ? data
+          : null;
     const baseUrl = detail?.base_url || data?.base_url;
-    if (useFallback && err.response?.status === 409 && (detail?.code === 'wrong_instance' || data?.code === 'wrong_instance') && baseUrl) {
+    if (useFallback && err.response?.status === 409 && baseUrl) {
       setApiBaseUrl(baseUrl);
       return request(path, options, false);
     }
